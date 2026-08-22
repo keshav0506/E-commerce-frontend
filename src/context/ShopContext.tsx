@@ -1,0 +1,888 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { Product, Category, CartItem, Order, OrderStatus, CustomerUser } from '../types';
+import { fetchCategories, fetchProducts } from '../services/apiService';
+
+interface CouponInfo {
+  code: string;
+  discountType: 'percentage' | 'flat';
+  value: number;
+}
+
+interface ShopContextType {
+  categories: Category[];
+  activeCategories: Category[];
+  selectedCategoryId: string;
+  setSelectedCategoryId: (id: string) => void;
+  products: Product[];
+  filteredProducts: Product[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  cart: CartItem[];
+  addToCart: (product: Product, quantity?: number, selectedVolume?: string) => void;
+  removeFromCart: (productId: string, selectedVolume?: string) => void;
+  updateQuantity: (productId: string, delta: number, selectedVolume?: string) => void;
+  wishlist: string[];
+  toggleWishlist: (productId: string) => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
+  quickViewProduct: Product | null;
+  setQuickViewProduct: (product: Product | null) => void;
+  toastMessage: string | null;
+  showToast: (message: string) => void;
+  cartTotalCount: number;
+  cartSubtotal: number;
+  cartProductDiscount: number;
+  cartDeliveryFee: number;
+  appliedCoupon: CouponInfo | null;
+  couponDiscountAmount: number;
+  cartFinalTotal: number;
+  applyCoupon: (code: string) => boolean;
+  removeCoupon: () => void;
+  clearCart: () => void;
+
+  // Admin Product CRUD Operations
+  createProduct: (newProduct: Omit<Product, 'id'>) => void;
+  updateProduct: (id: string, updatedFields: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
+
+  // Admin Category CRUD Operations
+  createCategory: (newCategory: Omit<Category, 'id' | 'itemCount'>) => void;
+  updateCategory: (id: string, updatedFields: Partial<Category>) => void;
+  deleteCategory: (id: string) => boolean;
+  toggleCategoryStatus: (id: string) => void;
+  getCategoryProductCount: (categoryId: string) => number;
+
+  // Admin Order Management Operations
+  orders: Order[];
+  updateOrderStatus: (orderId: string, newStatus: OrderStatus) => boolean;
+  cancelOrder: (orderId: string) => boolean;
+  placeOrder: (orderData: Omit<Order, 'id'>) => Order;
+
+  // Admin Customer Management Operations
+  customers: CustomerUser[];
+  toggleCustomerStatus: (customerId: string) => void;
+  getCustomerOrders: (customerEmail: string) => Order[];
+  getCustomerStats: (customerEmail: string) => { totalOrders: number; totalSpent: number };
+}
+
+const ShopContext = createContext<ShopContextType | undefined>(undefined);
+
+const LOCAL_STORAGE_CART_KEY = 'shoply_cart';
+const LOCAL_STORAGE_WISHLIST_KEY = 'shoply_wishlist';
+const LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY = 'shoply_custom_products';
+const LOCAL_STORAGE_DELETED_PRODUCTS_KEY = 'shoply_deleted_products';
+const LOCAL_STORAGE_CUSTOM_CATEGORIES_KEY = 'shoply_custom_categories';
+const LOCAL_STORAGE_ADMIN_ORDERS_KEY = 'shoply_admin_orders';
+const LOCAL_STORAGE_ADMIN_CUSTOMERS_KEY = 'shoply_admin_customers';
+
+// INITIAL REASONABLE MOCK CUSTOMERS
+const INITIAL_MOCK_CUSTOMERS: CustomerUser[] = [
+  {
+    id: 'cust-1',
+    name: 'Keshav Khandelwal',
+    firstName: 'Keshav',
+    lastName: 'Khandelwal',
+    email: 'keshav@example.com',
+    phone: '9876543210',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'Jan 15, 2026',
+    addresses: [
+      { id: 'addr-1', fullName: 'Keshav Khandelwal', phone: '9876543210', house: 'Flat 402, Sunshine Heights', street: 'MG Road, Indiranagar', city: 'Bengaluru', state: 'Karnataka', pincode: '560038', type: 'HOME', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-2',
+    name: 'Priya Verma',
+    firstName: 'Priya',
+    lastName: 'Verma',
+    email: 'priya.v@example.com',
+    phone: '9812345678',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'Feb 10, 2026',
+    addresses: [
+      { id: 'addr-2', fullName: 'Priya Verma', phone: '9812345678', house: 'House No. 12, Park Street', street: 'Sector 15', city: 'Gurugram', state: 'Haryana', pincode: '122001', type: 'WORK', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-3',
+    name: 'Rahul Sharma',
+    firstName: 'Rahul',
+    lastName: 'Sharma',
+    email: 'rahul.s@example.com',
+    phone: '9765432109',
+    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'Mar 04, 2026',
+    addresses: [
+      { id: 'addr-3', fullName: 'Rahul Sharma', phone: '9765432109', house: 'B-204, Royal Palms', street: 'Aarey Milk Colony', city: 'Mumbai', state: 'Maharashtra', pincode: '400065', type: 'HOME', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-4',
+    name: 'Amit Patel',
+    firstName: 'Amit',
+    lastName: 'Patel',
+    email: 'amit.patel@example.com',
+    phone: '9654321098',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'Apr 18, 2026',
+    addresses: [
+      { id: 'addr-4', fullName: 'Amit Patel', phone: '9654321098', house: 'Plot 45, CG Road', street: 'Navrangpura', city: 'Ahmedabad', state: 'Gujarat', pincode: '380009', type: 'HOME', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-5',
+    name: 'Sneha Kapoor',
+    firstName: 'Sneha',
+    lastName: 'Kapoor',
+    email: 'sneha.k@example.com',
+    phone: '9543210987',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'May 22, 2026',
+    addresses: [
+      { id: 'addr-5', fullName: 'Sneha Kapoor', phone: '9543210987', house: 'Flat 101, Lakeview Apts', street: 'Bani Park', city: 'Jaipur', state: 'Rajasthan', pincode: '302016', type: 'HOME', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-6',
+    name: 'Vikram Singh',
+    firstName: 'Vikram',
+    lastName: 'Singh',
+    email: 'vikram@example.com',
+    phone: '9432109876',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+    status: 'active',
+    joinedDate: 'Jun 12, 2026',
+    addresses: [
+      { id: 'addr-6', fullName: 'Vikram Singh', phone: '9432109876', house: 'House 88, Civil Lines', street: 'Mall Road', city: 'Kanpur', state: 'Uttar Pradesh', pincode: '208001', type: 'HOME', isDefault: true }
+    ]
+  },
+  {
+    id: 'cust-7',
+    name: 'Ananya Roy',
+    firstName: 'Ananya',
+    lastName: 'Roy',
+    email: 'ananya.roy@example.com',
+    phone: '9321098765',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80',
+    status: 'blocked',
+    joinedDate: 'Jul 01, 2026',
+    addresses: [
+      { id: 'addr-7', fullName: 'Ananya Roy', phone: '9321098765', house: 'Flat 5B, Salt Lake', street: 'Sector V', city: 'Kolkata', state: 'West Bengal', pincode: '700091', type: 'HOME', isDefault: true }
+    ]
+  }
+];
+
+// INITIAL REASONABLE MOCK ORDERS
+const INITIAL_MOCK_ORDERS: Order[] = [
+  {
+    id: '#ORD-2026-00124',
+    customer: { id: 'cust-1', name: 'Keshav Khandelwal', email: 'keshav@example.com', phone: '9876543210' },
+    items: [
+      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: '/images/berry_lemon.png', quantity: 2, priceAtPurchase: 199, total: 398 },
+      { productId: 'prod-19', productName: 'Aethelgard Studio Headphones', sku: 'SKU-000003', image: '/images/headphones.png', quantity: 1, priceAtPurchase: 2999, total: 2999 }
+    ],
+    status: 'Delivered',
+    paymentStatus: 'Paid',
+    paymentMethod: 'UPI (Google Pay)',
+    transactionId: 'TXN-948201',
+    shippingAddress: { fullName: 'Keshav Khandelwal', phone: '9876543210', house: 'Flat 402, Sunshine Heights', street: 'MG Road, Indiranagar', city: 'Bengaluru', state: 'Karnataka', pincode: '560038', type: 'HOME' },
+    subtotal: 3397,
+    discount: 298,
+    shipping: 0,
+    tax: 149,
+    total: 3248,
+    createdAt: 'Aug 10, 2026 10:32 AM',
+    updatedAt: 'Aug 10, 2026 04:15 PM'
+  },
+  {
+    id: '#ORD-2026-00123',
+    customer: { id: 'cust-2', name: 'Priya Verma', email: 'priya.v@example.com', phone: '9812345678' },
+    items: [
+      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: '/images/crunchy_nachos.png', quantity: 3, priceAtPurchase: 99, total: 297 }
+    ],
+    status: 'Processing',
+    paymentStatus: 'Paid',
+    paymentMethod: 'Credit Card',
+    transactionId: 'TXN-839205',
+    shippingAddress: { fullName: 'Priya Verma', phone: '9812345678', house: 'House No. 12, Park Street', street: 'Sector 15', city: 'Gurugram', state: 'Haryana', pincode: '122001', type: 'WORK' },
+    subtotal: 297,
+    discount: 50,
+    shipping: 99,
+    tax: 35,
+    total: 381,
+    createdAt: 'Aug 10, 2026 11:45 AM',
+    updatedAt: 'Aug 10, 2026 12:10 PM'
+  },
+  {
+    id: '#ORD-2026-00122',
+    customer: { id: 'cust-3', name: 'Rahul Sharma', email: 'rahul.s@example.com', phone: '9765432109' },
+    items: [
+      { productId: 'prod-25', productName: 'Apex White Leather Sneaker', sku: 'SKU-000004', image: '/images/sneakers.png', quantity: 1, priceAtPurchase: 1899, total: 1899 }
+    ],
+    status: 'Shipped',
+    paymentStatus: 'Paid',
+    paymentMethod: 'Debit Card',
+    transactionId: 'TXN-729104',
+    shippingAddress: { fullName: 'Rahul Sharma', phone: '9765432109', house: 'B-204, Royal Palms', street: 'Aarey Milk Colony', city: 'Mumbai', state: 'Maharashtra', pincode: '400065', type: 'HOME' },
+    subtotal: 1899,
+    discount: 200,
+    shipping: 0,
+    tax: 180,
+    total: 1879,
+    createdAt: 'Aug 09, 2026 02:15 PM',
+    updatedAt: 'Aug 10, 2026 09:30 AM'
+  },
+  {
+    id: '#ORD-2026-00121',
+    customer: { id: 'cust-4', name: 'Amit Patel', email: 'amit.patel@example.com', phone: '9654321098' },
+    items: [
+      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: '/images/berry_lemon.png', quantity: 6, priceAtPurchase: 199, total: 1194 }
+    ],
+    status: 'Confirmed',
+    paymentStatus: 'Paid',
+    paymentMethod: 'UPI (Paytm)',
+    transactionId: 'TXN-618093',
+    shippingAddress: { fullName: 'Amit Patel', phone: '9654321098', house: 'Plot 45, CG Road', street: 'Navrangpura', city: 'Ahmedabad', state: 'Gujarat', pincode: '380009', type: 'HOME' },
+    subtotal: 1194,
+    discount: 100,
+    shipping: 0,
+    tax: 45,
+    total: 1139,
+    createdAt: 'Aug 09, 2026 04:50 PM',
+    updatedAt: 'Aug 09, 2026 05:00 PM'
+  },
+  {
+    id: '#ORD-2026-00120',
+    customer: { id: 'cust-5', name: 'Sneha Kapoor', email: 'sneha.k@example.com', phone: '9543210987' },
+    items: [
+      { productId: 'prod-28', productName: 'Apex Pro OLED Smartwatch', sku: 'SKU-000003', image: '/images/smartwatch.png', quantity: 1, priceAtPurchase: 3499, total: 3499 }
+    ],
+    status: 'Pending',
+    paymentStatus: 'Pending',
+    paymentMethod: 'Cash on Delivery (COD)',
+    shippingAddress: { fullName: 'Sneha Kapoor', phone: '9543210987', house: 'Flat 101, Lakeview Apts', street: 'Bani Park', city: 'Jaipur', state: 'Rajasthan', pincode: '302016', type: 'HOME' },
+    subtotal: 3499,
+    discount: 200,
+    shipping: 0,
+    tax: 125,
+    total: 3424,
+    createdAt: 'Aug 08, 2026 08:10 PM',
+    updatedAt: 'Aug 08, 2026 08:10 PM'
+  },
+  {
+    id: '#ORD-2026-00119',
+    customer: { id: 'cust-6', name: 'Vikram Singh', email: 'vikram@example.com', phone: '9432109876' },
+    items: [
+      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: '/images/crunchy_nachos.png', quantity: 2, priceAtPurchase: 99, total: 198 }
+    ],
+    status: 'Cancelled',
+    paymentStatus: 'Refunded',
+    paymentMethod: 'UPI (PhonePe)',
+    transactionId: 'TXN-507982',
+    shippingAddress: { fullName: 'Vikram Singh', phone: '9432109876', house: 'House 88, Civil Lines', street: 'Mall Road', city: 'Kanpur', state: 'Uttar Pradesh', pincode: '208001', type: 'HOME' },
+    subtotal: 198,
+    discount: 0,
+    shipping: 99,
+    tax: 20,
+    total: 317,
+    createdAt: 'Aug 07, 2026 01:20 PM',
+    updatedAt: 'Aug 07, 2026 02:00 PM'
+  }
+];
+
+export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Orders State with LocalStorage Persistence
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_ADMIN_ORDERS_KEY);
+      return saved ? JSON.parse(saved) : INITIAL_MOCK_ORDERS;
+    } catch {
+      return INITIAL_MOCK_ORDERS;
+    }
+  });
+
+  // Customers State with LocalStorage Persistence
+  const [customers, setCustomers] = useState<CustomerUser[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_ADMIN_CUSTOMERS_KEY);
+      return saved ? JSON.parse(saved) : INITIAL_MOCK_CUSTOMERS;
+    } catch {
+      return INITIAL_MOCK_CUSTOMERS;
+    }
+  });
+
+  // Cart State with LocalStorage Persistence
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_CART_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Wishlist State with LocalStorage Persistence
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_WISHLIST_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponInfo | null>(null);
+
+  // Load Initial Catalog Data and Merge Local Custom/Deleted Items
+  useEffect(() => {
+    async function loadInitialData() {
+      const baseCats = await fetchCategories();
+      const baseProds = await fetchProducts();
+
+      // Load custom category updates
+      try {
+        const customCatsJson = localStorage.getItem(LOCAL_STORAGE_CUSTOM_CATEGORIES_KEY);
+        const customCats: Category[] = customCatsJson ? JSON.parse(customCatsJson) : [];
+
+        let mergedCats = baseCats.map((c) => {
+          const override = customCats.find((cc) => cc.id === c.id || cc.slug === c.slug);
+          return override ? { ...c, ...override } : { ...c, status: c.status || 'active', createdAt: c.createdAt || 'Aug 10, 2026' };
+        });
+
+        const extraCats = customCats.filter((cc) => !baseCats.some((bc) => bc.id === cc.id || bc.slug === cc.slug));
+        mergedCats = [...mergedCats, ...extraCats];
+
+        setCategories(mergedCats);
+      } catch {
+        setCategories(baseCats.map((c) => ({ ...c, status: 'active', createdAt: 'Aug 10, 2026' })));
+      }
+
+      // Load custom product updates
+      try {
+        const customProdsJson = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY);
+        const customProds: Product[] = customProdsJson ? JSON.parse(customProdsJson) : [];
+
+        const deletedIdsJson = localStorage.getItem(LOCAL_STORAGE_DELETED_PRODUCTS_KEY);
+        const deletedIds: string[] = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+
+        let combined = [...customProds, ...baseProds.filter((bp) => !customProds.some((cp) => cp.id === bp.id))];
+        combined = combined.filter((p) => !deletedIds.includes(p.id));
+
+        setProducts(combined);
+      } catch {
+        setProducts(baseProds);
+      }
+    }
+    loadInitialData();
+  }, []);
+
+  // Persist Orders to LocalStorage whenever modified
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_ADMIN_ORDERS_KEY, JSON.stringify(orders));
+    } catch (e) {
+      console.error('Failed to save orders', e);
+    }
+  }, [orders]);
+
+  // Persist Customers to LocalStorage whenever modified
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_ADMIN_CUSTOMERS_KEY, JSON.stringify(customers));
+    } catch (e) {
+      console.error('Failed to save customers', e);
+    }
+  }, [customers]);
+
+  const persistCategories = (cats: Category[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_CUSTOM_CATEGORIES_KEY, JSON.stringify(cats));
+    } catch (e) {
+      console.error('Failed to save categories', e);
+    }
+  };
+
+  // Sync Cart & Wishlist to LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_CART_KEY, JSON.stringify(cart));
+    } catch (e) {
+      console.error('Failed to save cart', e);
+    }
+  }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_WISHLIST_KEY, JSON.stringify(wishlist));
+    } catch (e) {
+      console.error('Failed to save wishlist', e);
+    }
+  }, [wishlist]);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  };
+
+  const addToCart = (product: Product, quantity = 1, selectedVolume?: string) => {
+    const vol = selectedVolume || product.volumes?.[0] || 'Standard';
+
+    setCart((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.product.id === product.id && item.selectedVolume === vol
+      );
+      if (existingIndex > -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += quantity;
+        return updated;
+      }
+      return [...prev, { product, quantity, selectedVolume: vol }];
+    });
+
+    showToast(`Added ${quantity}x ${product.name} to cart!`);
+  };
+
+  const removeFromCart = (productId: string, selectedVolume?: string) => {
+    setCart((prev) =>
+      prev.filter(
+        (item) =>
+          !(item.product.id === productId && (selectedVolume ? item.selectedVolume === selectedVolume : true))
+      )
+    );
+    showToast('Item removed from cart');
+  };
+
+  const updateQuantity = (productId: string, delta: number, selectedVolume?: string) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (
+            item.product.id === productId &&
+            (!selectedVolume || item.selectedVolume === selectedVolume)
+          ) {
+            const newQty = item.quantity + delta;
+            return newQty >= 1 ? { ...item, quantity: newQty } : item;
+          }
+          return item;
+        })
+        .filter(Boolean) as CartItem[]
+    );
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    setAppliedCoupon(null);
+  };
+
+  const toggleWishlist = (productId: string) => {
+    setWishlist((prev) => {
+      const exists = prev.includes(productId);
+      const updated = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
+      showToast(exists ? 'Removed from Wishlist' : 'Added to Wishlist!');
+      return updated;
+    });
+  };
+
+  const applyCoupon = (code: string): boolean => {
+    const cleanCode = code.trim().toUpperCase();
+    if (cleanCode === 'SAVE10') {
+      setAppliedCoupon({ code: 'SAVE10', discountType: 'percentage', value: 10 });
+      showToast('Coupon SAVE10 applied! (10% OFF)');
+      return true;
+    } else if (cleanCode === 'WELCOME100') {
+      setAppliedCoupon({ code: 'WELCOME100', discountType: 'flat', value: 100 });
+      showToast('Coupon WELCOME100 applied! (₹100 OFF)');
+      return true;
+    } else {
+      showToast('Invalid coupon code');
+      return false;
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    showToast('Coupon removed');
+  };
+
+  // ADMIN PRODUCT CRUD OPERATIONS
+  const createProduct = (newProductData: Omit<Product, 'id'>) => {
+    const newProd: Product = {
+      ...newProductData,
+      id: `prod-${Date.now()}`
+    };
+
+    setProducts((prev) => {
+      const updated = [newProd, ...prev];
+      try {
+        const savedCustomJson = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY);
+        const savedCustom: Product[] = savedCustomJson ? JSON.parse(savedCustomJson) : [];
+        localStorage.setItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY, JSON.stringify([newProd, ...savedCustom]));
+      } catch (e) {
+        console.error('Failed to persist new product', e);
+      }
+      return updated;
+    });
+
+    showToast('Product created successfully.');
+  };
+
+  const updateProduct = (id: string, updatedFields: Partial<Product>) => {
+    setProducts((prev) => {
+      const updated = prev.map((p) => (p.id === id ? { ...p, ...updatedFields } : p));
+      try {
+        const savedCustomJson = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY);
+        const savedCustom: Product[] = savedCustomJson ? JSON.parse(savedCustomJson) : [];
+        const existingIdx = savedCustom.findIndex((cp) => cp.id === id);
+        let newCustom = [...savedCustom];
+        const targetProd = updated.find((p) => p.id === id);
+        if (targetProd) {
+          if (existingIdx > -1) {
+            newCustom[existingIdx] = targetProd;
+          } else {
+            newCustom.push(targetProd);
+          }
+          localStorage.setItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY, JSON.stringify(newCustom));
+        }
+      } catch (e) {
+        console.error('Failed to persist product update', e);
+      }
+      return updated;
+    });
+
+    showToast('Product updated successfully.');
+  };
+
+  const deleteProduct = (id: string) => {
+    setProducts((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      try {
+        const deletedIdsJson = localStorage.getItem(LOCAL_STORAGE_DELETED_PRODUCTS_KEY);
+        const deletedIds: string[] = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+        if (!deletedIds.includes(id)) {
+          localStorage.setItem(LOCAL_STORAGE_DELETED_PRODUCTS_KEY, JSON.stringify([...deletedIds, id]));
+        }
+      } catch (e) {
+        console.error('Failed to persist product deletion', e);
+      }
+      return updated;
+    });
+
+    showToast('Product deleted successfully.');
+  };
+
+  // ADMIN CATEGORY CRUD OPERATIONS
+  const getCategoryProductCount = (categoryId: string): number => {
+    return products.filter((p) => p.categoryId === categoryId).length;
+  };
+
+  const createCategory = (newCategoryData: Omit<Category, 'id' | 'itemCount'>) => {
+    const slug = newCategoryData.slug || newCategoryData.name.toLowerCase().replace(/\s+/g, '-');
+    const newCat: Category = {
+      ...newCategoryData,
+      id: `cat-${slug}`,
+      slug,
+      status: newCategoryData.status || 'active',
+      createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+    };
+
+    setCategories((prev) => {
+      const updated = [...prev, newCat];
+      persistCategories(updated);
+      return updated;
+    });
+
+    showToast('Category created successfully.');
+  };
+
+  const updateCategory = (id: string, updatedFields: Partial<Category>) => {
+    setCategories((prev) => {
+      const updated = prev.map((c) => (c.id === id ? { ...c, ...updatedFields } : c));
+      persistCategories(updated);
+      return updated;
+    });
+
+    showToast('Category updated successfully.');
+  };
+
+  const toggleCategoryStatus = (id: string) => {
+    setCategories((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id === id) {
+          const newStatus: 'active' | 'inactive' = c.status === 'inactive' ? 'active' : 'inactive';
+          showToast(`Category status changed to ${newStatus}.`);
+          return { ...c, status: newStatus };
+        }
+        return c;
+      });
+      persistCategories(updated);
+      return updated;
+    });
+  };
+
+  const deleteCategory = (id: string): boolean => {
+    const count = getCategoryProductCount(id);
+    if (count > 0) {
+      showToast(`Cannot delete category with ${count} assigned products.`);
+      return false;
+    }
+
+    setCategories((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      persistCategories(updated);
+      return updated;
+    });
+
+    showToast('Category deleted successfully.');
+    return true;
+  };
+
+  // ADMIN ORDER OPERATIONS WITH WORKFLOW & TRANSITION RULES
+  const isValidOrderTransition = (current: OrderStatus, next: OrderStatus): boolean => {
+    if (current === next) return true;
+    if (current === 'Cancelled') return false;
+    if (current === 'Delivered') return false;
+
+    if (current === 'Pending') return next === 'Confirmed' || next === 'Cancelled';
+    if (current === 'Confirmed') return next === 'Processing' || next === 'Cancelled';
+    if (current === 'Processing') return next === 'Shipped' || next === 'Cancelled';
+    if (current === 'Shipped') return next === 'Delivered';
+
+    return false;
+  };
+
+  const updateOrderStatus = (orderId: string, newStatus: OrderStatus): boolean => {
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (!targetOrder) return false;
+
+    if (!isValidOrderTransition(targetOrder.status, newStatus)) {
+      showToast('This order cannot move to this status.');
+      return false;
+    }
+
+    const nowFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id === orderId) {
+          const isCOD = o.paymentMethod.toLowerCase().includes('cash');
+          let updatedPayStatus = o.paymentStatus;
+          if (newStatus === 'Delivered' && isCOD) {
+            updatedPayStatus = 'Paid';
+          } else if (newStatus === 'Cancelled' && o.paymentStatus === 'Paid') {
+            updatedPayStatus = 'Refunded';
+          }
+          return {
+            ...o,
+            status: newStatus,
+            paymentStatus: updatedPayStatus,
+            updatedAt: nowFormatted
+          };
+        }
+        return o;
+      })
+    );
+
+    showToast('Order status updated successfully.');
+    return true;
+  };
+
+  const cancelOrder = (orderId: string): boolean => {
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (!targetOrder) return false;
+
+    if (targetOrder.status === 'Cancelled') {
+      showToast('Order is already cancelled.');
+      return false;
+    }
+
+    if (targetOrder.status === 'Shipped' || targetOrder.status === 'Delivered') {
+      showToast('Shipped or Delivered orders cannot be cancelled.');
+      return false;
+    }
+
+    return updateOrderStatus(orderId, 'Cancelled');
+  };
+
+  const placeOrder = (newOrderData: Omit<Order, 'id'>): Order => {
+    const newOrder: Order = {
+      ...newOrderData,
+      id: `#ORD-2026-00${125 + orders.length}`
+    };
+
+    setOrders((prev) => [newOrder, ...prev]);
+
+    // Also ensure customer record exists or updates in customer store
+    setCustomers((prev) => {
+      const existing = prev.find((c) => c.email.toLowerCase() === newOrder.customer.email.toLowerCase());
+      if (existing) {
+        return prev;
+      }
+      const newCust: CustomerUser = {
+        id: `cust-${Date.now()}`,
+        name: newOrder.customer.name,
+        email: newOrder.customer.email,
+        phone: newOrder.customer.phone,
+        status: 'active',
+        joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        addresses: [
+          {
+            id: `addr-${Date.now()}`,
+            ...newOrder.shippingAddress,
+            type: newOrder.shippingAddress.type || 'HOME',
+            isDefault: true
+          }
+        ]
+      };
+      return [newCust, ...prev];
+    });
+
+    return newOrder;
+  };
+
+  // ADMIN CUSTOMER OPERATIONS
+  const toggleCustomerStatus = (customerId: string) => {
+    setCustomers((prev) =>
+      prev.map((c) => {
+        if (c.id === customerId) {
+          const newStatus: 'active' | 'blocked' = c.status === 'active' ? 'blocked' : 'active';
+          showToast(`Customer account status changed to ${newStatus}.`);
+          return { ...c, status: newStatus };
+        }
+        return c;
+      })
+    );
+  };
+
+  const getCustomerOrders = (customerEmail: string): Order[] => {
+    return orders.filter((o) => o.customer.email.toLowerCase() === customerEmail.toLowerCase());
+  };
+
+  const getCustomerStats = (customerEmail: string) => {
+    const custOrders = getCustomerOrders(customerEmail);
+    const validOrders = custOrders.filter((o) => o.status !== 'Cancelled');
+    const totalOrders = custOrders.length;
+    const totalSpent = validOrders.reduce((sum, o) => sum + o.total, 0);
+    return { totalOrders, totalSpent };
+  };
+
+  // Calculations & Category Resolution with Derived Product Counts
+  const categoriesWithDerivedCounts = categories.map((cat) => ({
+    ...cat,
+    itemCount: getCategoryProductCount(cat.id)
+  }));
+
+  const activeCategoriesWithDerivedCounts = categoriesWithDerivedCounts.filter(
+    (c) => c.status !== 'inactive'
+  );
+
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory = selectedCategoryId === 'all' || p.categoryId === selectedCategoryId;
+    const matchesSearch =
+      searchQuery.trim() === '' ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.categoryName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  const cartTotalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const cartSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+  const cartProductDiscount = cart.reduce((sum, item) => {
+    const itemOriginal = item.product.originalPrice || item.product.price;
+    const diff = Math.max(0, itemOriginal - item.product.price);
+    return sum + diff * item.quantity;
+  }, 0);
+
+  const cartDeliveryFee = cartSubtotal >= 499 || cartSubtotal === 0 ? 0 : 99;
+
+  let couponDiscountAmount = 0;
+  if (appliedCoupon && cartSubtotal > 0) {
+    if (appliedCoupon.discountType === 'percentage') {
+      couponDiscountAmount = Math.round((cartSubtotal * appliedCoupon.value) / 100);
+    } else {
+      couponDiscountAmount = Math.min(cartSubtotal, appliedCoupon.value);
+    }
+  }
+
+  const cartFinalTotal = Math.max(0, cartSubtotal - couponDiscountAmount + cartDeliveryFee);
+
+  return (
+    <ShopContext.Provider
+      value={{
+        categories: categoriesWithDerivedCounts,
+        activeCategories: activeCategoriesWithDerivedCounts,
+        selectedCategoryId,
+        setSelectedCategoryId,
+        products,
+        filteredProducts,
+        searchQuery,
+        setSearchQuery,
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        wishlist,
+        toggleWishlist,
+        isCartOpen,
+        setIsCartOpen,
+        quickViewProduct,
+        setQuickViewProduct,
+        toastMessage,
+        showToast,
+        cartTotalCount,
+        cartSubtotal,
+        cartProductDiscount,
+        cartDeliveryFee,
+        appliedCoupon,
+        couponDiscountAmount,
+        cartFinalTotal,
+        applyCoupon,
+        removeCoupon,
+        clearCart,
+        createProduct,
+        updateProduct,
+        deleteProduct,
+        createCategory,
+        updateCategory,
+        deleteCategory,
+        toggleCategoryStatus,
+        getCategoryProductCount,
+        orders,
+        updateOrderStatus,
+        cancelOrder,
+        placeOrder,
+        customers,
+        toggleCustomerStatus,
+        getCustomerOrders,
+        getCustomerStats
+      }}
+    >
+      {children}
+    </ShopContext.Provider>
+  );
+};
+
+export const useShop = () => {
+  const context = useContext(ShopContext);
+  if (!context) {
+    throw new Error('useShop must be used within a ShopProvider');
+  }
+  return context;
+};

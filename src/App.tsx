@@ -1,0 +1,98 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ShopProvider } from './context/ShopContext';
+import { Navbar } from './components/Navbar';
+import { HomePage } from './pages/HomePage';
+import { ProductsPage } from './pages/ProductsPage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
+import { CartPage } from './pages/CartPage';
+import { WishlistPage } from './pages/WishlistPage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { OrderSuccessPage } from './pages/OrderSuccessPage';
+import { AccountPage } from './pages/AccountPage';
+
+// Admin Imports
+import { AdminLayout } from './components/AdminLayout';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminProductsPage } from './pages/admin/AdminProductsPage';
+import { AdminAddProductPage } from './pages/admin/AdminAddProductPage';
+import { AdminEditProductPage } from './pages/admin/AdminEditProductPage';
+import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage';
+import { AdminAddCategoryPage } from './pages/admin/AdminAddCategoryPage';
+import { AdminEditCategoryPage } from './pages/admin/AdminEditCategoryPage';
+import { AdminOrdersPage } from './pages/admin/AdminOrdersPage';
+import { AdminOrderDetailsPage } from './pages/admin/AdminOrderDetailsPage';
+import { AdminCustomersPage } from './pages/admin/AdminCustomersPage';
+import { AdminCustomerDetailsPage } from './pages/admin/AdminCustomerDetailsPage';
+
+import { Footer } from './components/Footer';
+import { CartDrawer } from './components/CartDrawer';
+import { QuickViewModal } from './components/QuickViewModal';
+import { ToastNotification } from './components/ToastNotification';
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ShopProvider>
+          <div className="min-h-screen flex flex-col bg-[#fcfcfc] text-gray-900 font-sans selection:bg-rose-500 selection:text-white">
+            <Routes>
+              {/* ADMIN ROUTES (WITH PERSISTENT ADMIN LAYOUT) */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProductsPage />} />
+                <Route path="products/new" element={<AdminAddProductPage />} />
+                <Route path="products/:id/edit" element={<AdminEditProductPage />} />
+                <Route path="categories" element={<AdminCategoriesPage />} />
+                <Route path="categories/new" element={<AdminAddCategoryPage />} />
+                <Route path="categories/:id/edit" element={<AdminEditCategoryPage />} />
+                <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="orders/:id" element={<AdminOrderDetailsPage />} />
+                <Route path="customers" element={<AdminCustomersPage />} />
+                <Route path="customers/:id" element={<AdminCustomerDetailsPage />} />
+              </Route>
+
+              {/* CUSTOMER STOREFRONT ROUTES (WITH PERSISTENT NAVBAR & FOOTER) */}
+              <Route
+                path="*"
+                element={
+                  <div className="flex-1 flex flex-col min-h-screen">
+                    <Navbar />
+                    <div className="flex-1">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/products" element={<ProductsPage />} />
+                        <Route path="/products/:id" element={<ProductDetailPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/wishlist" element={<WishlistPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/order-success" element={<OrderSuccessPage />} />
+                        <Route path="/account" element={<AccountPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route path="/reset-password" element={<ResetPasswordPage />} />
+                      </Routes>
+                    </div>
+                    <Footer />
+                  </div>
+                }
+              />
+            </Routes>
+
+            {/* Global Drawers, Modals & Toast */}
+            <CartDrawer />
+            <QuickViewModal />
+            <ToastNotification />
+          </div>
+        </ShopProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
