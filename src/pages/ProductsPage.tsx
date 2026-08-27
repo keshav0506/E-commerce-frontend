@@ -49,8 +49,12 @@ export const ProductsPage: React.FC = () => {
     return products
       .filter((p) => {
         // Category Filter
-        if (selectedCategoryId !== 'all' && p.categoryId !== selectedCategoryId) {
-          return false;
+        if (selectedCategoryId !== 'all') {
+          const matchId = String(p.categoryId) === String(selectedCategoryId);
+          const matchName = (p.categoryName || '').toLowerCase().includes(selectedCategoryId.toLowerCase());
+          if (!matchId && !matchName) {
+            return false;
+          }
         }
 
         // Search Query Filter

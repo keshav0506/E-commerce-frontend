@@ -26,9 +26,8 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
     if (params.page !== undefined) {
       queryParts.push(`page=${params.page}`);
     }
-    if (params.size !== undefined) {
-      queryParts.push(`size=${params.size}`);
-    }
+    const size = params.size !== undefined ? params.size : 200;
+    queryParts.push(`size=${size}`);
     if (params.sort) {
       queryParts.push(`sort=${encodeURIComponent(params.sort)}`);
     }

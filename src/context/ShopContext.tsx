@@ -356,7 +356,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     async function loadInitialData() {
       const baseCats = await fetchCategories();
-      const baseProds = await fetchProducts();
+      const baseProds = await fetchProducts({ size: 200 });
 
       // Load custom category updates
       try {
