@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -43,6 +43,20 @@ export const Navbar: React.FC = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -314,31 +328,50 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* TIER 2: CATEGORIES ICON STRIP (FLIPKART STYLE) */}
-      <div className="bg-gray-50/60 border-t border-gray-100">
+      {/* TIER 2: CATEGORIES ICON / TEXT STRIP (SCROLL-AWARE) */}
+      <div className={`bg-gray-50/70 border-t border-gray-100 transition-all duration-300 ${
+        isScrolled ? 'py-1 shadow-xs bg-white/95 backdrop-blur-md' : 'py-2'
+      }`}>
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-1 sm:space-x-3 overflow-x-auto py-2 scrollbar-none">
+          <div className={`flex items-center overflow-x-auto scrollbar-none transition-all duration-300 ${
+            isScrolled ? 'space-x-1 sm:space-x-2' : 'space-x-1 sm:space-x-3'
+          }`}>
             
             {/* "For You" / "All Products" Option */}
             <button
               onClick={() => handleCategorySelect('all')}
-              className={`flex flex-col items-center justify-center px-3 sm:px-4 py-1.5 rounded-2xl transition-all cursor-pointer shrink-0 group ${
-                selectedCategoryId === 'all' && location.pathname === '/products'
-                  ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+              className={`transition-all duration-300 cursor-pointer shrink-0 group flex items-center justify-center ${
+                isScrolled
+                  ? `px-3 py-1 rounded-full text-xs font-bold ${
+                      selectedCategoryId === 'all' && location.pathname === '/products'
+                        ? 'bg-rose-500 text-white shadow-xs'
+                        : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/70'
+                    }`
+                  : `flex-col px-3 sm:px-4 py-1.5 rounded-2xl ${
+                      selectedCategoryId === 'all' && location.pathname === '/products'
+                        ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                    }`
               }`}
             >
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${
-                selectedCategoryId === 'all' && location.pathname === '/products' ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+              {/* Category Icon (Visible only when not scrolled down) */}
+              {!isScrolled && (
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 mb-1 ${
+                  selectedCategoryId === 'all' && location.pathname === '/products' ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+                }`}>
+                  {getCategoryIcon('all')}
+                </div>
+              )}
+              <span className={`whitespace-nowrap transition-all ${
+                isScrolled
+                  ? 'text-xs'
+                  : 'text-[11px] sm:text-xs font-semibold'
               }`}>
-                {getCategoryIcon('all')}
-              </div>
-              <span className="text-[11px] sm:text-xs font-semibold mt-1 whitespace-nowrap">
                 For You
               </span>
             </button>
 
-            <div className="h-6 w-px bg-gray-200/80 shrink-0 my-auto" />
+            <div className={`w-px bg-gray-200/80 shrink-0 my-auto transition-all ${isScrolled ? 'h-4' : 'h-6'}`} />
 
             {/* Dynamically Loaded Active Categories */}
             {categories.map((cat) => {
@@ -347,18 +380,33 @@ export const Navbar: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`flex flex-col items-center justify-center px-3 sm:px-4 py-1.5 rounded-2xl transition-all cursor-pointer shrink-0 group ${
-                    isSelected
-                      ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                  className={`transition-all duration-300 cursor-pointer shrink-0 group flex items-center justify-center ${
+                    isScrolled
+                      ? `px-3 py-1 rounded-full text-xs font-bold ${
+                          isSelected
+                            ? 'bg-rose-500 text-white shadow-xs'
+                            : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/70'
+                        }`
+                      : `flex-col px-3 sm:px-4 py-1.5 rounded-2xl ${
+                          isSelected
+                            ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
+                        }`
                   }`}
                 >
-                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${
-                    isSelected ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+                  {/* Category Icon (Visible only when not scrolled down) */}
+                  {!isScrolled && (
+                    <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 mb-1 ${
+                      isSelected ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+                    }`}>
+                      {getCategoryIcon(cat)}
+                    </div>
+                  )}
+                  <span className={`whitespace-nowrap transition-all ${
+                    isScrolled
+                      ? 'text-xs'
+                      : 'text-[11px] sm:text-xs font-semibold'
                   }`}>
-                    {getCategoryIcon(cat)}
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold mt-1 whitespace-nowrap">
                     {cat.name}
                   </span>
                 </button>
