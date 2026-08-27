@@ -9,7 +9,7 @@ export const WishlistPage: React.FC = () => {
   const { products, wishlist, addToCart, clearWishlist, showToast } = useShop();
 
   // Resolve full Product objects from centralized products list using wishlist IDs
-  const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlist.some((id) => String(id) === String(p.id)));
 
   const handleAddAllToCart = () => {
     wishlistedProducts.forEach((product) => {

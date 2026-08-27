@@ -10,7 +10,7 @@ export const QuickViewModal: React.FC = () => {
 
   if (!quickViewProduct) return null;
 
-  const isWishlisted = wishlist.includes(quickViewProduct.id);
+  const isWishlisted = wishlist.some((id) => String(id) === String(quickViewProduct.id));
   const activeVolume = selectedVolume || quickViewProduct.volumes?.[0] || 'Standard';
 
   const handleAddToCart = () => {

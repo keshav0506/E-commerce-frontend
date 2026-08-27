@@ -610,17 +610,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const toggleWishlist = (productId: string) => {
-    const exists = wishlist.includes(productId);
-    const updated = exists ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
+  const toggleWishlist = (productId: string | number) => {
+    const targetId = String(productId);
+    const exists = wishlist.some((id) => String(id) === targetId);
+    const updated = exists ? wishlist.filter((id) => String(id) !== targetId) : [...wishlist, targetId];
     setWishlist(updated);
     showToast(exists ? 'Removed from Wishlist' : 'Added to Wishlist!');
 
     const token = localStorage.getItem('token');
     if (token && token !== 'mock-jwt-token-dev') {
-      toggleWishlistApi(productId).then((res) => {
-        if (res?.productIds) {
-          setWishlist(res.productIds);
+      toggleWishlistApi(targetId).then((res) => {
+        if (res?.productIds && Array.isArray(res.productIds)) {
+          setWishlist(res.productIds.map(String));
         }
       }).catch((err: any) => {
         console.warn('Backend wishlist toggle sync error:', err);
@@ -628,15 +629,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const removeFromWishlist = (productId: string) => {
-    setWishlist((prev) => prev.filter((id) => id !== productId));
+  const removeFromWishlist = (productId: string | number) => {
+    const targetId = String(productId);
+    setWishlist((prev) => prev.filter((id) => String(id) !== targetId));
     showToast('Removed from Wishlist');
 
     const token = localStorage.getItem('token');
     if (token && token !== 'mock-jwt-token-dev') {
-      removeFromWishlistApi(productId).then((res) => {
-        if (res?.productIds) {
-          setWishlist(res.productIds);
+      removeFromWishlistApi(targetId).then((res) => {
+        if (res?.productIds && Array.isArray(res.productIds)) {
+          setWishlist(res.productIds.map(String));
         }
       }).catch((err: any) => {
         console.warn('Backend wishlist remove sync error:', err);

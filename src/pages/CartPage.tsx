@@ -138,7 +138,7 @@ export const CartPage: React.FC = () => {
               <div className="space-y-3 sm:space-y-4">
                 <AnimatePresence mode="popLayout">
                   {cart.map((item) => {
-                    const isWishlisted = wishlist.includes(item.product.id);
+                    const isWishlisted = wishlist.some((id) => String(id) === String(item.product.id));
 
                     return (
                       <motion.div
@@ -235,16 +235,27 @@ export const CartPage: React.FC = () => {
                           <div className="flex items-center gap-1">
                             {/* Wishlist Button */}
                             <button
-                              onClick={() => toggleWishlist(item.product.id)}
-                              className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleWishlist(String(item.product.id));
+                              }}
+                              className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
                                 isWishlisted
-                                  ? 'text-rose-500 bg-rose-50'
-                                  : 'text-gray-400 hover:text-rose-500 hover:bg-gray-100'
+                                  ? 'text-rose-500 bg-rose-50 border border-rose-100 shadow-xs'
+                                  : 'text-gray-400 hover:text-rose-500 hover:bg-gray-100 border border-transparent'
                               }`}
-                              title={isWishlisted ? 'In Wishlist' : 'Move to Wishlist'}
+                              title={isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
                               aria-label="Wishlist"
                             >
-                              <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
+                              <Heart
+                                className={`w-4 h-4 transition-all duration-200 ${
+                                  isWishlisted
+                                    ? 'fill-rose-500 text-rose-500 scale-110'
+                                    : 'text-gray-400 hover:text-rose-500'
+                                }`}
+                              />
                             </button>
 
                             {/* Remove Item Button */}

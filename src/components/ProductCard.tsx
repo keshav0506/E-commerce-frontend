@@ -16,7 +16,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
   const [imgSrc, setImgSrc] = useState(product.image || FALLBACK_IMAGE);
 
-  const isWishlisted = wishlist.includes(product.id);
+  const isWishlisted = wishlist.some((id) => String(id) === String(product.id));
   const inCartItem = cart.find((item) => item.product.id === product.id);
 
   const isOutOfStock = !product.inStock || product.stock <= 0;

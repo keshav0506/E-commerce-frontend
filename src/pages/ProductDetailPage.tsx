@@ -110,7 +110,7 @@ export const ProductDetailPage: React.FC = () => {
 
   const galleryImages = product.images && product.images.length > 0 ? product.images : [product.image];
   const activeVolume = selectedVolume || product.volumes?.[0] || 'Standard';
-  const isWishlisted = wishlist.includes(product.id);
+  const isWishlisted = wishlist.some((id) => String(id) === String(product.id));
 
   // Related products from same category (excluding current)
   const relatedProducts = products
