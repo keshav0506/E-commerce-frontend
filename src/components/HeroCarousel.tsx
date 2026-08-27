@@ -1,417 +1,185 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { useNavigate } from 'react-router-dom';
 
-interface FlipkartHeroBanner {
-  id: string;
-  brand: string;
-  brandSub: string;
-  title: string;
-  highlight: string;
-  subtitle: string;
-  bankOffer?: string;
-  image: string;
-  bgGradient: string;
-  textColor: string;
-  accentColor: string;
-  categoryFilter?: string;
-}
-
-interface MiniBannerItem {
+interface SpotlightCard {
   id: string;
   tag: string;
   title: string;
-  subtitle: string;
-  discountText: string;
   image: string;
-  bgGradient: string;
   categoryId?: string;
 }
 
-const HERO_BANNERS: FlipkartHeroBanner[] = [
-  {
-    id: 'banner-1',
-    brand: 'APEX',
-    brandSub: 'Smart Tech',
-    title: 'Apex Pro OLED Smartwatch',
-    highlight: 'From ₹1,999',
-    subtitle: 'Always-On Display • 7-Day Battery • IP68 Water Resistant',
-    bankOffer: 'Instant 10% Off with HDFC / SBI Cards',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
-    bgGradient: 'from-[#0f172a] via-[#1e293b] to-[#334155]',
-    textColor: 'text-white',
-    accentColor: 'text-rose-400',
-    categoryFilter: 'electronics'
-  },
-  {
-    id: 'banner-2',
-    brand: 'AETHELGARD',
-    brandSub: 'Studio Audio',
-    title: 'Pro ANC Wireless Headphones',
-    highlight: 'Flat 45% Off',
-    subtitle: 'Active Noise Cancellation • 60H Battery Life • Deep Bass',
-    bankOffer: 'Free Express 2-Day Delivery',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
-    bgGradient: 'from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0]',
-    textColor: 'text-gray-900',
-    accentColor: 'text-indigo-600',
-    categoryFilter: 'accessories'
-  },
-  {
-    id: 'banner-3',
-    brand: 'BERRY BLAST',
-    brandSub: 'Cold-Pressed',
-    title: 'Organic Fruit Beverages',
-    highlight: 'Pack of 3 at ₹499',
-    subtitle: '100% Pure Natural Fruits • Zero Added Sugars',
-    bankOffer: 'Buy 2 Get 1 Free on Beverages',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
-    bgGradient: 'from-[#fdf2f8] via-[#fce7f3] to-[#fbcfe8]',
-    textColor: 'text-gray-900',
-    accentColor: 'text-pink-600',
-    categoryFilter: 'beverages'
-  },
-  {
-    id: 'banner-4',
-    brand: 'URBAN',
-    brandSub: 'Streetwear',
-    title: 'Active Cushioned Sneakers',
-    highlight: 'Up to 50% Off',
-    subtitle: 'Breathable Knit Mesh • Memory Foam Sole • Lightweight',
-    bankOffer: 'Special Weekend Clearance Sale',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
-    bgGradient: 'from-[#fff7ed] via-[#ffedd5] to-[#fed7aa]',
-    textColor: 'text-gray-900',
-    accentColor: 'text-amber-700',
-    categoryFilter: 'footwear'
-  }
-];
+interface SpotlightSet {
+  id: string;
+  heading: string;
+  cards: SpotlightCard[];
+}
 
-const MINI_BANNERS: MiniBannerItem[] = [
+const SPOTLIGHT_SETS: SpotlightSet[] = [
   {
-    id: 'mini-1',
-    tag: 'Gourmet',
-    title: 'Chipotle Lime Nachos & Nuts',
-    subtitle: 'Crispy stone-ground nachos with zesty dip',
-    discountText: 'Up to 40% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
-    bgGradient: 'from-amber-900/90 via-amber-950/80 to-black/90',
-    categoryId: 'snacks'
+    id: 'set-1',
+    heading: "Spotlight's on",
+    cards: [
+      {
+        id: 'spot-1',
+        tag: 'Trending',
+        title: 'Top Rated',
+        image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
+        categoryId: 'snacks'
+      },
+      {
+        id: 'spot-2',
+        tag: 'Top Offers',
+        title: 'Min. 70% Off',
+        image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80',
+        categoryId: 'clothing'
+      },
+      {
+        id: 'spot-3',
+        tag: 'Grab Or Gone',
+        title: 'Top Rated',
+        image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
+        categoryId: 'accessories'
+      },
+      {
+        id: 'spot-4',
+        tag: 'Most-loved',
+        title: 'Special offer',
+        image: 'https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?w=600&auto=format&fit=crop&q=80',
+        categoryId: 'footwear'
+      }
+    ]
   },
   {
-    id: 'mini-2',
-    tag: 'Beverages',
-    title: 'Artisan Roast Espresso',
-    subtitle: 'Single origin Arabica coffee beans',
-    discountText: 'Up to 25% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
-    bgGradient: 'from-zinc-900/90 via-zinc-950/85 to-black/95',
-    categoryId: 'beverages'
-  },
-  {
-    id: 'mini-3',
-    tag: 'Audio',
-    title: 'Smart Gadgets & Earbuds',
-    subtitle: 'Crystal clear calls & ambient sound mode',
-    discountText: 'Up to 60% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
-    bgGradient: 'from-stone-900/90 via-stone-950/85 to-black/95',
-    categoryId: 'accessories'
-  },
-  {
-    id: 'mini-4',
-    tag: 'Apparel',
-    title: 'Comfort Cotton Tees',
-    subtitle: '100% Bio-washed premium streetwear',
-    discountText: 'Up to 50% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
-    bgGradient: 'from-indigo-950/90 via-slate-950/85 to-black/95',
-    categoryId: 'clothing'
-  },
-  {
-    id: 'mini-5',
-    tag: 'Wellness',
-    title: 'Organic Personal Care',
-    subtitle: 'Gentle hydration & natural essential oils',
-    discountText: 'Up to 35% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
-    bgGradient: 'from-rose-950/90 via-pink-950/85 to-black/95',
-    categoryId: 'care'
+    id: 'set-2',
+    heading: "Trending Deals",
+    cards: [
+      {
+        id: 'spot-5',
+        tag: 'Best Sellers',
+        title: 'From ₹1,999',
+        image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
+        categoryId: 'electronics'
+      },
+      {
+        id: 'spot-6',
+        tag: 'Studio Sound',
+        title: 'Flat 45% Off',
+        image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
+        categoryId: 'accessories'
+      },
+      {
+        id: 'spot-7',
+        tag: 'Cold Pressed',
+        title: 'Pack of 3 at ₹499',
+        image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+        categoryId: 'beverages'
+      },
+      {
+        id: 'spot-8',
+        tag: 'Daily Comfort',
+        title: 'Up to 50% Off',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+        categoryId: 'footwear'
+      }
+    ]
   }
 ];
 
 export const HeroCarousel: React.FC = () => {
   const navigate = useNavigate();
   const { setSelectedCategoryId } = useShop();
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const miniScrollRef = useRef<HTMLDivElement>(null);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
 
-  // Auto slide top carousel every 4.5 seconds
-  useEffect(() => {
-    if (isHovered) return;
-    const timer = setInterval(() => {
-      setCurrentSlideIndex((prev) => (prev + 1) % HERO_BANNERS.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [isHovered]);
-
-  const handlePrev = () => {
-    setCurrentSlideIndex((prev) => (prev - 1 + HERO_BANNERS.length) % HERO_BANNERS.length);
-  };
+  const currentSet = SPOTLIGHT_SETS[currentSetIndex];
 
   const handleNext = () => {
-    setCurrentSlideIndex((prev) => (prev + 1) % HERO_BANNERS.length);
+    setCurrentSetIndex((prev) => (prev + 1) % SPOTLIGHT_SETS.length);
   };
 
-  const handleMiniScroll = (direction: 'left' | 'right') => {
-    if (miniScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      miniScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
+  const handlePrev = () => {
+    setCurrentSetIndex((prev) => (prev - 1 + SPOTLIGHT_SETS.length) % SPOTLIGHT_SETS.length);
   };
 
-  const handleBannerClick = (cat?: string) => {
-    if (cat) {
-      setSelectedCategoryId(cat);
+  const handleCardClick = (categoryId?: string) => {
+    if (categoryId) {
+      setSelectedCategoryId(categoryId);
     }
     navigate('/products');
   };
 
-  // Get active slide and next slide for 2-card desktop view
-  const slide1 = HERO_BANNERS[currentSlideIndex];
-  const slide2 = HERO_BANNERS[(currentSlideIndex + 1) % HERO_BANNERS.length];
-
   return (
-    <section
-      aria-label="Promotional Banners"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1 space-y-3"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* ========================================================================= */}
-      {/* 1. TOP FLIPKART-STYLE HERO BANNER CAROUSEL (COMPACT HEIGHT: ~210px)       */}
-      {/* ========================================================================= */}
-      <div className="relative group">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-          
-          {/* Card 1 */}
-          <motion.div
-            key={slide1.id}
-            initial={{ opacity: 0.7, scale: 0.99 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            onClick={() => handleBannerClick(slide1.categoryFilter)}
-            className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${slide1.bgGradient} p-5 sm:p-6 h-[190px] sm:h-[210px] flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-md transition-all border border-gray-200/40`}
-          >
-            {/* Top Brand Tag */}
-            <div className="flex items-center gap-2 z-10">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-900 bg-white/90 px-2 py-0.5 rounded shadow-xs">
-                {slide1.brand}
-              </span>
-              <span className={`text-[11px] font-bold opacity-80 ${slide1.textColor}`}>
-                {slide1.brandSub}
-              </span>
-            </div>
+    <section aria-label="Spotlight Deals" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+      {/* SOFT PASTEL MINT/GREEN CONTAINER MATCHING UPLOADED IMAGE */}
+      <div className="relative rounded-3xl bg-[#dcf0e8] p-4 sm:p-5 border border-emerald-100/60 shadow-xs">
+        
+        {/* HEADER TITLE & CONTROLS */}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+            {currentSet.heading}
+          </h2>
 
-            {/* Middle Title & Highlight */}
-            <div className="z-10 max-w-[65%] sm:max-w-[60%] space-y-1">
-              <h3 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${slide1.textColor}`}>
-                {slide1.title}
-              </h3>
-              <div className={`text-base sm:text-lg font-extrabold ${slide1.accentColor}`}>
-                {slide1.highlight}
-              </div>
-              <p className={`text-[11px] font-medium opacity-75 line-clamp-1 ${slide1.textColor}`}>
-                {slide1.subtitle}
-              </p>
-            </div>
-
-            {/* Bottom Bank Offer & AD Tag */}
-            <div className="flex items-center justify-between z-10 pt-1">
-              {slide1.bankOffer && (
-                <span className="text-[10px] font-bold bg-black/10 text-white/90 backdrop-blur-xs px-2 py-0.5 rounded border border-white/10 truncate max-w-[80%]">
-                  {slide1.bankOffer}
-                </span>
-              )}
-              <span className="text-[9px] font-extrabold uppercase bg-black/20 text-white/70 px-1.5 py-0.5 rounded ml-auto">
-                OFFER
-              </span>
-            </div>
-
-            {/* Product Cutout Graphic on Right */}
-            <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-32 sm:w-44 h-32 sm:h-44 pointer-events-none flex items-center justify-center">
-              <img
-                src={slide1.image}
-                alt={slide1.title}
-                className="w-full h-full object-contain filter drop-shadow-xl transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-          </motion.div>
-
-          {/* Card 2 (Desktop View) */}
-          <motion.div
-            key={slide2.id}
-            initial={{ opacity: 0.7, scale: 0.99 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            onClick={() => handleBannerClick(slide2.categoryFilter)}
-            className={`hidden md:flex relative overflow-hidden rounded-2xl bg-gradient-to-r ${slide2.bgGradient} p-5 sm:p-6 h-[190px] sm:h-[210px] flex-col justify-between cursor-pointer shadow-sm hover:shadow-md transition-all border border-gray-200/40`}
-          >
-            {/* Top Brand Tag */}
-            <div className="flex items-center gap-2 z-10">
-              <span className="text-xs font-black uppercase tracking-wider text-gray-900 bg-white/90 px-2 py-0.5 rounded shadow-xs">
-                {slide2.brand}
-              </span>
-              <span className={`text-[11px] font-bold opacity-80 ${slide2.textColor}`}>
-                {slide2.brandSub}
-              </span>
-            </div>
-
-            {/* Middle Title & Highlight */}
-            <div className="z-10 max-w-[60%] space-y-1">
-              <h3 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${slide2.textColor}`}>
-                {slide2.title}
-              </h3>
-              <div className={`text-base sm:text-lg font-extrabold ${slide2.accentColor}`}>
-                {slide2.highlight}
-              </div>
-              <p className={`text-[11px] font-medium opacity-75 line-clamp-1 ${slide2.textColor}`}>
-                {slide2.subtitle}
-              </p>
-            </div>
-
-            {/* Bottom Bank Offer & AD Tag */}
-            <div className="flex items-center justify-between z-10 pt-1">
-              {slide2.bankOffer && (
-                <span className="text-[10px] font-bold bg-black/10 text-gray-800 backdrop-blur-xs px-2 py-0.5 rounded border border-gray-300/40 truncate max-w-[80%]">
-                  {slide2.bankOffer}
-                </span>
-              )}
-              <span className="text-[9px] font-extrabold uppercase bg-black/10 text-gray-600 px-1.5 py-0.5 rounded ml-auto">
-                OFFER
-              </span>
-            </div>
-
-            {/* Product Cutout Graphic on Right */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-40 sm:w-44 h-40 sm:h-44 pointer-events-none flex items-center justify-center">
-              <img
-                src={slide2.image}
-                alt={slide2.title}
-                className="w-full h-full object-contain filter drop-shadow-xl transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-          </motion.div>
-
-        </div>
-
-        {/* Carousel Navigation Buttons */}
-        <button
-          onClick={handlePrev}
-          aria-label="Previous Slide"
-          className="absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-gray-800 shadow-md border border-gray-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-20 cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={handleNext}
-          aria-label="Next Slide"
-          className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-gray-800 shadow-md border border-gray-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 z-20 cursor-pointer"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-
-        {/* Dots Pagination */}
-        <div className="flex justify-center gap-1.5 mt-2">
-          {HERO_BANNERS.map((_, i) => (
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-1.5">
             <button
-              key={i}
-              onClick={() => setCurrentSlideIndex(i)}
-              className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                i === currentSlideIndex ? 'w-5 bg-rose-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 2. BOTTOM MINI BANNERS STRIP (COMPACT CATEGORY DEALS: ~110px)             */}
-      {/* ========================================================================= */}
-      <div className="relative group/mini pt-0.5">
-        {/* Left Arrow Button */}
-        <button
-          onClick={() => handleMiniScroll('left')}
-          aria-label="Previous Mini Banners"
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-gray-800 shadow-md border border-gray-200 flex items-center justify-center opacity-0 group-hover/mini:opacity-100 transition-all hover:scale-110 z-20 cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-
-        {/* Scroll Container */}
-        <div
-          ref={miniScrollRef}
-          className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none snap-x"
-        >
-          {MINI_BANNERS.map((mini) => (
-            <motion.div
-              key={mini.id}
-              whileHover={{ y: -2 }}
-              onClick={() => handleBannerClick(mini.categoryId)}
-              className="relative shrink-0 w-[240px] sm:w-[270px] lg:w-[285px] h-[105px] sm:h-[115px] rounded-2xl overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all border border-gray-200/60 bg-gray-900 group/card snap-start"
+              onClick={handlePrev}
+              aria-label="Previous Set"
+              className="w-7 h-7 rounded-full bg-white/90 hover:bg-white text-gray-700 shadow-xs flex items-center justify-center transition-all cursor-pointer hover:scale-105"
             >
-              {/* Background Product Image */}
-              <img
-                src={mini.image}
-                alt={mini.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover/card:scale-105 transition-transform duration-500"
-              />
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleNext}
+              aria-label="Next Set"
+              className="w-7 h-7 rounded-full bg-white/90 hover:bg-white text-gray-700 shadow-xs flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
-              {/* Gradient Dark Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${mini.bgGradient}`} />
-
-              {/* Content Container */}
-              <div className="relative z-10 h-full p-3 flex flex-col justify-between text-white">
-                {/* Top Row: Tag & OFFER */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 backdrop-blur-xs px-2 py-0.5 rounded text-white border border-white/20">
-                    {mini.tag}
-                  </span>
-                  <span className="text-[8px] font-bold uppercase bg-black/40 text-white/70 px-1.5 py-0.5 rounded">
-                    DEAL
-                  </span>
+        {/* 4 COMPACT CLEAN WHITE CARDS ROW */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSet.id}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.25 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
+          >
+            {currentSet.cards.map((card) => (
+              <div
+                key={card.id}
+                onClick={() => handleCardClick(card.categoryId)}
+                className="bg-white rounded-2xl p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-100/40"
+              >
+                {/* Product Image Box */}
+                <div className="w-full aspect-square bg-[#f8fafc] rounded-xl flex items-center justify-center p-2.5 overflow-hidden relative">
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-108 transition-transform duration-300"
+                  />
                 </div>
 
-                {/* Middle: Subtitle */}
-                <p className="text-[10px] font-medium text-white/90 line-clamp-1">
-                  {mini.subtitle}
-                </p>
-
-                {/* Bottom: Discount Badge */}
-                <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                  <span className="text-xs font-black tracking-tight text-amber-300">
-                    {mini.discountText}
+                {/* Bottom Clean Typography (No Gradients) */}
+                <div className="pt-2.5 px-0.5 space-y-0.5 text-left">
+                  <span className="block text-[11px] sm:text-xs text-gray-500 font-medium leading-tight">
+                    {card.tag}
                   </span>
-                  <span className="text-[10px] font-bold text-white/80 flex items-center gap-0.5 group-hover/card:translate-x-0.5 transition-transform">
-                    Explore &gt;
+                  <span className="block text-xs sm:text-sm font-extrabold text-gray-900 tracking-tight leading-tight group-hover:text-emerald-700 transition-colors">
+                    {card.title}
                   </span>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Right Arrow Button */}
-        <button
-          onClick={() => handleMiniScroll('right')}
-          aria-label="Next Mini Banners"
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-gray-800 shadow-md border border-gray-200 flex items-center justify-center opacity-0 group-hover/mini:opacity-100 transition-all hover:scale-110 z-20 cursor-pointer"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
       </div>
     </section>
   );
