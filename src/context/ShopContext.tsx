@@ -49,6 +49,11 @@ interface ShopContextType {
   removeCoupon: () => void;
   clearCart: () => void;
 
+  // Instant Buy / Direct Checkout Isolated Session
+  instantCheckoutItem: CartItem | null;
+  startInstantCheckout: (product: Product, quantity?: number, selectedVolume?: string) => void;
+  clearInstantCheckout: () => void;
+
   // Admin Product CRUD Operations
   createProduct: (newProduct: Omit<Product, 'id'>) => void;
   updateProduct: (id: string, updatedFields: Partial<Product>) => void;
@@ -83,6 +88,7 @@ const LOCAL_STORAGE_DELETED_PRODUCTS_KEY = 'shoply_deleted_products';
 const LOCAL_STORAGE_CUSTOM_CATEGORIES_KEY = 'shoply_custom_categories';
 const LOCAL_STORAGE_ADMIN_ORDERS_KEY = 'shoply_admin_orders';
 const LOCAL_STORAGE_ADMIN_CUSTOMERS_KEY = 'shoply_admin_customers';
+const SESSION_STORAGE_INSTANT_KEY = 'shoply_instant_checkout';
 
 // INITIAL REASONABLE MOCK CUSTOMERS
 const INITIAL_MOCK_CUSTOMERS: CustomerUser[] = [
@@ -357,6 +363,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<CouponInfo | null>(null);
 
+  // Instant Checkout Session (Isolated from regular persistent Cart)
+  const [instantCheckoutItem, setInstantCheckoutItem] = useState<CartItem | null>(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_STORAGE_INSTANT_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const loadInitialData = async () => {
     setIsLoading(true);
     setApiError(null);
@@ -607,6 +623,26 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearCartApi().catch((err: any) => {
         if (err.message) showToast(err.message);
       });
+    }
+  };
+
+  const startInstantCheckout = (product: Product, quantity = 1, selectedVolume?: string) => {
+    const vol = selectedVolume || product.volumes?.[0] || 'Standard';
+    const item: CartItem = { product, quantity, selectedVolume: vol };
+    setInstantCheckoutItem(item);
+    try {
+      sessionStorage.setItem(SESSION_STORAGE_INSTANT_KEY, JSON.stringify(item));
+    } catch (e) {
+      console.error('Failed to save instant checkout item', e);
+    }
+  };
+
+  const clearInstantCheckout = () => {
+    setInstantCheckoutItem(null);
+    try {
+      sessionStorage.removeItem(SESSION_STORAGE_INSTANT_KEY);
+    } catch (e) {
+      console.error('Failed to remove instant checkout item', e);
     }
   };
 
@@ -1101,6 +1137,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         applyCoupon,
         removeCoupon,
         clearCart,
+        instantCheckoutItem,
+        startInstantCheckout,
+        clearInstantCheckout,
         createProduct,
         updateProduct,
         deleteProduct,

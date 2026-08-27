@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ShoppingBag,
   MapPin,
@@ -12,6 +12,7 @@ import {
   X,
   Loader2,
   ArrowRight,
+  ArrowLeft,
   User,
   Phone,
   Check
@@ -22,37 +23,57 @@ import { loadRazorpayScript, createRazorpayOrderApi, verifyRazorpayPaymentApi } 
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isInstantCheckout = searchParams.get('instant') === 'true';
+
   const { user, addAddress } = useAuth();
   const {
     cart,
-    cartSubtotal,
-    cartProductDiscount,
     appliedCoupon,
-    couponDiscountAmount,
     applyCoupon,
     removeCoupon,
     clearCart,
     showToast,
-    placeOrder
+    placeOrder,
+    instantCheckoutItem,
+    clearInstantCheckout
   } = useShop();
 
-  // Redirect to /products if cart is empty
-  if (cart.length === 0) {
+  // Active items being checked out (isolated instant cart vs regular persistent cart)
+  const activeCart = isInstantCheckout
+    ? (instantCheckoutItem ? [instantCheckoutItem] : [])
+    : cart;
+
+  // Cleanup instant checkout session on unmount or if user navigates back
+  useEffect(() => {
+    return () => {
+      if (isInstantCheckout) {
+        clearInstantCheckout();
+      }
+    };
+  }, [isInstantCheckout]);
+
+  // Redirect if active cart is empty
+  if (activeCart.length === 0) {
     return (
       <div className="min-h-screen bg-[#fcfcfc] flex items-center justify-center p-6 text-center">
         <div className="bg-white rounded-3xl p-10 max-w-md w-full border border-gray-100 shadow-lg space-y-4">
           <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-extrabold text-gray-900">Your cart is empty</h2>
+          <h2 className="text-xl font-extrabold text-gray-900">
+            {isInstantCheckout ? 'No Item in Instant Checkout' : 'Your Cart is Empty'}
+          </h2>
           <p className="text-xs text-gray-500">
-            Please add items to your cart before proceeding to checkout.
+            {isInstantCheckout
+              ? 'The instant checkout session was cancelled or has expired.'
+              : 'Please add items to your cart before proceeding to checkout.'}
           </p>
           <Link
             to="/products"
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors cursor-pointer"
           >
-            <span>Continue Shopping</span>
+            <span>Explore Products</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -104,15 +125,32 @@ export const CheckoutPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Delivery Calculation
+  // Delivery Calculation based on active items
+  const subtotal = activeCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+  const productDiscount = activeCart.reduce((sum, item) => {
+    const itemOriginal = item.product.originalPrice || item.product.price;
+    const diff = Math.max(0, itemOriginal - item.product.price);
+    return sum + diff * item.quantity;
+  }, 0);
+
   const deliveryFee =
     deliveryMethod === 'express'
       ? 99
-      : cartSubtotal >= 499 || cartSubtotal === 0
+      : subtotal >= 499 || subtotal === 0
       ? 0
       : 99;
 
-  const finalCheckoutTotal = Math.max(0, cartSubtotal - couponDiscountAmount + deliveryFee);
+  let couponDiscountAmount = 0;
+  if (appliedCoupon && subtotal > 0) {
+    if (appliedCoupon.discountType === 'percentage') {
+      couponDiscountAmount = Math.round((subtotal * appliedCoupon.value) / 100);
+    } else {
+      couponDiscountAmount = Math.min(subtotal, appliedCoupon.value);
+    }
+  }
+
+  const finalCheckoutTotal = Math.max(0, subtotal - couponDiscountAmount + deliveryFee);
 
   // Handle Verify UPI
   const handleVerifyUpi = (e: React.FormEvent) => {
@@ -165,6 +203,17 @@ export const CheckoutPage: React.FC = () => {
     setNewPincode('');
   };
 
+  // Complete order and clean up cart accordingly
+  const handleCompleteOrder = () => {
+    if (isInstantCheckout) {
+      clearInstantCheckout();
+    } else {
+      clearCart();
+    }
+    setIsSubmitting(false);
+    navigate('/order-success');
+  };
+
   // Handle Place Order Submit
   const handlePlaceOrder = async () => {
     const errors: { [key: string]: string } = {};
@@ -208,7 +257,7 @@ export const CheckoutPage: React.FC = () => {
         email: email.trim(),
         phone: phone.trim()
       },
-      items: cart.map((item) => ({
+      items: activeCart.map((item) => ({
         productId: item.product.id,
         productName: item.product.name,
         sku: `SKU-${item.product.id.slice(-6).toUpperCase()}`,
@@ -231,19 +280,17 @@ export const CheckoutPage: React.FC = () => {
         pincode: activeAddr?.pincode || '560001',
         type: activeAddr?.type || 'HOME'
       },
-      subtotal: cartSubtotal,
-      discount: couponDiscountAmount + cartProductDiscount,
+      subtotal: subtotal,
+      discount: couponDiscountAmount + productDiscount,
       shipping: deliveryFee,
-      tax: Math.round(cartSubtotal * 0.05),
+      tax: Math.round(subtotal * 0.05),
       total: finalCheckoutTotal,
       createdAt: nowFormatted
     });
 
     if (paymentMethod === 'cod') {
       setTimeout(() => {
-        clearCart();
-        setIsSubmitting(false);
-        navigate('/order-success');
+        handleCompleteOrder();
       }, 800);
       return;
     }
@@ -276,9 +323,7 @@ export const CheckoutPage: React.FC = () => {
 
           if (verifyRes.success) {
             showToast('Payment successful!');
-            clearCart();
-            setIsSubmitting(false);
-            navigate('/order-success');
+            handleCompleteOrder();
           } else {
             showToast(verifyRes.message || 'Payment verification failed.');
             setIsSubmitting(false);
@@ -310,9 +355,7 @@ export const CheckoutPage: React.FC = () => {
       console.warn('Razorpay checkout initialization notice:', err);
       // Fallback for demo when backend Razorpay key is unconfigured
       setTimeout(() => {
-        clearCart();
-        setIsSubmitting(false);
-        navigate('/order-success');
+        handleCompleteOrder();
       }, 1000);
     }
   };
@@ -322,17 +365,38 @@ export const CheckoutPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-4">
-          <Link to="/" className="hover:text-rose-600 transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <Link to="/cart" className="hover:text-rose-600 transition-colors">
-            Cart
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-          <span className="text-gray-900 font-semibold">Checkout</span>
-        </nav>
+        {isInstantCheckout ? (
+          <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                clearInstantCheckout();
+                navigate(-1);
+              }}
+              className="hover:text-rose-600 transition-colors inline-flex items-center gap-1 cursor-pointer font-bold text-gray-600"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Product</span>
+            </button>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <span className="text-rose-600 font-extrabold flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+              <span>Instant Checkout</span>
+            </span>
+          </nav>
+        ) : (
+          <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-4">
+            <Link to="/" className="hover:text-rose-600 transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <Link to="/cart" className="hover:text-rose-600 transition-colors">
+              Cart
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <span className="text-gray-900 font-semibold">Checkout</span>
+          </nav>
+        )}
 
         {/* CHECKOUT PROGRESS INDICATOR */}
         <div className="bg-white border border-gray-100 rounded-3xl p-4 sm:p-5 mb-8 shadow-xs">
@@ -570,7 +634,7 @@ export const CheckoutPage: React.FC = () => {
                     <span className="text-xs font-bold text-gray-900 block">Standard Delivery</span>
                     <span className="text-xs text-gray-500 block mt-0.5">3–5 Business Days</span>
                     <span className="text-xs font-extrabold text-emerald-600 block mt-1">
-                      {cartSubtotal >= 499 ? 'FREE' : '₹99'}
+                      {subtotal >= 499 ? 'FREE' : '₹99'}
                     </span>
                   </div>
                 </label>
@@ -758,18 +822,33 @@ export const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-5 sticky top-24">
               
-              <h2 className="text-base font-extrabold text-gray-900 pb-3 border-b border-gray-100">
-                Order Summary
+              <h2 className="text-base font-extrabold text-gray-900 pb-3 border-b border-gray-100 flex items-center justify-between">
+                <span>Order Summary</span>
+                {isInstantCheckout ? (
+                  <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100 flex items-center gap-1">
+                    <Zap className="w-3 h-3 fill-amber-400 text-amber-500" />
+                    <span>Instant Buy</span>
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold text-gray-400">{activeCart.length} items</span>
+                )}
               </h2>
 
               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
-                {cart.map((item) => (
+                {activeCart.map((item) => (
                   <div key={`${item.product.id}-${item.selectedVolume}`} className="flex items-center justify-between text-xs">
                     <div className="flex items-center space-x-2 truncate">
                       <img src={item.product.image} alt={item.product.name} className="w-8 h-8 object-contain bg-gray-50 rounded-lg p-1 border border-gray-100" />
-                      <span className="font-bold text-gray-900 truncate max-w-[140px]">
-                        {item.product.name}
-                      </span>
+                      <div className="truncate max-w-[140px]">
+                        <span className="font-bold text-gray-900 truncate block">
+                          {item.product.name}
+                        </span>
+                        {item.selectedVolume && (
+                          <span className="text-[10px] text-gray-400 block">
+                            Size: {item.selectedVolume}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-gray-400">×{item.quantity}</span>
                     </div>
                     <span className="font-extrabold text-gray-900 shrink-0">
@@ -815,13 +894,13 @@ export const CheckoutPage: React.FC = () => {
               <div className="space-y-2.5 text-xs font-medium pt-2 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span className="font-bold text-gray-900">₹{cartSubtotal}</span>
+                  <span className="font-bold text-gray-900">₹{subtotal}</span>
                 </div>
 
-                {cartProductDiscount > 0 && (
+                {productDiscount > 0 && (
                   <div className="flex justify-between text-emerald-600">
                     <span>Product Discounts</span>
-                    <span className="font-bold">-₹{cartProductDiscount}</span>
+                    <span className="font-bold">-₹{productDiscount}</span>
                   </div>
                 )}
 

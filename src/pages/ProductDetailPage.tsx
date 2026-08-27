@@ -35,7 +35,7 @@ import type { ProductReviewsSummary } from '../services/reviewService';
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, addToCart, wishlist, toggleWishlist, setIsCartOpen, showToast } = useShop();
+  const { products, addToCart, wishlist, toggleWishlist, showToast, startInstantCheckout } = useShop();
   const { user, isLoggedIn } = useAuth();
 
   const product = products.find((p) => p.id === id);
@@ -58,20 +58,22 @@ export const ProductDetailPage: React.FC = () => {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // Load reviews for current product
-  const loadReviews = async (prodId: string) => {
+  const loadReviews = async (targetId?: string) => {
+    const reviewId = targetId || id;
+    if (!reviewId) return;
     try {
       setIsReviewLoading(true);
-      const data = await fetchProductReviewsApi(prodId);
+      const data = await fetchProductReviewsApi(reviewId);
       setReviewSummary(data);
     } catch (err) {
-      console.error('Failed to load reviews:', err);
+      console.warn('Failed to load reviews:', err);
     } finally {
       setIsReviewLoading(false);
     }
   };
 
-  // Scroll to top when product ID changes
   useEffect(() => {
+    loadReviews();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setSelectedImageIndex(0);
     setQuantity(1);
@@ -79,10 +81,7 @@ export const ProductDetailPage: React.FC = () => {
     if (product?.volumes && product.volumes.length > 0) {
       setSelectedVolume(product.volumes[0]);
     }
-    if (product?.id) {
-      loadReviews(product.id);
-    }
-  }, [id, product]);
+  }, [id, product, isLoggedIn]);
 
   // Handle Invalid Product ID State
   if (!product) {
@@ -127,8 +126,8 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, activeVolume);
-    setIsCartOpen(true);
+    startInstantCheckout(product, quantity, activeVolume);
+    navigate('/checkout?instant=true');
   };
 
   const handleCheckPincode = (e: React.FormEvent) => {
