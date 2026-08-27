@@ -33,12 +33,12 @@ interface MiniBannerItem {
 const HERO_BANNERS: FlipkartHeroBanner[] = [
   {
     id: 'banner-1',
-    brand: 'boltt',
-    brandSub: 'Shoply Unique',
-    title: 'ACE 5G',
-    highlight: 'From ₹12,999',
-    subtitle: 'Sale on 1st Sep, 12 PM',
-    bankOffer: '₹1,500 Off with HDFC / SBI Cards',
+    brand: 'APEX',
+    brandSub: 'Smart Tech',
+    title: 'Apex Pro OLED Smartwatch',
+    highlight: 'From ₹1,999',
+    subtitle: 'Always-On Display • 7-Day Battery • IP68 Water Resistant',
+    bankOffer: 'Instant 10% Off with HDFC / SBI Cards',
     image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
     bgGradient: 'from-[#0f172a] via-[#1e293b] to-[#334155]',
     textColor: 'text-white',
@@ -47,98 +47,98 @@ const HERO_BANNERS: FlipkartHeroBanner[] = [
   },
   {
     id: 'banner-2',
-    brand: 'realme',
-    brandSub: 'Exclusive Launch',
-    title: 'P4s 5G | 8+128 GB',
-    highlight: 'From ₹2,666/M*',
-    subtitle: 'Excl. launch offer • 144 FPS Fast Smooth',
-    bankOffer: 'Instant Bank Discounts Available',
+    brand: 'AETHELGARD',
+    brandSub: 'Studio Audio',
+    title: 'Pro ANC Wireless Headphones',
+    highlight: 'Flat 45% Off',
+    subtitle: 'Active Noise Cancellation • 60H Battery Life • Deep Bass',
+    bankOffer: 'Free Express 2-Day Delivery',
     image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
     bgGradient: 'from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0]',
     textColor: 'text-gray-900',
-    accentColor: 'text-blue-600',
-    categoryFilter: 'electronics'
-  },
-  {
-    id: 'banner-3',
-    brand: 'boAt',
-    brandSub: "INDIA'S #1 AUDIO",
-    title: 'Rockerz 430 ANC',
-    highlight: 'Up to 80% Off',
-    subtitle: 'Effortless fit • 60H Playback • Deep Bass',
-    bankOffer: 'Free Express Shipping',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
-    bgGradient: 'from-[#fff7ed] via-[#ffedd5] to-[#fed7aa]',
-    textColor: 'text-gray-900',
-    accentColor: 'text-orange-600',
+    accentColor: 'text-indigo-600',
     categoryFilter: 'accessories'
   },
   {
-    id: 'banner-4',
-    brand: 'NATIVE',
-    brandSub: 'Fresh Harvest',
-    title: 'Organic Beverages & Snacks',
-    highlight: 'Flat 40% Off',
-    subtitle: '100% Pure Cold-Pressed • No Preservatives',
-    bankOffer: 'Buy 2 Get 1 Free Today',
+    id: 'banner-3',
+    brand: 'BERRY BLAST',
+    brandSub: 'Cold-Pressed',
+    title: 'Organic Fruit Beverages',
+    highlight: 'Pack of 3 at ₹499',
+    subtitle: '100% Pure Natural Fruits • Zero Added Sugars',
+    bankOffer: 'Buy 2 Get 1 Free on Beverages',
     image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
     bgGradient: 'from-[#fdf2f8] via-[#fce7f3] to-[#fbcfe8]',
     textColor: 'text-gray-900',
     accentColor: 'text-pink-600',
     categoryFilter: 'beverages'
+  },
+  {
+    id: 'banner-4',
+    brand: 'URBAN',
+    brandSub: 'Streetwear',
+    title: 'Active Cushioned Sneakers',
+    highlight: 'Up to 50% Off',
+    subtitle: 'Breathable Knit Mesh • Memory Foam Sole • Lightweight',
+    bankOffer: 'Special Weekend Clearance Sale',
+    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
+    bgGradient: 'from-[#fff7ed] via-[#ffedd5] to-[#fed7aa]',
+    textColor: 'text-gray-900',
+    accentColor: 'text-amber-700',
+    categoryFilter: 'footwear'
   }
 ];
 
 const MINI_BANNERS: MiniBannerItem[] = [
   {
     id: 'mini-1',
-    tag: 'Bolas',
-    title: 'Premium Dry Fruits',
-    subtitle: 'Buttery, crunchy snack with bigger savings',
-    discountText: 'Up to 50% Off',
+    tag: 'Gourmet',
+    title: 'Chipotle Lime Nachos & Nuts',
+    subtitle: 'Crispy stone-ground nachos with zesty dip',
+    discountText: 'Up to 40% Off',
     image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
     bgGradient: 'from-amber-900/90 via-amber-950/80 to-black/90',
     categoryId: 'snacks'
   },
   {
     id: 'mini-2',
-    tag: 'Active',
-    title: 'Pet Care & Food',
-    subtitle: 'Twice the happiness for your best companions',
-    discountText: 'Up to 15% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
+    tag: 'Beverages',
+    title: 'Artisan Roast Espresso',
+    subtitle: 'Single origin Arabica coffee beans',
+    discountText: 'Up to 25% Off',
+    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
     bgGradient: 'from-zinc-900/90 via-zinc-950/85 to-black/95',
-    categoryId: 'essentials'
+    categoryId: 'beverages'
   },
   {
     id: 'mini-3',
-    tag: 'Little Angel',
-    title: 'Baby Essentials & Diapers',
-    subtitle: "For every mom's love & every baby's smile",
+    tag: 'Audio',
+    title: 'Smart Gadgets & Earbuds',
+    subtitle: 'Crystal clear calls & ambient sound mode',
     discountText: 'Up to 60% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
     bgGradient: 'from-stone-900/90 via-stone-950/85 to-black/95',
-    categoryId: 'care'
+    categoryId: 'accessories'
   },
   {
     id: 'mini-4',
-    tag: 'PediaSure',
-    title: 'Health & Nutrition',
-    subtitle: 'Specialized nutrition to support bone growth',
-    discountText: 'Up to 20% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
+    tag: 'Apparel',
+    title: 'Comfort Cotton Tees',
+    subtitle: '100% Bio-washed premium streetwear',
+    discountText: 'Up to 50% Off',
+    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
     bgGradient: 'from-indigo-950/90 via-slate-950/85 to-black/95',
-    categoryId: 'supplements'
+    categoryId: 'clothing'
   },
   {
     id: 'mini-5',
-    tag: 'MeeMee',
-    title: 'Baby Comfort Care',
-    subtitle: 'Gentle & Dermatologist Tested',
-    discountText: 'Up to 50% Off',
+    tag: 'Wellness',
+    title: 'Organic Personal Care',
+    subtitle: 'Gentle hydration & natural essential oils',
+    discountText: 'Up to 35% Off',
     image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
     bgGradient: 'from-rose-950/90 via-pink-950/85 to-black/95',
-    categoryId: 'babycare'
+    categoryId: 'care'
   }
 ];
 
@@ -237,7 +237,7 @@ export const HeroCarousel: React.FC = () => {
                 </span>
               )}
               <span className="text-[9px] font-extrabold uppercase bg-black/20 text-white/70 px-1.5 py-0.5 rounded ml-auto">
-                AD
+                OFFER
               </span>
             </div>
 
@@ -291,7 +291,7 @@ export const HeroCarousel: React.FC = () => {
                 </span>
               )}
               <span className="text-[9px] font-extrabold uppercase bg-black/10 text-gray-600 px-1.5 py-0.5 rounded ml-auto">
-                AD
+                OFFER
               </span>
             </div>
 
@@ -375,13 +375,13 @@ export const HeroCarousel: React.FC = () => {
 
               {/* Content Container */}
               <div className="relative z-10 h-full p-3 flex flex-col justify-between text-white">
-                {/* Top Row: Tag & AD */}
+                {/* Top Row: Tag & OFFER */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 backdrop-blur-xs px-2 py-0.5 rounded text-white border border-white/20">
                     {mini.tag}
                   </span>
                   <span className="text-[8px] font-bold uppercase bg-black/40 text-white/70 px-1.5 py-0.5 rounded">
-                    AD
+                    DEAL
                   </span>
                 </div>
 
@@ -396,7 +396,7 @@ export const HeroCarousel: React.FC = () => {
                     {mini.discountText}
                   </span>
                   <span className="text-[10px] font-bold text-white/80 flex items-center gap-0.5 group-hover/card:translate-x-0.5 transition-transform">
-                    Shop &gt;
+                    Explore &gt;
                   </span>
                 </div>
               </div>

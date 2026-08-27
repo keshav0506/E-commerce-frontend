@@ -270,7 +270,7 @@ export const AccountPage: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <span className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full">
-              Welcome back, {user.firstName}! 👋
+              Welcome back, {user.firstName}!
             </span>
           </div>
         </div>

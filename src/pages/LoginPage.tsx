@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2, Sparkles, CheckCircle2, User, ShieldCheck, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 
@@ -152,7 +152,10 @@ export const LoginPage: React.FC = () => {
           {isLocalhost && (
             <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 uppercase tracking-wider">
-                <span>⚡ Quick Fill for Testing (Localhost Only)</span>
+                <span className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                  Quick Fill for Testing (Localhost Only)
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -160,14 +163,16 @@ export const LoginPage: React.FC = () => {
                   onClick={() => fillCredentials('user')}
                   className="py-1.5 px-2.5 bg-white hover:bg-amber-100/50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <span>👤 User Account</span>
+                  <User className="w-3.5 h-3.5 text-amber-700" />
+                  <span>User Account</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => fillCredentials('admin')}
                   className="py-1.5 px-2.5 bg-white hover:bg-amber-100/50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <span>🛡️ Admin Account</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Admin Account</span>
                 </button>
               </div>
             </div>

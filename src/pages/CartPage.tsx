@@ -118,7 +118,7 @@ export const CartPage: React.FC = () => {
                   <span className="flex items-center gap-1.5">
                     <Truck className="w-4 h-4 text-rose-500" />
                     {cartSubtotal >= freeShippingThreshold ? (
-                      <span className="text-emerald-600 font-extrabold">🎉 You unlocked Free Delivery!</span>
+                      <span className="text-emerald-600 font-extrabold">You unlocked Free Delivery!</span>
                     ) : (
                       <span>Add ₹{freeShippingThreshold - cartSubtotal} more for Free Delivery</span>
                     )}
