@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, ArrowLeft, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, CheckCircle2, KeyRound, ArrowRight } from 'lucide-react';
+import { forgotPasswordApi } from '../services/authService';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
 
@@ -21,11 +24,16 @@ export const ForgotPasswordPage: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const res = await forgotPasswordApi(email.trim());
+      setSuccessMessage(res.message || 'Password reset OTP generated.');
       setIsSuccess(true);
-    }, 800);
+    } catch (err: any) {
+      setEmailError(err.message || 'Unable to process password reset request.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,15 +51,22 @@ export const ForgotPasswordPage: React.FC = () => {
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-extrabold text-gray-900">Check your email</h2>
-              <p className="text-xs text-gray-500 mt-2 leading-relaxed max-w-xs mx-auto">
-                We've sent a password reset link to <strong className="text-gray-800">{email}</strong>. Please check your inbox and spam folder.
+              <h2 className="text-2xl font-extrabold text-gray-900">Check your email / OTP</h2>
+              <p className="text-xs text-gray-600 mt-2 leading-relaxed max-w-xs mx-auto bg-gray-50 p-3 rounded-xl border border-gray-100">
+                {successMessage}
               </p>
             </div>
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
+              <button
+                onClick={() => navigate(`/reset-password?email=${encodeURIComponent(email.trim())}`)}
+                className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <span>Enter Reset OTP & New Password</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
               <Link
                 to="/login"
-                className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-2xl font-bold text-xs shadow-md inline-flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Login</span>
@@ -69,7 +84,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 Forgot your password?
               </h1>
               <p className="text-xs text-gray-500 leading-relaxed">
-                Enter the email associated with your account and we'll send you a reset link.
+                Enter the email associated with your account and we'll generate your password reset verification code.
               </p>
             </div>
 
@@ -102,10 +117,10 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Sending link...</span>
+                    <span>Sending code...</span>
                   </>
                 ) : (
-                  <span>Send Reset Link</span>
+                  <span>Send Reset Code</span>
                 )}
               </button>
             </form>

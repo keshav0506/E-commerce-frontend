@@ -21,6 +21,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import type { UserAddress } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
+import { changePasswordApi } from '../services/authService';
 
 export const AccountPage: React.FC = () => {
   const navigate = useNavigate();
@@ -207,14 +208,16 @@ export const AccountPage: React.FC = () => {
     showToast('Default address updated.');
   };
 
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
   // Change Password Submit
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors: { [key: string]: string } = {};
 
     if (!currentPassword) errors.current = 'Current password is required.';
-    if (!newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      errors.new = 'Must be 8+ chars with uppercase & number.';
+    if (!newPassword || newPassword.length < 6) {
+      errors.new = 'Must be at least 6 characters.';
     }
     if (newPassword !== confirmNewPassword) {
       errors.confirm = 'Passwords do not match.';
@@ -223,10 +226,22 @@ export const AccountPage: React.FC = () => {
     setPasswordErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
-    showToast('Password updated successfully.');
+    try {
+      setIsChangingPassword(true);
+      const res = await changePasswordApi({
+        currentPassword,
+        newPassword
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      showToast(res.message || 'Password updated successfully.');
+    } catch (err: any) {
+      setPasswordErrors({ current: err.message || 'Failed to update password. Please check your current password.' });
+      showToast(err.message || 'Failed to update password');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleConfirmLogout = () => {
@@ -798,9 +813,10 @@ export const AccountPage: React.FC = () => {
 
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-colors"
+                      disabled={isChangingPassword}
+                      className="px-6 py-2.5 bg-gray-900 hover:bg-black disabled:bg-gray-400 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-colors"
                     >
-                      Update Password
+                      {isChangingPassword ? 'Updating...' : 'Update Password'}
                     </button>
                   </form>
                 </div>

@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, ArrowLeft, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, ArrowLeft, Loader2, CheckCircle2, ShieldCheck, Mail, Key } from 'lucide-react';
+import { resetPasswordApi } from '../services/authService';
 
 export const ResetPasswordPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState('');
+  const [token, setToken] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -11,23 +15,40 @@ export const ResetPasswordPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const [formError, setFormError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  const hasMinLength = password.length >= 8;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    const tokenParam = searchParams.get('token');
+    if (emailParam) setEmail(emailParam);
+    if (tokenParam) setToken(tokenParam);
+  }, [searchParams]);
+
+  const hasMinLength = password.length >= 6;
 
   const validate = () => {
     let valid = true;
+    setFormError('');
     setPasswordError('');
     setConfirmPasswordError('');
+
+    if (!email.trim()) {
+      setFormError('Email address is required.');
+      return false;
+    }
+
+    if (!token.trim()) {
+      setFormError('Reset code/OTP is required.');
+      return false;
+    }
 
     if (!password) {
       setPasswordError('Password is required.');
       valid = false;
-    } else if (!hasMinLength || !hasUppercase || !hasNumber) {
-      setPasswordError('Password does not meet the requirements.');
+    } else if (!hasMinLength) {
+      setPasswordError('Password must be at least 6 characters.');
       valid = false;
     }
 
@@ -39,15 +60,23 @@ export const ResetPasswordPage: React.FC = () => {
     return valid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      setIsLoading(true);
+      await resetPasswordApi({
+        email: email.trim(),
+        token: token.trim(),
+        newPassword: password
+      });
       setIsSuccess(true);
-    }, 800);
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to reset password. Please verify the OTP.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,17 +94,17 @@ export const ResetPasswordPage: React.FC = () => {
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-extrabold text-gray-900">Password updated successfully.</h2>
+              <h2 className="text-2xl font-extrabold text-gray-900">Password reset complete!</h2>
               <p className="text-xs text-gray-500 mt-2 leading-relaxed max-w-xs mx-auto">
-                Your password has been changed. You can now sign in with your new password.
+                Your password has been updated successfully. You can now log in with your new password.
               </p>
             </div>
             <div className="pt-2">
               <Link
                 to="/login"
-                className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md inline-flex items-center justify-center gap-2 transition-all"
+                className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                <span>Back to Login</span>
+                <span>Back to Sign In</span>
               </Link>
             </div>
           </div>
@@ -87,15 +116,57 @@ export const ResetPasswordPage: React.FC = () => {
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                Create a new password
+                Reset your password
               </h1>
               <p className="text-xs text-gray-500 leading-relaxed">
-                Set a strong password for your account.
+                Enter your email, the verification OTP code sent, and your new password.
               </p>
             </div>
 
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs font-semibold text-rose-600">
+                {formError}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               
+              {/* Email Address */}
+              <div>
+                <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                    required
+                  />
+                  <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              {/* Reset OTP Code */}
+              <div>
+                <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">
+                  6-Digit OTP / Verification Code
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. 549120"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                    required
+                  />
+                  <Key className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
               {/* New Password */}
               <div>
                 <label className="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-1.5">
@@ -104,7 +175,6 @@ export const ResetPasswordPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -116,26 +186,12 @@ export const ResetPasswordPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {passwordError && <p className="text-xs text-rose-500 font-semibold mt-1">{passwordError}</p>}
-
-                {/* Requirements Checklist */}
-                <div className="mt-2 space-y-1 text-[11px] text-gray-500">
-                  <div className={`flex items-center gap-1.5 ${hasMinLength ? 'text-emerald-600 font-semibold' : ''}`}>
-                    <span>{hasMinLength ? '✓' : '○'} At least 8 characters</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${hasUppercase ? 'text-emerald-600 font-semibold' : ''}`}>
-                    <span>{hasUppercase ? '✓' : '○'} One uppercase letter</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 ${hasNumber ? 'text-emerald-600 font-semibold' : ''}`}>
-                    <span>{hasNumber ? '✓' : '○'} One number</span>
-                  </div>
-                </div>
               </div>
 
               {/* Confirm New Password */}
@@ -146,7 +202,6 @@ export const ResetPasswordPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -158,13 +213,14 @@ export const ResetPasswordPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {confirmPasswordError && <p className="text-xs text-rose-500 font-semibold mt-1">{confirmPasswordError}</p>}
+                {confirmPasswordError && (
+                  <p className="text-xs text-rose-500 font-semibold mt-1">{confirmPasswordError}</p>
+                )}
               </div>
 
               <button
@@ -175,10 +231,10 @@ export const ResetPasswordPage: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Resetting...</span>
+                    <span>Updating password...</span>
                   </>
                 ) : (
-                  <span>Reset Password</span>
+                  <span>Update Password</span>
                 )}
               </button>
             </form>

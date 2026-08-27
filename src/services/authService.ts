@@ -107,3 +107,34 @@ export async function registerApi(userData: RegisterRequest): Promise<{ token: s
   return { token, user };
 }
 
+/**
+ * Change Password for logged-in user (POST /api/auth/change-password)
+ */
+export async function changePasswordApi(passwords: { currentPassword: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+  return await apiFetch<{ success: boolean; message: string }>('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(passwords),
+  });
+}
+
+/**
+ * Forgot Password request OTP/Token (POST /api/auth/forgot-password)
+ */
+export async function forgotPasswordApi(email: string): Promise<{ success: boolean; message: string }> {
+  return await apiFetch<{ success: boolean; message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+/**
+ * Reset Password with OTP/Token (POST /api/auth/reset-password)
+ */
+export async function resetPasswordApi(data: { email: string; token: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+  return await apiFetch<{ success: boolean; message: string }>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+
