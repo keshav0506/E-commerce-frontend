@@ -162,46 +162,31 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* RIGHT ACTION BUTTONS: ADMIN TOGGLE, ACCOUNT, WISHLIST, CART */}
-          <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
+          {/* RIGHT ACTION BUTTONS: ADMIN, ACCOUNT, WISHLIST, CART, HAMBURGER */}
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
 
             {/* ADMIN PANEL TOGGLE (STRICTLY FOR LOGGED-IN ADMINS ONLY) */}
             {isAdmin && (
               <button
                 onClick={() => navigate('/admin')}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-xl shadow-xs border border-slate-700/80 transition-all cursor-pointer group"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-xl shadow-xs border border-slate-700/80 transition-all cursor-pointer group"
                 title="Switch to Admin Dashboard"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <ShieldCheck className="w-3.5 h-3.5 text-rose-400 group-hover:rotate-12 transition-transform" />
-                <span className="text-xs font-bold text-slate-100 tracking-tight hidden sm:inline">Admin Mode</span>
+                <span className="text-xs font-bold text-slate-100 tracking-tight hidden sm:inline">Admin</span>
               </button>
             )}
-            
-            {/* Mobile Search Icon Toggle */}
-            <button
-              onClick={() => {
-                navigate('/products');
-                setTimeout(() => {
-                  const searchEl = document.getElementById('mobile-search');
-                  searchEl?.focus();
-                }, 100);
-              }}
-              aria-label="Search"
-              className="sm:hidden p-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              <Search className="w-5 h-5" />
-            </button>
 
             {/* Account Profile Button */}
             <div className="relative">
               <button
                 onClick={handleAccountClick}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-gray-700 hover:text-rose-600 hover:bg-rose-50/60 rounded-xl transition-all cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-2 text-xs sm:text-sm font-bold text-gray-700 hover:text-rose-600 hover:bg-rose-50/60 rounded-xl transition-all cursor-pointer"
                 aria-label="Account"
               >
-                <User className="w-4 h-4 text-gray-500" />
-                <span>{isLoggedIn ? user?.firstName || 'Account' : 'Sign In'}</span>
+                <User className="w-4.5 h-4.5 sm:w-4 sm:h-4 text-gray-600" />
+                <span className="hidden sm:inline">{isLoggedIn ? user?.firstName || 'Account' : 'Sign In'}</span>
                 <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:inline" />
               </button>
 
@@ -272,17 +257,18 @@ export const Navbar: React.FC = () => {
             {/* Wishlist Button */}
             <button
               onClick={() => navigate('/wishlist')}
-              className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`relative flex items-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 location.pathname === '/wishlist'
                   ? 'bg-rose-50 text-rose-600'
                   : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/60'
               }`}
               title="My Wishlist"
+              aria-label="Wishlist"
             >
-              <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-500'}`} />
+              <Heart className={`w-4.5 h-4.5 sm:w-4 sm:h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-600'}`} />
               <span className="hidden md:inline">Wishlist</span>
               {wishlist.length > 0 && (
-                <span className="w-4 h-4 bg-rose-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 sm:static w-4 h-4 bg-rose-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
@@ -291,17 +277,17 @@ export const Navbar: React.FC = () => {
             {/* Cart Button */}
             <button
               onClick={() => navigate('/cart')}
-              className={`relative flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+              className={`relative flex items-center gap-1 sm:gap-1.5 p-2 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
                 location.pathname === '/cart'
                   ? 'bg-rose-500 text-white shadow-md'
                   : 'bg-rose-50 hover:bg-rose-100/80 text-rose-600 border border-rose-100'
               }`}
               aria-label="Shopping Cart"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Cart</span>
+              <ShoppingBag className="w-4.5 h-4.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Cart</span>
               {cartTotalCount > 0 && (
-                <span className={`px-1.5 py-0.5 text-[10px] font-black rounded-full ${
+                <span className={`px-1.5 py-0.2 sm:py-0.5 text-[10px] font-black rounded-full ${
                   location.pathname === '/cart' ? 'bg-white text-rose-600' : 'bg-rose-500 text-white'
                 }`}>
                   {cartTotalCount}
@@ -309,13 +295,13 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* Mobile Hamburger Button */}
+            {/* Mobile Hamburger Button (Prominently next to Cart) */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="sm:hidden p-2 text-gray-700 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-colors"
-              aria-label="Mobile Menu"
+              className="sm:hidden p-2 text-gray-700 hover:text-rose-600 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer ml-0.5"
+              aria-label="Mobile Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-rose-600" /> : <Menu className="w-5 h-5" />}
             </button>
 
           </div>
