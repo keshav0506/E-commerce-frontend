@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginApi, registerApi } from '../services/authService';
+import { fetchAddressesApi, createAddressApi, updateAddressApi, deleteAddressApi, setDefaultAddressApi } from '../services/addressService';
 
 export interface UserAddress {
   id: string;
@@ -26,6 +28,7 @@ export interface UserProfile {
   name: string;
   email: string;
   phone: string;
+  role?: string;
   avatar?: string;
   addresses: UserAddress[];
   preferences: UserPreferences;
@@ -34,6 +37,7 @@ export interface UserProfile {
 interface AuthContextType {
   user: UserProfile | null;
   isLoggedIn: boolean;
+  isAdmin: boolean;
   login: (email: string, pass: string) => Promise<boolean>;
   register: (name: string, email: string, pass: string) => Promise<boolean>;
   logout: () => void;
@@ -87,17 +91,62 @@ const DEFAULT_MOCK_USER: UserProfile = {
   }
 };
 
+function getRoleFromToken(token: string | null): string | null {
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    return payload.role || (Array.isArray(payload.roles) ? payload.roles[0] : null);
+  } catch {
+    return null;
+  }
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
+      // Only restore user if a real JWT token exists
+      const token = localStorage.getItem('token');
+      if (!token || token === 'mock-jwt-token-dev') {
+        // No valid token - clear stale user and start as logged out
+        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+        localStorage.removeItem('token');
+        return null;
+      }
       const saved = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_MOCK_USER;
+      if (!saved) return null;
+      const parsedUser = JSON.parse(saved);
+      const tokenRole = getRoleFromToken(token);
+      if (tokenRole) {
+        parsedUser.role = tokenRole.toUpperCase();
+      }
+      return parsedUser;
     } catch {
-      return DEFAULT_MOCK_USER;
+      return null;
     }
   });
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const tokenRole = getRoleFromToken(token)?.toUpperCase();
+  const userRole = (user?.role || tokenRole || '').toUpperCase();
+
+  // Strict verification: user object AND valid backend JWT token must both have ADMIN role
+  const isAdmin = Boolean(
+    user &&
+    (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') &&
+    (tokenRole === 'ADMIN' || tokenRole === 'ROLE_ADMIN')
+  );
 
   useEffect(() => {
     try {
@@ -111,9 +160,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const login = async (email: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
+  const login = async (email: string, pass: string): Promise<boolean> => {
+    try {
+      const { user: resUser } = await loginApi({ email, password: pass });
+      setUser(resUser);
+      return true;
+    } catch (err: any) {
+      console.warn('Real backend login failed, trying fallback mock login if network error:', err);
+      // If network error/unreachable backend, allow login for dev verification
+      if (err.name === 'TypeError' || err.status === 0 || err.message?.includes('fetch')) {
         const parts = email.split('@')[0].split('.');
         const fName = parts[0] || 'Keshav';
         const lName = parts[1] || 'Khandelwal';
@@ -126,14 +181,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email
         };
         setUser(mockUser);
-        resolve(true);
-      }, 800);
-    });
+        localStorage.setItem('token', 'mock-jwt-token-dev');
+        return true;
+      }
+      throw err;
+    }
   };
 
-  const register = async (name: string, email: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
+  const register = async (name: string, email: string, pass: string): Promise<boolean> => {
+    try {
+      const { user: resUser } = await registerApi({ name, email, password: pass });
+      setUser(resUser);
+      return true;
+    } catch (err: any) {
+      console.warn('Real backend register failed, trying fallback mock register if network error:', err);
+      if (err.name === 'TypeError' || err.status === 0 || err.message?.includes('fetch')) {
         const nameParts = name.trim().split(' ');
         const fName = nameParts[0] || 'User';
         const lName = nameParts.slice(1).join(' ') || '';
@@ -146,13 +208,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email
         };
         setUser(mockUser);
-        resolve(true);
-      }, 800);
-    });
+        localStorage.setItem('token', 'mock-jwt-token-dev');
+        return true;
+      }
+      throw err;
+    }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
   };
 
   const updateProfile = (updated: Partial<UserProfile>) => {
@@ -168,6 +234,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     });
   };
+
+  // Fetch remote addresses if token exists
+  useEffect(() => {
+    if (localStorage.getItem('token') && user) {
+      fetchAddressesApi()
+        .then((remoteAddrs) => {
+          if (remoteAddrs && remoteAddrs.length > 0) {
+            setUser((prev) => (prev ? { ...prev, addresses: remoteAddrs } : null));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const addAddress = (addressData: Omit<UserAddress, 'id'>) => {
     if (!user) return;
@@ -185,6 +264,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return { ...prev, addresses: [...updatedAddresses, newAddr] };
     });
+
+    if (localStorage.getItem('token')) {
+      createAddressApi(addressData).then((resAddr) => {
+        if (resAddr && resAddr.id) {
+          setUser((prev) => {
+            if (!prev) return null;
+            const updated = prev.addresses.map((a) => (a.id === newAddr.id ? resAddr : a));
+            return { ...prev, addresses: updated };
+          });
+        }
+      }).catch(() => {});
+    }
   };
 
   const updateAddress = (id: string, updatedFields: Partial<UserAddress>) => {
@@ -204,6 +295,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { ...prev, addresses: updatedList };
     });
+
+    if (localStorage.getItem('token')) {
+      updateAddressApi(id, updatedFields).catch(() => {});
+    }
   };
 
   const deleteAddress = (id: string) => {
@@ -219,6 +314,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { ...prev, addresses: remaining };
     });
+
+    if (localStorage.getItem('token')) {
+      deleteAddressApi(id).catch(() => {});
+    }
   };
 
   const setDefaultAddress = (id: string) => {
@@ -231,6 +330,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }));
       return { ...prev, addresses: updated };
     });
+
+    if (localStorage.getItem('token')) {
+      setDefaultAddressApi(id).catch(() => {});
+    }
   };
 
   const updatePreferences = (prefs: Partial<UserPreferences>) => {
@@ -252,6 +355,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         isLoggedIn: !!user,
+        isAdmin,
         login,
         register,
         logout,

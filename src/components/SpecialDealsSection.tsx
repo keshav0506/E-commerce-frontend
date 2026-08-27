@@ -32,7 +32,10 @@ export const SpecialDealsSection: React.FC = () => {
       catId: 'electronics',
       filterFn: (prods) =>
         prods.filter(
-          (p) => p.categoryId === 'electronics' || p.categoryId === 'accessories'
+          (p) => {
+            const cat = (p.categoryName || p.categoryId || '').toLowerCase();
+            return cat.includes('electronic') || cat.includes('accessori') || p.categoryId === '9' || p.categoryId === '6';
+          }
         ).slice(0, 4)
     },
     {
@@ -51,7 +54,9 @@ export const SpecialDealsSection: React.FC = () => {
             p.name.toLowerCase().includes('festive') ||
             p.name.toLowerCase().includes('sweet') ||
             p.name.toLowerCase().includes('kurta') ||
-            p.name.toLowerCase().includes('berry')
+            p.name.toLowerCase().includes('berry') ||
+            p.name.toLowerCase().includes('juice') ||
+            p.name.toLowerCase().includes('hamper')
         ).slice(0, 4)
     },
     {
@@ -64,7 +69,7 @@ export const SpecialDealsSection: React.FC = () => {
       catId: 'all',
       filterFn: (prods) =>
         prods
-          .filter((p) => p.rating >= 4.8)
+          .filter((p) => (p.rating || 4.5) >= 4.7)
           .slice(0, 4)
     },
     {
@@ -79,9 +84,11 @@ export const SpecialDealsSection: React.FC = () => {
         prods.filter(
           (p) =>
             p.name.toLowerCase().includes('coffee') ||
-            p.name.toLowerCase().includes('almonds') ||
+            p.name.toLowerCase().includes('almond') ||
             p.name.toLowerCase().includes('athletic') ||
-            p.name.toLowerCase().includes('spray')
+            p.name.toLowerCase().includes('spray') ||
+            p.name.toLowerCase().includes('tea') ||
+            p.name.toLowerCase().includes('hoodie')
         ).slice(0, 4)
     },
     {
@@ -94,7 +101,7 @@ export const SpecialDealsSection: React.FC = () => {
       catId: 'all',
       filterFn: (prods) =>
         prods
-          .filter((p) => (p.discountPercent || 0) >= 30)
+          .filter((p) => (p.discountPercent || 0) >= 20)
           .slice(0, 4)
     }
   ];

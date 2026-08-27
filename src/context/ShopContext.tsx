@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Product, Category, CartItem, Order, OrderStatus, CustomerUser } from '../types';
 import { fetchCategories, fetchProducts } from '../services/apiService';
+import { fetchCartApi, addToCartApi, updateCartItemQuantityApi, removeCartItemApi, clearCartApi } from '../services/cartService';
+import { fetchWishlistApi, toggleWishlistApi, removeFromWishlistApi, clearWishlistApi } from '../services/wishlistService';
+import { createOrderApi, cancelOrderApi, fetchCustomerOrdersApi } from '../services/orderService';
+import { createProductApi, updateProductApi, deleteProductApi, createCategoryApi, updateCategoryApi, deleteCategoryApi, updateOrderStatusApi } from '../services/adminService';
 
 interface CouponInfo {
   code: string;
@@ -23,6 +27,8 @@ interface ShopContextType {
   updateQuantity: (productId: string, delta: number, selectedVolume?: string) => void;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
+  removeFromWishlist: (productId: string) => void;
+  clearWishlist: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   quickViewProduct: Product | null;
@@ -183,8 +189,8 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00124',
     customer: { id: 'cust-1', name: 'Keshav Khandelwal', email: 'keshav@example.com', phone: '9876543210' },
     items: [
-      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: '/images/berry_lemon.png', quantity: 2, priceAtPurchase: 199, total: 398 },
-      { productId: 'prod-19', productName: 'Aethelgard Studio Headphones', sku: 'SKU-000003', image: '/images/headphones.png', quantity: 1, priceAtPurchase: 2999, total: 2999 }
+      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg', quantity: 2, priceAtPurchase: 199, total: 398 },
+      { productId: 'prod-19', productName: 'Aethelgard Studio Headphones', sku: 'SKU-000003', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg', quantity: 1, priceAtPurchase: 2999, total: 2999 }
     ],
     status: 'Delivered',
     paymentStatus: 'Paid',
@@ -203,7 +209,7 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00123',
     customer: { id: 'cust-2', name: 'Priya Verma', email: 'priya.v@example.com', phone: '9812345678' },
     items: [
-      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: '/images/crunchy_nachos.png', quantity: 3, priceAtPurchase: 99, total: 297 }
+      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg', quantity: 3, priceAtPurchase: 99, total: 297 }
     ],
     status: 'Processing',
     paymentStatus: 'Paid',
@@ -222,7 +228,7 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00122',
     customer: { id: 'cust-3', name: 'Rahul Sharma', email: 'rahul.s@example.com', phone: '9765432109' },
     items: [
-      { productId: 'prod-25', productName: 'Apex White Leather Sneaker', sku: 'SKU-000004', image: '/images/sneakers.png', quantity: 1, priceAtPurchase: 1899, total: 1899 }
+      { productId: 'prod-25', productName: 'Apex White Leather Sneaker', sku: 'SKU-000004', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846776/ecommerce/products/vmw38u1w7d7nbxbmer9m.jpg', quantity: 1, priceAtPurchase: 1899, total: 1899 }
     ],
     status: 'Shipped',
     paymentStatus: 'Paid',
@@ -241,7 +247,7 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00121',
     customer: { id: 'cust-4', name: 'Amit Patel', email: 'amit.patel@example.com', phone: '9654321098' },
     items: [
-      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: '/images/berry_lemon.png', quantity: 6, priceAtPurchase: 199, total: 1194 }
+      { productId: 'prod-1', productName: 'Berry Blast Juice', sku: 'SKU-000001', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg', quantity: 6, priceAtPurchase: 199, total: 1194 }
     ],
     status: 'Confirmed',
     paymentStatus: 'Paid',
@@ -260,7 +266,7 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00120',
     customer: { id: 'cust-5', name: 'Sneha Kapoor', email: 'sneha.k@example.com', phone: '9543210987' },
     items: [
-      { productId: 'prod-28', productName: 'Apex Pro OLED Smartwatch', sku: 'SKU-000003', image: '/images/smartwatch.png', quantity: 1, priceAtPurchase: 3499, total: 3499 }
+      { productId: 'prod-28', productName: 'Apex Pro OLED Smartwatch', sku: 'SKU-000003', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg', quantity: 1, priceAtPurchase: 3499, total: 3499 }
     ],
     status: 'Pending',
     paymentStatus: 'Pending',
@@ -278,7 +284,7 @@ const INITIAL_MOCK_ORDERS: Order[] = [
     id: '#ORD-2026-00119',
     customer: { id: 'cust-6', name: 'Vikram Singh', email: 'vikram@example.com', phone: '9432109876' },
     items: [
-      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: '/images/crunchy_nachos.png', quantity: 2, priceAtPurchase: 99, total: 198 }
+      { productId: 'prod-6', productName: 'Chipotle Lime Nachos', sku: 'SKU-000002', image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg', quantity: 2, priceAtPurchase: 99, total: 198 }
     ],
     status: 'Cancelled',
     paymentStatus: 'Refunded',
@@ -385,6 +391,19 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         setProducts(baseProds);
       }
+
+      // Load Wishlist from backend if logged in
+      const token = localStorage.getItem('token');
+      if (token && token !== 'mock-jwt-token-dev') {
+        try {
+          const { productIds } = await fetchWishlistApi();
+          if (productIds && productIds.length > 0) {
+            setWishlist(productIds);
+          }
+        } catch (e) {
+          console.warn('Backend wishlist fetch fallback to local:', e);
+        }
+      }
     }
     loadInitialData();
   }, []);
@@ -432,6 +451,35 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [wishlist]);
 
+  // Load initial remote cart if token exists
+  useEffect(() => {
+    if (localStorage.getItem('token') && products.length > 0) {
+      fetchCartApi(products)
+        .then((remoteItems) => {
+          if (remoteItems && remoteItems.length > 0) {
+            setCart(remoteItems);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [products]);
+
+  // Load initial customer orders if token exists
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      fetchCustomerOrdersApi()
+        .then((remoteOrders) => {
+          if (remoteOrders && remoteOrders.length > 0) {
+            setOrders((prev) => {
+              const combined = [...remoteOrders, ...prev.filter((p) => !remoteOrders.some((r) => r.id === p.id))];
+              return combined;
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
@@ -455,6 +503,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     showToast(`Added ${quantity}x ${product.name} to cart!`);
+
+    if (localStorage.getItem('token')) {
+      addToCartApi(product.id, quantity, vol).catch((err: any) => {
+        if (err.message) showToast(err.message);
+      });
+    }
   };
 
   const removeFromCart = (productId: string, selectedVolume?: string) => {
@@ -465,9 +519,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
     );
     showToast('Item removed from cart');
+
+    if (localStorage.getItem('token')) {
+      removeCartItemApi(productId).catch((err: any) => {
+        if (err.message) showToast(err.message);
+      });
+    }
   };
 
   const updateQuantity = (productId: string, delta: number, selectedVolume?: string) => {
+    let targetNewQty = 1;
     setCart((prev) =>
       prev
         .map((item) => {
@@ -476,26 +537,76 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             (!selectedVolume || item.selectedVolume === selectedVolume)
           ) {
             const newQty = item.quantity + delta;
+            targetNewQty = newQty;
             return newQty >= 1 ? { ...item, quantity: newQty } : item;
           }
           return item;
         })
         .filter(Boolean) as CartItem[]
     );
+
+    if (localStorage.getItem('token')) {
+      updateCartItemQuantityApi(productId, targetNewQty, selectedVolume).catch((err: any) => {
+        if (err.message) showToast(err.message);
+      });
+    }
   };
 
   const clearCart = () => {
     setCart([]);
     setAppliedCoupon(null);
+
+    if (localStorage.getItem('token')) {
+      clearCartApi().catch((err: any) => {
+        if (err.message) showToast(err.message);
+      });
+    }
   };
 
   const toggleWishlist = (productId: string) => {
-    setWishlist((prev) => {
-      const exists = prev.includes(productId);
-      const updated = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
-      showToast(exists ? 'Removed from Wishlist' : 'Added to Wishlist!');
-      return updated;
-    });
+    const exists = wishlist.includes(productId);
+    const updated = exists ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
+    setWishlist(updated);
+    showToast(exists ? 'Removed from Wishlist' : 'Added to Wishlist!');
+
+    const token = localStorage.getItem('token');
+    if (token && token !== 'mock-jwt-token-dev') {
+      toggleWishlistApi(productId).then((res) => {
+        if (res?.productIds) {
+          setWishlist(res.productIds);
+        }
+      }).catch((err: any) => {
+        console.warn('Backend wishlist toggle sync error:', err);
+      });
+    }
+  };
+
+  const removeFromWishlist = (productId: string) => {
+    setWishlist((prev) => prev.filter((id) => id !== productId));
+    showToast('Removed from Wishlist');
+
+    const token = localStorage.getItem('token');
+    if (token && token !== 'mock-jwt-token-dev') {
+      removeFromWishlistApi(productId).then((res) => {
+        if (res?.productIds) {
+          setWishlist(res.productIds);
+        }
+      }).catch((err: any) => {
+        console.warn('Backend wishlist remove sync error:', err);
+      });
+    }
+  };
+
+  const clearWishlist = () => {
+    setWishlist([]);
+    showToast('Wishlist cleared');
+
+    const token = localStorage.getItem('token');
+    if (token && token !== 'mock-jwt-token-dev') {
+      clearWishlistApi().catch((err: any) => {
+        console.warn('Backend wishlist clear sync error:', err);
+      });
+    }
   };
 
   const applyCoupon = (code: string): boolean => {
@@ -538,6 +649,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updated;
     });
 
+    if (localStorage.getItem('token')) {
+      createProductApi(newProductData)
+        .then((remoteProd) => {
+          if (remoteProd && remoteProd.id) {
+            setProducts((prev) => prev.map((p) => (p.id === newProd.id ? remoteProd : p)));
+          }
+        })
+        .catch((err: any) => {
+          if (err?.message) showToast(err.message);
+        });
+    }
+
     showToast('Product created successfully.');
   };
 
@@ -564,6 +687,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updated;
     });
 
+    if (localStorage.getItem('token')) {
+      updateProductApi(id, updatedFields).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
+
     showToast('Product updated successfully.');
   };
 
@@ -581,6 +710,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return updated;
     });
+
+    if (localStorage.getItem('token')) {
+      deleteProductApi(id).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
 
     showToast('Product deleted successfully.');
   };
@@ -606,6 +741,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updated;
     });
 
+    if (localStorage.getItem('token')) {
+      createCategoryApi(newCategoryData)
+        .then((remoteCat) => {
+          if (remoteCat && remoteCat.id) {
+            setCategories((prev) => prev.map((c) => (c.id === newCat.id ? remoteCat : c)));
+          }
+        })
+        .catch((err: any) => {
+          if (err?.message) showToast(err.message);
+        });
+    }
+
     showToast('Category created successfully.');
   };
 
@@ -616,6 +763,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updated;
     });
 
+    if (localStorage.getItem('token')) {
+      updateCategoryApi(id, updatedFields).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
+
     showToast('Category updated successfully.');
   };
 
@@ -625,6 +778,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (c.id === id) {
           const newStatus: 'active' | 'inactive' = c.status === 'inactive' ? 'active' : 'inactive';
           showToast(`Category status changed to ${newStatus}.`);
+          if (localStorage.getItem('token')) {
+            updateCategoryApi(id, { status: newStatus }).catch((err: any) => {
+              if (err?.message) showToast(err.message);
+            });
+          }
           return { ...c, status: newStatus };
         }
         return c;
@@ -646,6 +804,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       persistCategories(updated);
       return updated;
     });
+
+    if (localStorage.getItem('token')) {
+      deleteCategoryApi(id).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
 
     showToast('Category deleted successfully.');
     return true;
@@ -697,6 +861,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     );
 
+    if (localStorage.getItem('token')) {
+      updateOrderStatusApi(orderId, newStatus).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
+
     showToast('Order status updated successfully.');
     return true;
   };
@@ -715,6 +885,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
 
+    if (localStorage.getItem('token')) {
+      cancelOrderApi(orderId).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
+
     return updateOrderStatus(orderId, 'Cancelled');
   };
 
@@ -725,6 +901,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setOrders((prev) => [newOrder, ...prev]);
+
+    if (localStorage.getItem('token')) {
+      createOrderApi({
+        shippingAddress: newOrderData.shippingAddress,
+        items: newOrderData.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+        paymentMethod: newOrderData.paymentMethod,
+        totalAmount: newOrderData.total
+      }).then((createdRemoteOrder) => {
+        if (createdRemoteOrder && createdRemoteOrder.id) {
+          setOrders((prev) => prev.map((o) => (o.id === newOrder.id ? createdRemoteOrder : o)));
+        }
+      }).catch((err: any) => {
+        if (err?.message) showToast(err.message);
+      });
+    }
 
     // Also ensure customer record exists or updates in customer store
     setCustomers((prev) => {
@@ -840,6 +1031,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateQuantity,
         wishlist,
         toggleWishlist,
+        removeFromWishlist,
+        clearWishlist,
         isCartOpen,
         setIsCartOpen,
         quickViewProduct,

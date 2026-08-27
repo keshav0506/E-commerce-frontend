@@ -6,7 +6,7 @@ import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 
 export const WishlistPage: React.FC = () => {
-  const { products, wishlist, addToCart, showToast } = useShop();
+  const { products, wishlist, addToCart, clearWishlist, showToast } = useShop();
 
   // Resolve full Product objects from centralized products list using wishlist IDs
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
@@ -44,7 +44,7 @@ export const WishlistPage: React.FC = () => {
           </div>
 
           {wishlistedProducts.length > 0 && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-full border border-rose-100">
                 {wishlistedProducts.length} {wishlistedProducts.length === 1 ? 'saved product' : 'saved products'}
               </span>
@@ -55,6 +55,13 @@ export const WishlistPage: React.FC = () => {
               >
                 <ShoppingBag className="w-4 h-4 text-rose-400" />
                 <span>Add All to Cart</span>
+              </button>
+
+              <button
+                onClick={clearWishlist}
+                className="px-3 py-2 text-xs font-bold text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-rose-100"
+              >
+                Clear All
               </button>
             </div>
           )}

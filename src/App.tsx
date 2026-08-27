@@ -16,6 +16,7 @@ import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import { AccountPage } from './pages/AccountPage';
 
 // Admin Imports
+import { AdminRoute } from './components/AdminRoute';
 import { AdminLayout } from './components/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProductsPage } from './pages/admin/AdminProductsPage';
@@ -41,8 +42,15 @@ export function App() {
         <ShopProvider>
           <div className="min-h-screen flex flex-col bg-[#fcfcfc] text-gray-900 font-sans selection:bg-rose-500 selection:text-white">
             <Routes>
-              {/* ADMIN ROUTES (WITH PERSISTENT ADMIN LAYOUT) */}
-              <Route path="/admin" element={<AdminLayout />}>
+              {/* ADMIN ROUTES (PROTECTED BY ADMIN ROUTE GUARD) */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }
+              >
                 <Route index element={<AdminDashboard />} />
                 <Route path="products" element={<AdminProductsPage />} />
                 <Route path="products/new" element={<AdminAddProductPage />} />

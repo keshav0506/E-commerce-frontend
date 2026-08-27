@@ -1,90 +1,135 @@
-import type { Product, Category, HeroSlide, PromotionBanner } from '../types';
+import type { Product, Category, HeroSlide, PromotionBanner, PageResponse } from '../types';
+import { mapProductResponseToProduct, mapCategoryResponseToCategory } from '../types';
 import { PRODUCTS, CATEGORIES, HERO_SLIDES, PROMOTIONS } from '../data/mockData';
+import { apiFetch } from './api';
 
-// Set to true when Spring Boot backend is connected
-const USE_REAL_API = false;
-const API_BASE_URL = 'http://localhost:8080/api';
+export interface FetchProductsParams {
+  search?: string;
+  categoryId?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
 
 /**
- * Fetch all products (GET /api/products)
+ * Fetch products (GET /api/products)
+ * Supports search, categoryId, page, size, sort query parameters
  */
-export async function fetchProducts(): Promise<Product[]> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/products`);
-    return await res.json();
+export async function fetchProducts(params: FetchProductsParams = {}): Promise<Product[]> {
+  try {
+    const queryParts: string[] = [];
+    if (params.search && params.search.trim()) {
+      queryParts.push(`search=${encodeURIComponent(params.search.trim())}`);
+    }
+    if (params.categoryId && params.categoryId !== 'all') {
+      queryParts.push(`categoryId=${encodeURIComponent(params.categoryId)}`);
+    }
+    if (params.page !== undefined) {
+      queryParts.push(`page=${params.page}`);
+    }
+    if (params.size !== undefined) {
+      queryParts.push(`size=${params.size}`);
+    }
+    if (params.sort) {
+      queryParts.push(`sort=${encodeURIComponent(params.sort)}`);
+    }
+
+    const queryString = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
+    const res = await apiFetch<PageResponse<any> | any[]>(`/products${queryString}`);
+
+    let rawList: any[] = [];
+    if (res && typeof res === 'object' && 'content' in res && Array.isArray((res as PageResponse<any>).content)) {
+      rawList = (res as PageResponse<any>).content;
+    } else if (Array.isArray(res)) {
+      rawList = res;
+    }
+
+    const mapped = rawList.map(mapProductResponseToProduct);
+    // If backend returned empty list, use mock data as fallback
+    if (mapped.length === 0) {
+      console.info('Backend returned 0 products, using mock data.');
+      return PRODUCTS;
+    }
+    return mapped;
+  } catch (error) {
+    console.warn('Backend products endpoint unreachable or failed, falling back to mock data:', error);
+    return PRODUCTS;
   }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(PRODUCTS), 50);
-  });
 }
 
 /**
  * Fetch single product by ID (GET /api/products/{id})
  */
 export async function fetchProductById(id: string): Promise<Product | undefined> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/products/${id}`);
-    return await res.json();
+  const isNumeric = /^\d+$/.test(id);
+  if (!isNumeric) {
+    return PRODUCTS.find((p) => p.id === id);
   }
-  return new Promise((resolve) => {
-    const product = PRODUCTS.find((p) => p.id === id);
-    setTimeout(() => resolve(product), 50);
-  });
+
+  try {
+    const res = await apiFetch<any>(`/products/${id}`);
+    if (!res) return undefined;
+    return mapProductResponseToProduct(res);
+  } catch (error) {
+    console.warn(`Backend product ${id} endpoint unreachable or failed, falling back to mock data:`, error);
+    return PRODUCTS.find((p) => p.id === id);
+  }
 }
 
 /**
  * Fetch all categories (GET /api/categories)
  */
 export async function fetchCategories(): Promise<Category[]> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/categories`);
-    return await res.json();
+  try {
+    const res = await apiFetch<any[] | PageResponse<any>>('/categories');
+    let rawList: any[] = [];
+    if (res && typeof res === 'object' && 'content' in res && Array.isArray((res as PageResponse<any>).content)) {
+      rawList = (res as PageResponse<any>).content;
+    } else if (Array.isArray(res)) {
+      rawList = res;
+    }
+    const mapped = rawList.map(mapCategoryResponseToCategory);
+    // If backend returned empty list, use mock data as fallback
+    if (mapped.length === 0) {
+      console.info('Backend returned 0 categories, using mock data.');
+      return CATEGORIES;
+    }
+    return mapped;
+  } catch (error) {
+    console.warn('Backend categories endpoint unreachable or failed, falling back to mock data:', error);
+    return CATEGORIES;
   }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(CATEGORIES), 50);
-  });
 }
 
 /**
- * Fetch products filtered by category (GET /api/products/category/{category})
+ * Fetch products filtered by category (GET /api/products?categoryId={id})
  */
 export async function fetchProductsByCategory(categoryId: string): Promise<Product[]> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/products/category/${categoryId}`);
-    return await res.json();
-  }
-  return new Promise((resolve) => {
-    if (!categoryId || categoryId === 'all') {
-      setTimeout(() => resolve(PRODUCTS), 50);
-    } else {
-      const filtered = PRODUCTS.filter((p) => p.categoryId === categoryId);
-      setTimeout(() => resolve(filtered), 50);
-    }
-  });
+  return fetchProducts({ categoryId });
 }
 
 /**
  * Fetch active promotional banners (GET /api/promotions)
  */
 export async function fetchPromotions(): Promise<PromotionBanner[]> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/promotions`);
-    return await res.json();
+  try {
+    const res = await apiFetch<PromotionBanner[]>('/promotions');
+    if (Array.isArray(res)) return res;
+    return PROMOTIONS;
+  } catch {
+    return PROMOTIONS;
   }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(PROMOTIONS), 50);
-  });
 }
 
 /**
  * Fetch hero carousel slides (GET /api/hero-slides)
  */
 export async function fetchHeroSlides(): Promise<HeroSlide[]> {
-  if (USE_REAL_API) {
-    const res = await fetch(`${API_BASE_URL}/hero-slides`);
-    return await res.json();
+  try {
+    const res = await apiFetch<HeroSlide[]>('/hero-slides');
+    if (Array.isArray(res)) return res;
+    return HERO_SLIDES;
+  } catch {
+    return HERO_SLIDES;
   }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(HERO_SLIDES), 50);
-  });
 }

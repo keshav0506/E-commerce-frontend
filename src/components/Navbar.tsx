@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
     setSelectedCategoryId
   } = useShop();
 
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, isAdmin, logout } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,32 +70,26 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  // Helper to map category ID to clean Lucide icons
-  const getCategoryIcon = (catId: string) => {
-    switch (catId) {
-      case 'all':
-        return <Sparkles className="w-5 h-5 text-rose-500" />;
-      case 'beverages':
-        return <CupSoda className="w-5 h-5 text-amber-500" />;
-      case 'snacks':
-        return <UtensilsCrossed className="w-5 h-5 text-orange-500" />;
-      case 'dairy':
-        return <Milk className="w-5 h-5 text-blue-500" />;
-      case 'personal-care':
-        return <Smile className="w-5 h-5 text-pink-500" />;
-      case 'household':
-        return <Home className="w-5 h-5 text-emerald-500" />;
-      case 'accessories':
-        return <Headphones className="w-5 h-5 text-purple-500" />;
-      case 'clothing':
-        return <Shirt className="w-5 h-5 text-indigo-500" />;
-      case 'footwear':
-        return <Footprints className="w-5 h-5 text-teal-500" />;
-      case 'electronics':
-        return <Smartphone className="w-5 h-5 text-sky-500" />;
-      default:
-        return <Sparkles className="w-5 h-5 text-rose-500" />;
+  // Helper to map category to clean Lucide icons
+  const getCategoryIcon = (catOrName?: string | { slug?: string; name?: string; id?: string | number }) => {
+    let key = '';
+    if (typeof catOrName === 'string') {
+      key = catOrName.toLowerCase();
+    } else if (catOrName) {
+      key = `${catOrName.slug || ''} ${catOrName.name || ''} ${catOrName.id || ''}`.toLowerCase();
     }
+
+    if (key === 'all' || key.includes('for you') || key.includes('for-you')) return <Sparkles className="w-5 h-5 text-rose-500" />;
+    if (key.includes('beverage') || key === '1') return <CupSoda className="w-5 h-5 text-amber-500" />;
+    if (key.includes('snack') || key === '2') return <UtensilsCrossed className="w-5 h-5 text-orange-500" />;
+    if (key.includes('dairy') || key === '3') return <Milk className="w-5 h-5 text-blue-500" />;
+    if (key.includes('personal') || key.includes('care') || key === '4') return <Smile className="w-5 h-5 text-pink-500" />;
+    if (key.includes('household') || key.includes('home') || key === '5') return <Home className="w-5 h-5 text-emerald-500" />;
+    if (key.includes('accessories') || key.includes('accessory') || key === '6') return <Headphones className="w-5 h-5 text-purple-500" />;
+    if (key.includes('cloth') || key.includes('apparel') || key === '7') return <Shirt className="w-5 h-5 text-indigo-500" />;
+    if (key.includes('footwear') || key.includes('shoe') || key.includes('sneaker') || key === '8') return <Footprints className="w-5 h-5 text-teal-500" />;
+    if (key.includes('electronic') || key.includes('gadget') || key === '9') return <Smartphone className="w-5 h-5 text-sky-500" />;
+    return <Sparkles className="w-5 h-5 text-rose-500" />;
   };
 
   return (
@@ -140,8 +134,21 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* RIGHT ACTION BUTTONS: ACCOUNT, WISHLIST, CART */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          {/* RIGHT ACTION BUTTONS: ADMIN TOGGLE, ACCOUNT, WISHLIST, CART */}
+          <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
+
+            {/* ADMIN PANEL TOGGLE (STRICTLY FOR LOGGED-IN ADMINS ONLY) */}
+            {isAdmin && (
+              <button
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-xl shadow-xs border border-slate-700/80 transition-all cursor-pointer group"
+                title="Switch to Admin Dashboard"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <ShieldCheck className="w-3.5 h-3.5 text-rose-400 group-hover:rotate-12 transition-transform" />
+                <span className="text-xs font-bold text-slate-100 tracking-tight hidden sm:inline">Admin Mode</span>
+              </button>
+            )}
             
             {/* Mobile Search Icon Toggle */}
             <button
@@ -174,7 +181,14 @@ export const Navbar: React.FC = () => {
               {isLoggedIn && userDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 text-left animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-900 truncate">{user?.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-gray-900 truncate">{user?.name}</p>
+                      {isAdmin && (
+                        <span className="text-[9px] font-black bg-rose-500 text-white px-1.5 py-0.2 rounded">
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
                   </div>
                   <button
@@ -197,16 +211,21 @@ export const Navbar: React.FC = () => {
                     <Heart className="w-3.5 h-3.5 text-rose-500" />
                     <span>My Wishlist ({wishlist.length})</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      navigate('/admin');
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Admin Panel</span>
-                  </button>
+
+                  {/* ONLY show Admin Panel option if user is verified ADMIN */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        navigate('/admin');
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-slate-900 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Admin Panel</span>
+                    </button>
+                  )}
+
                   <div className="h-px bg-gray-100 my-1" />
                   <button
                     onClick={() => {
@@ -337,7 +356,7 @@ export const Navbar: React.FC = () => {
                   <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${
                     isSelected ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
                   }`}>
-                    {getCategoryIcon(cat.id)}
+                    {getCategoryIcon(cat)}
                   </div>
                   <span className="text-[11px] sm:text-xs font-semibold mt-1 whitespace-nowrap">
                     {cat.name}

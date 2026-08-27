@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import { useShop } from '../context/ShopContext';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const { showToast } = useShop();
 
@@ -38,8 +39,8 @@ export const LoginPage: React.FC = () => {
     if (!password) {
       setPasswordError('Password is required.');
       valid = false;
-    } else if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters.');
+    } else if (password.length < 4) {
+      setPasswordError('Password must be at least 4 characters.');
       valid = false;
     }
 
@@ -55,12 +56,23 @@ export const LoginPage: React.FC = () => {
       const success = await login(email, password);
       if (success) {
         showToast('Signed in successfully!');
-        navigate('/');
+        const redirectParam = new URLSearchParams(location.search).get('redirect') || (location.state as any)?.from;
+
+        // Check if admin
+        const savedUserStr = localStorage.getItem('shoply_user');
+        const parsed = savedUserStr ? JSON.parse(savedUserStr) : null;
+        const role = (parsed?.role || '').toUpperCase();
+
+        if (role === 'ADMIN' || role === 'ROLE_ADMIN' || redirectParam?.startsWith('/admin')) {
+          navigate(redirectParam || '/admin');
+        } else {
+          navigate(redirectParam || '/');
+        }
       } else {
         setGeneralError('Invalid email or password. Please try again.');
       }
-    } catch {
-      setGeneralError('An unexpected error occurred. Please try again.');
+    } catch (err: any) {
+      setGeneralError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +80,23 @@ export const LoginPage: React.FC = () => {
 
   const handleSocialLogin = () => {
     showToast('Social login will be available soon.');
+  };
+
+  const isLocalhost =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
+
+  const fillCredentials = (roleType: 'user' | 'admin') => {
+    setEmailError('');
+    setPasswordError('');
+    setGeneralError('');
+    if (roleType === 'admin') {
+      setEmail('admin@ecommerce.com');
+      setPassword('admin123');
+    } else {
+      setEmail('user@ecommerce.com');
+      setPassword('user123');
+    }
   };
 
   return (
@@ -118,6 +147,31 @@ export const LoginPage: React.FC = () => {
               Sign in to continue shopping.
             </p>
           </div>
+
+          {/* Localhost Quick Fill Buttons */}
+          {isLocalhost && (
+            <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                <span>⚡ Quick Fill for Testing (Localhost Only)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('user')}
+                  className="py-1.5 px-2.5 bg-white hover:bg-amber-100/50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <span>👤 User Account</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillCredentials('admin')}
+                  className="py-1.5 px-2.5 bg-white hover:bg-amber-100/50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <span>🛡️ Admin Account</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {generalError && (
             <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-bold text-rose-600">

@@ -109,8 +109,8 @@ export const RegisterPage: React.FC = () => {
         showToast('Account created successfully!');
         navigate('/');
       }
-    } catch {
-      setEmailError('Failed to create account. Please try again.');
+    } catch (err: any) {
+      setEmailError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }

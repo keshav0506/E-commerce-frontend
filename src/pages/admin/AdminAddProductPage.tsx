@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, ArrowLeft, Loader2, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { ChevronRight, ArrowLeft, Loader2, Image as ImageIcon, Sparkles, Upload } from 'lucide-react';
 import { useShop } from '../../context/ShopContext';
+import { uploadProductImageApi } from '../../services/adminService';
 
 export const AdminAddProductPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,9 +17,27 @@ export const AdminAddProductPage: React.FC = () => {
   const [originalPrice, setOriginalPrice] = useState<number | ''>('');
   const [stock, setStock] = useState<number>(24);
   const [badge, setBadge] = useState<string>('NEW LAUNCH');
-  const [image, setImage] = useState('/images/berry_lemon.png');
+  const [image, setImage] = useState('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg');
   const [inStock, setInStock] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const uploadedUrl = await uploadProductImageApi(file);
+      if (uploadedUrl) {
+        setImage(uploadedUrl);
+      }
+    } catch (err) {
+      console.warn('Image upload notice:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -59,8 +78,8 @@ export const AdminAddProductPage: React.FC = () => {
         discountPercent: discount,
         rating: 4.8,
         reviewCount: 12,
-        image: image.trim() || '/images/berry_lemon.png',
-        images: [image.trim() || '/images/berry_lemon.png'],
+        image: image.trim() || 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+        images: [image.trim() || 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg'],
         badge: badge.trim() || undefined,
         description: description.trim(),
         inStock: inStock && stock > 0,
@@ -203,20 +222,40 @@ export const AdminAddProductPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
-                Image URL or Preset Path
+                Upload Image or Enter URL
               </label>
-              <input
-                type="text"
-                placeholder="/images/berry_lemon.png or https://..."
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
-              />
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  placeholder="https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg or https://..."
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                />
+                <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition-colors shrink-0 border border-rose-200">
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span>Upload File</span>
+                    </>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                </label>
+              </div>
             </div>
 
             <div className="p-4 bg-[#f8f9fa] border border-gray-100 rounded-2xl flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-xl p-2 border border-gray-100 shrink-0 flex items-center justify-center">
-                <img src={image} alt="Preview" className="w-full h-full object-contain" />
+              <div className="w-16 h-16 bg-white rounded-xl p-2 border border-gray-100 shrink-0 flex items-center justify-center overflow-hidden">
+                {image ? (
+                  <img src={image} alt="Preview" className="w-full h-full object-contain" />
+                ) : (
+                  <ImageIcon className="w-6 h-6 text-gray-300" />
+                )}
               </div>
               <div>
                 <span className="text-xs font-bold text-gray-900 block">Image Preview</span>
