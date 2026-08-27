@@ -5,6 +5,7 @@ import { apiFetch } from './api';
 export interface FetchProductsParams {
   search?: string;
   categoryId?: string;
+  featured?: boolean;
   page?: number;
   size?: number;
   sort?: string;
@@ -23,11 +24,15 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
     if (params.categoryId && params.categoryId !== 'all') {
       queryParts.push(`categoryId=${encodeURIComponent(params.categoryId)}`);
     }
+    if (params.featured) {
+      queryParts.push(`featured=true`);
+    }
     if (params.page !== undefined) {
       queryParts.push(`page=${params.page}`);
     }
     const size = params.size !== undefined ? params.size : 200;
     queryParts.push(`size=${size}`);
+
     if (params.sort) {
       queryParts.push(`sort=${encodeURIComponent(params.sort)}`);
     }
@@ -50,6 +55,60 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
 }
 
 /**
+ * Fetch products by category name, slug, or ID (GET /api/products/category/{category})
+ */
+export async function fetchProductsByCategory(category: string, params: FetchProductsParams = {}): Promise<Product[]> {
+  try {
+    const queryParts: string[] = [];
+    const size = params.size !== undefined ? params.size : 200;
+    queryParts.push(`size=${size}`);
+    if (params.page !== undefined) {
+      queryParts.push(`page=${params.page}`);
+    }
+    const queryString = `?${queryParts.join('&')}`;
+
+    const res = await apiFetch<PageResponse<any> | any[]>(`/products/category/${encodeURIComponent(category)}${queryString}`);
+    let rawList: any[] = [];
+    if (res && typeof res === 'object' && 'content' in res && Array.isArray((res as PageResponse<any>).content)) {
+      rawList = (res as PageResponse<any>).content;
+    } else if (Array.isArray(res)) {
+      rawList = res;
+    }
+    return rawList.map(mapProductResponseToProduct);
+  } catch (error) {
+    console.error(`Error fetching products for category ${category}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Search products (GET /api/products/search?query=)
+ */
+export async function searchProducts(query: string, params: FetchProductsParams = {}): Promise<Product[]> {
+  try {
+    const queryParts: string[] = [`query=${encodeURIComponent(query.trim())}`];
+    const size = params.size !== undefined ? params.size : 200;
+    queryParts.push(`size=${size}`);
+    if (params.page !== undefined) {
+      queryParts.push(`page=${params.page}`);
+    }
+    const queryString = `?${queryParts.join('&')}`;
+
+    const res = await apiFetch<PageResponse<any> | any[]>(`/products/search${queryString}`);
+    let rawList: any[] = [];
+    if (res && typeof res === 'object' && 'content' in res && Array.isArray((res as PageResponse<any>).content)) {
+      rawList = (res as PageResponse<any>).content;
+    } else if (Array.isArray(res)) {
+      rawList = res;
+    }
+    return rawList.map(mapProductResponseToProduct);
+  } catch (error) {
+    console.error(`Error searching products for '${query}':`, error);
+    return [];
+  }
+}
+
+/**
  * Fetch single product by ID (GET /api/products/{id})
  */
 export async function fetchProductById(id: string): Promise<Product | undefined> {
@@ -59,6 +118,20 @@ export async function fetchProductById(id: string): Promise<Product | undefined>
     return mapProductResponseToProduct(res);
   } catch (error) {
     console.error(`Error fetching product ${id} from backend:`, error);
+    return undefined;
+  }
+}
+
+/**
+ * Fetch single product by slug (GET /api/products/slug/{slug})
+ */
+export async function fetchProductBySlug(slug: string): Promise<Product | undefined> {
+  try {
+    const res = await apiFetch<any>(`/products/slug/${encodeURIComponent(slug)}`);
+    if (!res) return undefined;
+    return mapProductResponseToProduct(res);
+  } catch (error) {
+    console.error(`Error fetching product by slug ${slug}:`, error);
     return undefined;
   }
 }

@@ -13,6 +13,9 @@ interface CouponInfo {
 }
 
 interface ShopContextType {
+  isLoading: boolean;
+  apiError: string | null;
+  refetchProducts: () => Promise<void>;
   categories: Category[];
   activeCategories: Category[];
   selectedCategoryId: string;
@@ -304,6 +307,8 @@ const INITIAL_MOCK_ORDERS: Order[] = [
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -352,11 +357,20 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<CouponInfo | null>(null);
 
-  // Load Initial Catalog Data and Merge Local Custom/Deleted Items
-  useEffect(() => {
-    async function loadInitialData() {
-      const baseCats = await fetchCategories();
-      const baseProds = await fetchProducts({ size: 200 });
+  const loadInitialData = async () => {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      const [baseCats, baseProds] = await Promise.all([
+        fetchCategories(),
+        fetchProducts({ size: 200 })
+      ]);
+
+      if (baseCats.length === 0 && baseProds.length === 0) {
+        setApiError('Unable to connect to the backend server. Please verify the service is running.');
+      } else {
+        setApiError(null);
+      }
 
       // Load custom category updates
       try {
@@ -376,21 +390,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCategories(baseCats.map((c) => ({ ...c, status: 'active', createdAt: 'Aug 10, 2026' })));
       }
 
-      // Load custom product updates
+      // Clean legacy localStorage caches and use ONLY unique products from database
       try {
-        const customProdsJson = localStorage.getItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY);
-        const customProds: Product[] = customProdsJson ? JSON.parse(customProdsJson) : [];
+        localStorage.removeItem(LOCAL_STORAGE_CUSTOM_PRODUCTS_KEY);
+        localStorage.removeItem(LOCAL_STORAGE_DELETED_PRODUCTS_KEY);
+      } catch {}
 
-        const deletedIdsJson = localStorage.getItem(LOCAL_STORAGE_DELETED_PRODUCTS_KEY);
-        const deletedIds: string[] = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-
-        let combined = [...customProds, ...baseProds.filter((bp) => !customProds.some((cp) => cp.id === bp.id))];
-        combined = combined.filter((p) => !deletedIds.includes(p.id));
-
-        setProducts(combined);
-      } catch {
-        setProducts(baseProds);
+      const uniqueProducts: Product[] = [];
+      const seenKeys = new Set<string>();
+      for (const p of baseProds) {
+        const key = p.sku || p.name.toLowerCase().trim();
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          uniqueProducts.push(p);
+        }
       }
+      setProducts(uniqueProducts);
 
       // Load Wishlist from backend if logged in
       const token = localStorage.getItem('token');
@@ -404,7 +419,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.warn('Backend wishlist fetch fallback to local:', e);
         }
       }
+    } catch (err: any) {
+      console.error('Failed to load initial data:', err);
+      setApiError(err.message || 'Failed to fetch catalog from backend');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadInitialData();
   }, []);
 
@@ -958,7 +981,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {
             id: `addr-${Date.now()}`,
             ...newOrder.shippingAddress,
-            type: newOrder.shippingAddress.type || 'HOME',
+            type: (newOrder.shippingAddress.type as 'HOME' | 'WORK' | 'OTHER') || 'HOME',
             isDefault: true
           }
         ]
@@ -1041,6 +1064,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <ShopContext.Provider
       value={{
+        isLoading,
+        apiError,
+        refetchProducts: loadInitialData,
         categories: categoriesWithDerivedCounts,
         activeCategories: activeCategoriesWithDerivedCounts,
         selectedCategoryId,

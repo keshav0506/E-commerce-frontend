@@ -19,11 +19,16 @@ export interface RatingDistribution {
 
 export interface Product {
   id: string;
+  sku?: string;
   name: string;
+  slug?: string;
+  brand?: string;
   categoryId: string;
   categoryName: string;
+  categorySlug?: string;
   price: number;
   originalPrice: number;
+  discountPrice?: number;
   discountPercent: number;
   rating: number;
   reviewCount: number;
@@ -31,14 +36,19 @@ export interface Product {
   images?: string[];
   badge?: string;
   description: string;
+  shortDescription?: string;
   volumes?: string[];
   inStock: boolean;
-  stock?: number;
+  stock: number;
+  lowStockThreshold?: number;
   isFeatured?: boolean;
+  featured?: boolean;
   isNewArrival?: boolean;
   specifications?: ProductSpecification[];
   reviews?: ProductReview[];
   ratingDistribution?: RatingDistribution[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Category {
@@ -58,19 +68,19 @@ export interface Category {
 
 export interface HeroSlide {
   id: string;
-  categoryId?: string;
+  categoryId: string;
   badge: string;
   headline: string;
   subtitle: string;
   ctaText: string;
   productImage: string;
   productName: string;
-  options?: string[];
+  options: string[];
   bgGradient: string;
-  textColor?: string;
-  ctaBg?: string;
-  ctaTextColor?: string;
-  badgeBg?: string;
+  textColor: string;
+  ctaBg: string;
+  ctaTextColor: string;
+  badgeBg: string;
 }
 
 export interface PromotionBanner {
@@ -139,28 +149,19 @@ export interface Order {
   transactionId?: string;
   shippingAddress: OrderShippingAddress;
   subtotal: number;
+  deliveryFee?: number;
+  shipping?: number;
+  tax?: number;
   discount: number;
-  shipping: number;
-  tax: number;
+  finalTotal?: number;
   total: number;
   createdAt: string;
   updatedAt?: string;
+  estimatedDelivery?: string;
+  trackingNumber?: string;
 }
 
-// CUSTOMER MANAGEMENT TYPES
-export interface CustomerAddress {
-  id: string;
-  fullName: string;
-  phone: string;
-  house: string;
-  street: string;
-  city: string;
-  state: string;
-  pincode: string;
-  type: string;
-  isDefault?: boolean;
-}
-
+// CUSTOMER / USER TYPES
 export interface CustomerUser {
   id: string;
   name: string;
@@ -169,9 +170,22 @@ export interface CustomerUser {
   email: string;
   phone: string;
   avatar?: string;
-  status: 'active' | 'blocked';
+  status: 'active' | 'blocked' | 'inactive';
   joinedDate: string;
-  addresses: CustomerAddress[];
+  totalOrders?: number;
+  totalSpent?: number;
+  addresses?: Array<{
+    id: string;
+    fullName: string;
+    phone: string;
+    house: string;
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    type: 'HOME' | 'WORK' | 'OTHER';
+    isDefault?: boolean;
+  }>;
 }
 
 export interface PageResponse<T> {
@@ -180,23 +194,33 @@ export interface PageResponse<T> {
   totalPages: number;
   size: number;
   number: number;
+  last: boolean;
+  first: boolean;
+  empty: boolean;
 }
 
 export interface ProductResponseDTO {
   id: string | number;
+  sku?: string;
   name: string;
+  slug?: string;
+  brand?: string;
   description?: string;
+  shortDescription?: string;
   price: number;
+  discountPrice?: number;
   stock?: number;
-  image?: string;
+  lowStockThreshold?: number;
+  image: string;
   status?: string;
-  categoryId?: string | number;
-  categoryName?: string;
-  originalPrice?: number;
-  discountPercent?: number;
   rating?: number;
   reviewCount?: number;
-  images?: string[];
+  featured?: boolean;
+  categoryId?: string | number;
+  categoryName?: string;
+  categorySlug?: string;
+  createdAt?: string;
+  updatedAt?: string;
   badge?: string;
   volumes?: string[];
   inStock?: boolean;
@@ -220,7 +244,10 @@ export function mapProductResponseToProduct(dto: any): Product {
   if (!dto) {
     return {
       id: '',
+      sku: '',
       name: 'Unknown Product',
+      slug: '',
+      brand: 'Shoply',
       categoryId: 'all',
       categoryName: 'General',
       price: 0,
@@ -231,37 +258,68 @@ export function mapProductResponseToProduct(dto: any): Product {
       image: '',
       description: '',
       inStock: false,
-      stock: 0
+      stock: 0,
+      lowStockThreshold: 5,
+      featured: false
     };
   }
 
   const stock = typeof dto.stock === 'number' ? dto.stock : (dto.inStock ? 10 : 0);
   const price = typeof dto.price === 'number' ? dto.price : Number(dto.price) || 0;
-  const originalPrice = dto.originalPrice || (price > 0 ? Math.round(price * 1.2) : 0);
-  const discountPercent = dto.discountPercent || (originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0);
+  const discountPrice = dto.discountPrice != null ? Number(dto.discountPrice) : undefined;
+  
+  // Original price is either discountPrice (if higher than current price) or calculated
+  let originalPrice = dto.originalPrice;
+  if (!originalPrice) {
+    if (discountPrice && discountPrice > price) {
+      originalPrice = discountPrice;
+    } else if (price > 0) {
+      originalPrice = Math.round(price * 1.25);
+    } else {
+      originalPrice = 0;
+    }
+  }
+
+  const discountPercent = dto.discountPercent || 
+    (originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0);
+
+  const lowStockThreshold = dto.lowStockThreshold != null ? dto.lowStockThreshold : 5;
+  const featured = Boolean(dto.featured ?? dto.isFeatured ?? false);
+  const name = dto.name || 'Untitled Product';
+  const slug = dto.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   return {
     id: String(dto.id ?? ''),
-    name: dto.name || 'Untitled Product',
+    sku: dto.sku || `SKU-${dto.id}`,
+    name,
+    slug,
+    brand: dto.brand || 'Shoply',
     categoryId: String(dto.categoryId ?? dto.category?.id ?? 'all'),
     categoryName: dto.categoryName || dto.category?.name || 'General',
+    categorySlug: dto.categorySlug || (dto.categoryName ? dto.categoryName.toLowerCase().replace(/\s+/g, '-') : undefined),
     price,
     originalPrice,
+    discountPrice,
     discountPercent,
-    rating: dto.rating ?? 4.5,
-    reviewCount: dto.reviewCount ?? 12,
+    rating: dto.rating != null ? Number(dto.rating) : 4.5,
+    reviewCount: dto.reviewCount != null ? Number(dto.reviewCount) : 12,
     image: dto.image || dto.images?.[0] || 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846340/ecommerce/products/re1p3tqmpjl4gdqngjf1.jpg',
     images: dto.images && dto.images.length > 0 ? dto.images : [dto.image].filter(Boolean),
     badge: dto.badge || (discountPercent > 0 ? `${discountPercent}% OFF` : undefined),
     description: dto.description || '',
+    shortDescription: dto.shortDescription || dto.description?.substring(0, 120),
     volumes: dto.volumes || ['Standard'],
     inStock: dto.inStock !== undefined ? Boolean(dto.inStock) : stock > 0,
     stock,
-    isFeatured: dto.isFeatured ?? true,
+    lowStockThreshold,
+    isFeatured: featured,
+    featured,
     isNewArrival: dto.isNewArrival ?? false,
     specifications: dto.specifications || [],
     reviews: dto.reviews || [],
-    ratingDistribution: dto.ratingDistribution || []
+    ratingDistribution: dto.ratingDistribution || [],
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt
   };
 }
 
@@ -293,4 +351,3 @@ export function mapCategoryResponseToCategory(dto: any): Category {
     createdAt: dto.createdAt || new Date().toISOString()
   };
 }
-

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Heart, Plus, Star, Check } from 'lucide-react';
+import { Heart, Plus, Star, Check, AlertCircle } from 'lucide-react';
 import type { Product } from '../types';
 import { useShop } from '../context/ShopContext';
 
@@ -9,12 +9,18 @@ interface ProductCardProps {
   product: Product;
 }
 
+const FALLBACK_IMAGE = 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846340/ecommerce/products/re1p3tqmpjl4gdqngjf1.jpg';
+
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, wishlist, toggleWishlist, cart } = useShop();
   const navigate = useNavigate();
+  const [imgSrc, setImgSrc] = useState(product.image || FALLBACK_IMAGE);
 
   const isWishlisted = wishlist.includes(product.id);
   const inCartItem = cart.find((item) => item.product.id === product.id);
+
+  const isOutOfStock = !product.inStock || product.stock <= 0;
+  const isLowStock = !isOutOfStock && product.stock <= (product.lowStockThreshold ?? 5);
 
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
@@ -22,21 +28,38 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.25 }}
       onClick={handleCardClick}
-      className="group relative bg-white rounded-2xl p-4 flex flex-col justify-between hover:shadow-xl border border-gray-100/90 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+      className={`group relative bg-white rounded-2xl p-4 flex flex-col justify-between hover:shadow-xl border border-gray-100/90 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${
+        isOutOfStock ? 'opacity-75' : ''
+      }`}
     >
       {/* Top Badge & Wishlist Heart */}
       <div className="flex items-center justify-between z-10">
-        <div>
-          {product.badge && (
-            <span className="inline-block px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 rounded-full border border-rose-100/80">
-              {product.badge}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {product.brand && (
+            <span className="inline-block px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-700 bg-gray-100 rounded-md">
+              {product.brand}
             </span>
           )}
+
+          {isOutOfStock ? (
+            <span className="inline-block px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-100 rounded-md">
+              Out of Stock
+            </span>
+          ) : isLowStock ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-amber-800 bg-amber-100 rounded-md">
+              <AlertCircle className="w-3 h-3 text-amber-600" />
+              Only {product.stock} left
+            </span>
+          ) : product.badge ? (
+            <span className="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 rounded-md border border-rose-100/80">
+              {product.badge}
+            </span>
+          ) : null}
         </div>
 
         <button
@@ -58,34 +81,44 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Seamless Image Area with Quick Add (+) Button */}
       <div className="relative my-2 aspect-square flex items-center justify-center p-3 rounded-xl bg-slate-50/40 group-hover:bg-rose-50/30 transition-colors duration-300 overflow-hidden">
         <img
-          src={product.image}
+          src={imgSrc}
           alt={product.name}
-          className="w-full h-full object-contain filter drop-shadow-md mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+          onError={() => setImgSrc(FALLBACK_IMAGE)}
+          className={`w-full h-full object-contain filter drop-shadow-md mix-blend-multiply group-hover:scale-105 transition-transform duration-300 ${
+            isOutOfStock ? 'grayscale opacity-60' : ''
+          }`}
         />
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            addToCart(product);
-          }}
-          className={`absolute bottom-1.5 right-1.5 p-2.5 rounded-xl shadow-md transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 z-10 ${
-            inCartItem
-              ? 'bg-rose-500 text-white'
-              : 'bg-white hover:bg-rose-50 text-gray-800 hover:text-rose-600 border border-gray-100'
-          }`}
-          title="Quick Add to Cart"
-        >
-          {inCartItem ? <Check className="w-4 h-4 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[3]" />}
-        </button>
+        {!isOutOfStock && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(product);
+            }}
+            className={`absolute bottom-1.5 right-1.5 p-2.5 rounded-xl shadow-md transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 z-10 ${
+              inCartItem
+                ? 'bg-rose-500 text-white'
+                : 'bg-white hover:bg-rose-50 text-gray-800 hover:text-rose-600 border border-gray-100'
+            }`}
+            title="Quick Add to Cart"
+          >
+            {inCartItem ? <Check className="w-4 h-4 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[3]" />}
+          </button>
+        )}
       </div>
 
       {/* Product Details */}
       <div className="pt-2 flex flex-col space-y-1.5 text-left">
-        {/* Rating */}
-        <div className="flex items-center space-x-1 text-xs text-amber-500 font-medium">
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-          <span>{product.rating}</span>
-          <span className="text-gray-400 font-normal">({product.reviewCount})</span>
+        {/* Rating & Category */}
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-1 text-amber-500 font-medium">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span>{product.rating}</span>
+            <span className="text-gray-400 font-normal">({product.reviewCount})</span>
+          </div>
+          <span className="text-[10px] text-gray-400 font-bold uppercase truncate max-w-[45%]">
+            {product.categoryName}
+          </span>
         </div>
 
         {/* Product Title */}
