@@ -31,6 +31,7 @@ import {
   fetchProductReviewsApi,
   submitProductReviewApi,
   deleteProductReviewApi,
+  uploadReviewImageApi,
 } from '../services/reviewService';
 import type { ProductReviewsSummary } from '../services/reviewService';
 
@@ -58,8 +59,9 @@ export const ProductDetailPage: React.FC = () => {
   const [titleInput, setTitleInput] = useState('');
   const [commentInput, setCommentInput] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  // Review images (stored as base64 data URLs - up to 4 images)
+  // Review images stored as Cloudinary CDN URLs (uploaded via backend)
   const [reviewImages, setReviewImages] = useState<string[]>([]);
+  const [uploadingImageIdx, setUploadingImageIdx] = useState<number | null>(null); // index being replaced, or -1 for new
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const replaceImageIndexRef = useRef<number | null>(null);
@@ -170,44 +172,50 @@ export const ProductDetailPage: React.FC = () => {
     setIsReviewModalOpen(true);
   };
 
-  // Handle image file selection (add new or replace existing)
-  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image file selection — upload to Cloudinary via backend, store CDN URL
+  const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
     const replaceIdx = replaceImageIndexRef.current;
     replaceImageIndexRef.current = null;
+    e.target.value = '';
 
-    files.slice(0, replaceIdx !== null ? 1 : 4 - reviewImages.length).forEach((file) => {
+    const filesToUpload = files.slice(0, replaceIdx !== null ? 1 : 4 - reviewImages.length);
+
+    for (const file of filesToUpload) {
       if (!file.type.startsWith('image/')) {
         showToast('Only image files are allowed');
-        return;
+        continue;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Image must be under 5 MB');
-        return;
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Image must be under 10 MB');
+        continue;
       }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
+
+      try {
+        // Show uploading spinner at the right slot
+        setUploadingImageIdx(replaceIdx !== null ? replaceIdx : -1);
+        const cloudUrl = await uploadReviewImageApi(file);
+
         if (replaceIdx !== null) {
           setReviewImages((prev) => {
             const updated = [...prev];
-            updated[replaceIdx] = dataUrl;
+            updated[replaceIdx] = cloudUrl;
             return updated;
           });
         } else {
           setReviewImages((prev) => {
             if (prev.length >= 4) return prev;
-            return [...prev, dataUrl];
+            return [...prev, cloudUrl];
           });
         }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Reset file input so the same file can be re-selected if needed
-    e.target.value = '';
+      } catch (err: any) {
+        showToast(err?.message || 'Failed to upload image. Please try again.');
+      } finally {
+        setUploadingImageIdx(null);
+      }
+    }
   };
 
   const handleRemoveImage = (idx: number) => {
@@ -871,6 +879,12 @@ export const ProductDetailPage: React.FC = () => {
                         onClick={() => setLightboxImage(src)}
                       >
                         <img src={src} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
+                        {/* Upload spinner for replace */}
+                        {uploadingImageIdx === idx && (
+                          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                            <Loader2 className="w-5 h-5 animate-spin text-rose-500" />
+                          </div>
+                        )}
                         {/* Overlay actions */}
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                           <button
@@ -897,8 +911,16 @@ export const ProductDetailPage: React.FC = () => {
                       </div>
                     ))}
 
-                    {/* Add photo button */}
-                    {reviewImages.length < 4 && (
+                    {/* Upload spinner for new image slot */}
+                    {uploadingImageIdx === -1 && (
+                      <div className="w-20 h-20 rounded-xl border-2 border-rose-200 bg-rose-50 flex flex-col items-center justify-center gap-1">
+                        <Loader2 className="w-5 h-5 animate-spin text-rose-500" />
+                        <span className="text-[9px] font-bold text-rose-500">Uploading...</span>
+                      </div>
+                    )}
+
+                    {/* Add photo button — hidden while uploading */}
+                    {reviewImages.length < 4 && uploadingImageIdx === null && (
                       <button
                         type="button"
                         onClick={() => {
@@ -933,13 +955,18 @@ export const ProductDetailPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmittingReview}
+                    disabled={isSubmittingReview || uploadingImageIdx !== null}
                     className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-md transition-all cursor-pointer"
                   >
                     {isSubmittingReview ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Submitting...</span>
+                      </>
+                    ) : uploadingImageIdx !== null ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Uploading photo...</span>
                       </>
                     ) : (
                       <span>{reviewSummary?.userHasReviewed ? 'Update Review' : 'Submit Review'}</span>

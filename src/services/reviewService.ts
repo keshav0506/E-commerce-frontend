@@ -69,3 +69,17 @@ export const deleteProductReviewApi = async (productId: string | number): Promis
     method: 'DELETE',
   });
 };
+
+/**
+ * Upload a single image file to Cloudinary via the backend and return the CDN URL.
+ * Uses multipart/form-data — no base64 needed.
+ */
+export const uploadReviewImageApi = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await apiFetch<{ imageUrl: string }>('/images/upload', {
+    method: 'POST',
+    body: formData,
+  });
+  return res.imageUrl;
+};
