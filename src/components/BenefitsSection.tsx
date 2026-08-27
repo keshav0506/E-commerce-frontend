@@ -1,6 +1,39 @@
 import React from 'react';
 import { Truck, RotateCcw, ShieldCheck, Headphones } from 'lucide-react';
-import { BENEFITS } from '../data/mockData';
+
+interface BenefitItem {
+  id: string;
+  iconName: 'Truck' | 'RotateCcw' | 'ShieldCheck' | 'Headphones';
+  title: string;
+  subtitle: string;
+}
+
+const BENEFITS: BenefitItem[] = [
+  {
+    id: 'benefit-1',
+    iconName: 'Truck',
+    title: 'Free Express Shipping',
+    subtitle: 'On orders over ₹499'
+  },
+  {
+    id: 'benefit-2',
+    iconName: 'RotateCcw',
+    title: '7-Day Easy Returns',
+    subtitle: 'Hassle-free refunds & pickups'
+  },
+  {
+    id: 'benefit-3',
+    iconName: 'ShieldCheck',
+    title: '100% Safe Payments',
+    subtitle: '256-bit SSL secured checkout'
+  },
+  {
+    id: 'benefit-4',
+    iconName: 'Headphones',
+    title: '24/7 Priority Support',
+    subtitle: 'Dedicated customer care desk'
+  }
+];
 
 export const BenefitsSection: React.FC = () => {
   const getIcon = (iconName: string) => {
