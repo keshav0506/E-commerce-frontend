@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,7 +20,9 @@ import {
   Edit3,
   X,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  ImagePlus,
+  Camera
 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
@@ -56,6 +58,11 @@ export const ProductDetailPage: React.FC = () => {
   const [titleInput, setTitleInput] = useState('');
   const [commentInput, setCommentInput] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  // Review images (stored as base64 data URLs - up to 4 images)
+  const [reviewImages, setReviewImages] = useState<string[]>([]);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const replaceImageIndexRef = useRef<number | null>(null);
 
   // Load reviews for current product
   const loadReviews = async (targetId?: string) => {
@@ -151,12 +158,65 @@ export const ProductDetailPage: React.FC = () => {
       setRatingInput(reviewSummary.userReview.rating);
       setTitleInput(reviewSummary.userReview.title);
       setCommentInput(reviewSummary.userReview.comment);
+      // Restore existing review images if they exist (stored in userReview.images)
+      const existing = (reviewSummary.userReview as any).images;
+      setReviewImages(Array.isArray(existing) ? existing : []);
     } else {
       setRatingInput(5);
       setTitleInput('');
       setCommentInput('');
+      setReviewImages([]);
     }
     setIsReviewModalOpen(true);
+  };
+
+  // Handle image file selection (add new or replace existing)
+  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const replaceIdx = replaceImageIndexRef.current;
+    replaceImageIndexRef.current = null;
+
+    files.slice(0, replaceIdx !== null ? 1 : 4 - reviewImages.length).forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        showToast('Only image files are allowed');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image must be under 5 MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        if (replaceIdx !== null) {
+          setReviewImages((prev) => {
+            const updated = [...prev];
+            updated[replaceIdx] = dataUrl;
+            return updated;
+          });
+        } else {
+          setReviewImages((prev) => {
+            if (prev.length >= 4) return prev;
+            return [...prev, dataUrl];
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset file input so the same file can be re-selected if needed
+    e.target.value = '';
+  };
+
+  const handleRemoveImage = (idx: number) => {
+    setReviewImages((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleReplaceImage = (idx: number) => {
+    replaceImageIndexRef.current = idx;
+    imageInputRef.current?.click();
   };
 
   // Submit review handler
@@ -172,11 +232,17 @@ export const ProductDetailPage: React.FC = () => {
       await submitProductReviewApi(product.id, {
         rating: ratingInput,
         title: titleInput.trim() || 'Great product!',
-        comment: commentInput.trim()
+        comment: commentInput.trim(),
+        images: reviewImages,
       });
-      showToast('Thank you! Your review has been submitted.');
+      showToast('Thank you! Your review has been submitted. 🎉');
       setIsReviewModalOpen(false);
-      loadReviews(product.id);
+      setReviewImages([]);
+      // Reload reviews and scroll to the reviews section - DON'T navigate away
+      await loadReviews(product.id);
+      setTimeout(() => {
+        document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
     } catch (err: any) {
       showToast(err.response?.data?.message || 'Failed to submit review');
     } finally {
@@ -628,6 +694,26 @@ export const ProductDetailPage: React.FC = () => {
                       <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                         "{rev.comment}"
                       </p>
+
+                      {/* Review Images */}
+                      {Array.isArray(rev.images) && rev.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {rev.images.map((imgSrc: string, imgIdx: number) => (
+                            <button
+                              key={imgIdx}
+                              type="button"
+                              onClick={() => setLightboxImage(imgSrc)}
+                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-100 hover:border-rose-300 transition-all cursor-pointer shadow-xs hover:scale-105"
+                            >
+                              <img
+                                src={imgSrc}
+                                alt={`Review photo ${imgIdx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -758,6 +844,84 @@ export const ProductDetailPage: React.FC = () => {
                   />
                 </div>
 
+                {/* Review Images Upload */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-2 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-rose-500" />
+                    Add Photos
+                    <span className="text-gray-400 font-normal normal-case">(optional, up to 4)</span>
+                  </label>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageFileSelect}
+                  />
+
+                  <div className="flex flex-wrap gap-2">
+                    {/* Existing image previews */}
+                    {reviewImages.map((src, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200 group cursor-pointer"
+                        onClick={() => setLightboxImage(src)}
+                      >
+                        <img src={src} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
+                        {/* Overlay actions */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleReplaceImage(idx); }}
+                            className="w-7 h-7 rounded-full bg-white/90 text-gray-800 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors"
+                            title="Replace image"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleRemoveImage(idx); }}
+                            className="w-7 h-7 rounded-full bg-white/90 text-gray-800 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors"
+                            title="Remove image"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {/* Image number badge */}
+                        <span className="absolute top-1 left-1 w-4 h-4 rounded-full bg-black/60 text-white text-[9px] font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Add photo button */}
+                    {reviewImages.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          replaceImageIndexRef.current = null;
+                          imageInputRef.current?.click();
+                        }}
+                        className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 hover:border-rose-400 hover:bg-rose-50/50 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-rose-500 transition-all cursor-pointer"
+                      >
+                        <ImagePlus className="w-5 h-5" />
+                        <span className="text-[9px] font-bold">
+                          {reviewImages.length === 0 ? 'Add Photo' : `Add More`}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  {reviewImages.length > 0 && (
+                    <p className="text-[11px] text-gray-400 mt-1.5">
+                      Hover over a photo to replace or remove it. Click to enlarge.
+                    </p>
+                  )}
+                </div>
+
                 {/* Action Buttons */}
                 <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
                   <button
@@ -783,6 +947,39 @@ export const ProductDetailPage: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* IMAGE LIGHTBOX - full screen image viewer */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLightboxImage(null)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-sm cursor-pointer"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              className="relative z-10 max-w-2xl w-full"
+            >
+              <button
+                onClick={() => setLightboxImage(null)}
+                className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-white text-gray-800 flex items-center justify-center shadow-lg hover:bg-rose-500 hover:text-white transition-colors z-10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <img
+                src={lightboxImage}
+                alt="Review photo"
+                className="w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+              />
             </motion.div>
           </div>
         )}

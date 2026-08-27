@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -44,6 +44,36 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close User Card / Dropdown when clicking or touching anywhere else on the screen
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [userDropdownOpen]);
+
+  // Close popovers on route changes
+  useEffect(() => {
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     let ticking = false;
@@ -179,7 +209,7 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* Account Profile Button */}
-            <div className="relative">
+            <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={handleAccountClick}
                 className="flex items-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-2 text-xs sm:text-sm font-bold text-gray-700 hover:text-rose-600 hover:bg-rose-50/60 rounded-xl transition-all cursor-pointer"

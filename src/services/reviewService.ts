@@ -11,6 +11,7 @@ export interface ReviewItem {
   comment: string;
   verifiedPurchase: boolean;
   owner: boolean;
+  images: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +31,7 @@ export interface ReviewSubmitData {
   rating: number;
   title: string;
   comment: string;
+  images?: string[];
 }
 
 export const fetchProductReviewsApi = async (productId: string | number): Promise<ProductReviewsSummary> => {
