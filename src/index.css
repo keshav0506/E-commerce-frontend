@@ -6,13 +6,29 @@
 }
 
 @layer base {
-  body {
+  html, body {
     font-family: var(--font-sans);
     background-color: #fcfcfc;
     color: #111827;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent double-tap zoom & pinch-to-zoom on Android/iOS touch devices */
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  /* Prevent auto-zoom on input focus in Android and iOS */
+  input, select, textarea, button {
+    touch-action: manipulation;
+  }
+
+  @media screen and (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 }
 
