@@ -46,11 +46,25 @@ export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          setIsScrolled((prev) => {
+            // Hysteresis prevents layout shift jitter loops
+            if (!prev && currentY > 110) {
+              return true;
+            }
+            if (prev && currentY < 40) {
+              return false;
+            }
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -328,50 +342,56 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* TIER 2: CATEGORIES ICON / TEXT STRIP (SCROLL-AWARE) */}
-      <div className={`bg-gray-50/70 border-t border-gray-100 transition-all duration-300 ${
+      {/* TIER 2: CATEGORIES ICON / TEXT STRIP (SMOOTH SCROLL TRANSFORMATION) */}
+      <div className={`bg-gray-50/80 border-t border-gray-100/80 transition-all duration-300 ease-in-out ${
         isScrolled ? 'py-1 shadow-xs bg-white/95 backdrop-blur-md' : 'py-2'
       }`}>
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-          <div className={`flex items-center overflow-x-auto scrollbar-none transition-all duration-300 ${
-            isScrolled ? 'space-x-1 sm:space-x-2' : 'space-x-1 sm:space-x-3'
-          }`}>
+          <div className="flex items-center space-x-1 sm:space-x-2.5 overflow-x-auto scrollbar-none transition-all duration-300">
             
             {/* "For You" / "All Products" Option */}
             <button
               onClick={() => handleCategorySelect('all')}
-              className={`transition-all duration-300 cursor-pointer shrink-0 group flex items-center justify-center ${
+              className={`flex flex-col items-center justify-center rounded-2xl transition-all duration-300 cursor-pointer shrink-0 group ${
                 isScrolled
-                  ? `px-3 py-1 rounded-full text-xs font-bold ${
-                      selectedCategoryId === 'all' && location.pathname === '/products'
-                        ? 'bg-rose-500 text-white shadow-xs'
-                        : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/70'
-                    }`
-                  : `flex-col px-3 sm:px-4 py-1.5 rounded-2xl ${
-                      selectedCategoryId === 'all' && location.pathname === '/products'
-                        ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                    }`
+                  ? 'px-2.5 sm:px-3 py-1 hover:bg-white/80'
+                  : 'px-3 sm:px-4 py-1.5 hover:bg-white/80'
               }`}
             >
-              {/* Category Icon (Visible only when not scrolled down) */}
-              {!isScrolled && (
-                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 mb-1 ${
-                  selectedCategoryId === 'all' && location.pathname === '/products' ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+              {/* Smooth Animated Category Icon Wrapper */}
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center ${
+                isScrolled
+                  ? 'max-h-0 opacity-0 scale-75 -translate-y-1 mb-0 pointer-events-none'
+                  : 'max-h-12 opacity-100 scale-100 translate-y-0 mb-1'
+              }`}>
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${
+                  selectedCategoryId === 'all' && location.pathname === '/products'
+                    ? 'bg-rose-100/80'
+                    : 'bg-white shadow-2xs border border-gray-100'
                 }`}>
                   {getCategoryIcon('all')}
                 </div>
-              )}
-              <span className={`whitespace-nowrap transition-all ${
+              </div>
+
+              {/* Text Label */}
+              <span className={`whitespace-nowrap transition-all duration-200 ${
                 isScrolled
-                  ? 'text-xs'
-                  : 'text-[11px] sm:text-xs font-semibold'
+                  ? `text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                      selectedCategoryId === 'all' && location.pathname === '/products'
+                        ? 'bg-rose-500 text-white shadow-xs'
+                        : 'text-gray-700 group-hover:text-rose-600'
+                    }`
+                  : `text-[11px] sm:text-xs font-semibold ${
+                      selectedCategoryId === 'all' && location.pathname === '/products'
+                        ? 'text-rose-600 font-bold'
+                        : 'text-gray-700 group-hover:text-gray-900'
+                    }`
               }`}>
                 For You
               </span>
             </button>
 
-            <div className={`w-px bg-gray-200/80 shrink-0 my-auto transition-all ${isScrolled ? 'h-4' : 'h-6'}`} />
+            <div className={`w-px bg-gray-200/80 shrink-0 my-auto transition-all duration-300 ${isScrolled ? 'h-3.5' : 'h-6'}`} />
 
             {/* Dynamically Loaded Active Categories */}
             {categories.map((cat) => {
@@ -380,32 +400,40 @@ export const Navbar: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`transition-all duration-300 cursor-pointer shrink-0 group flex items-center justify-center ${
+                  className={`flex flex-col items-center justify-center rounded-2xl transition-all duration-300 cursor-pointer shrink-0 group ${
                     isScrolled
-                      ? `px-3 py-1 rounded-full text-xs font-bold ${
-                          isSelected
-                            ? 'bg-rose-500 text-white shadow-xs'
-                            : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/70'
-                        }`
-                      : `flex-col px-3 sm:px-4 py-1.5 rounded-2xl ${
-                          isSelected
-                            ? 'bg-rose-50 text-rose-600 font-bold border-b-2 border-rose-500 shadow-2xs'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'
-                        }`
+                      ? 'px-2.5 sm:px-3 py-1 hover:bg-white/80'
+                      : 'px-3 sm:px-4 py-1.5 hover:bg-white/80'
                   }`}
                 >
-                  {/* Category Icon (Visible only when not scrolled down) */}
-                  {!isScrolled && (
-                    <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 mb-1 ${
-                      isSelected ? 'bg-rose-100/80' : 'bg-white shadow-2xs border border-gray-100'
+                  {/* Smooth Animated Category Icon Wrapper */}
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out flex items-center justify-center ${
+                    isScrolled
+                      ? 'max-h-0 opacity-0 scale-75 -translate-y-1 mb-0 pointer-events-none'
+                      : 'max-h-12 opacity-100 scale-100 translate-y-0 mb-1'
+                  }`}>
+                    <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${
+                      isSelected
+                        ? 'bg-rose-100/80'
+                        : 'bg-white shadow-2xs border border-gray-100'
                     }`}>
                       {getCategoryIcon(cat)}
                     </div>
-                  )}
-                  <span className={`whitespace-nowrap transition-all ${
+                  </div>
+
+                  {/* Text Label */}
+                  <span className={`whitespace-nowrap transition-all duration-200 ${
                     isScrolled
-                      ? 'text-xs'
-                      : 'text-[11px] sm:text-xs font-semibold'
+                      ? `text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                          isSelected
+                            ? 'bg-rose-500 text-white shadow-xs'
+                            : 'text-gray-700 group-hover:text-rose-600'
+                        }`
+                      : `text-[11px] sm:text-xs font-semibold ${
+                          isSelected
+                            ? 'text-rose-600 font-bold'
+                            : 'text-gray-700 group-hover:text-gray-900'
+                        }`
                   }`}>
                     {cat.name}
                   </span>
