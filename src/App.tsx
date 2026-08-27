@@ -15,6 +15,15 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import { AccountPage } from './pages/AccountPage';
 
+// Customer Support & Company Info Pages
+import { ContactPage } from './pages/ContactPage';
+import { AboutPage } from './pages/AboutPage';
+import { FaqPage } from './pages/FaqPage';
+import { ShippingInfoPage } from './pages/ShippingInfoPage';
+import { ReturnsPage } from './pages/ReturnsPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+
 // Admin Imports
 import { AdminRoute } from './components/AdminRoute';
 import { AdminLayout } from './components/AdminLayout';
@@ -84,6 +93,15 @@ export function App() {
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                        {/* Customer Support & Information Routes */}
+                        <Route path="/contact" element={<ContactPage />} />
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/faq" element={<FaqPage />} />
+                        <Route path="/shipping" element={<ShippingInfoPage />} />
+                        <Route path="/returns" element={<ReturnsPage />} />
+                        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                        <Route path="/terms" element={<TermsPage />} />
                       </Routes>
                     </div>
                     <Footer />
