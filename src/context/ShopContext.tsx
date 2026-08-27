@@ -528,24 +528,48 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateQuantity = (productId: string, delta: number, selectedVolume?: string) => {
+    let shouldRemove = false;
     let targetNewQty = 1;
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (
-            item.product.id === productId &&
-            (!selectedVolume || item.selectedVolume === selectedVolume)
-          ) {
-            const newQty = item.quantity + delta;
-            targetNewQty = newQty;
-            return newQty >= 1 ? { ...item, quantity: newQty } : item;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
 
-    if (localStorage.getItem('token')) {
+    setCart((prev) => {
+      const targetItem = prev.find(
+        (item) =>
+          item.product.id === productId &&
+          (!selectedVolume || item.selectedVolume === selectedVolume)
+      );
+
+      if (targetItem && targetItem.quantity + delta <= 0) {
+        shouldRemove = true;
+        return prev.filter(
+          (item) =>
+            !(
+              item.product.id === productId &&
+              (!selectedVolume || item.selectedVolume === selectedVolume)
+            )
+        );
+      }
+
+      return prev.map((item) => {
+        if (
+          item.product.id === productId &&
+          (!selectedVolume || item.selectedVolume === selectedVolume)
+        ) {
+          const newQty = item.quantity + delta;
+          targetNewQty = newQty;
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      });
+    });
+
+    if (shouldRemove) {
+      showToast('Item removed from cart');
+      if (localStorage.getItem('token')) {
+        removeCartItemApi(productId).catch((err: any) => {
+          if (err.message) showToast(err.message);
+        });
+      }
+    } else if (localStorage.getItem('token')) {
       updateCartItemQuantityApi(productId, targetNewQty, selectedVolume).catch((err: any) => {
         if (err.message) showToast(err.message);
       });
