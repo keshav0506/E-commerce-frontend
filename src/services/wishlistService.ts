@@ -48,9 +48,11 @@ export async function fetchWishlistApi(): Promise<{ items: Product[]; productIds
 
     const productIds = res.productIds.map(String);
     return { items, productIds };
-  } catch (error) {
-    console.warn('Failed to fetch wishlist from backend:', error);
-    throw error;
+  } catch (error: any) {
+    if (error?.status !== 401) {
+      console.warn('Failed to fetch wishlist from backend:', error);
+    }
+    return { items: [], productIds: [] };
   }
 }
 

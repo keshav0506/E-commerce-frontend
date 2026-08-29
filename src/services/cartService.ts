@@ -60,9 +60,11 @@ export async function fetchCartApi(fallbackProducts: Product[] = []): Promise<Ca
       rawItems = res;
     }
     return rawItems.map((item) => mapCartItemResponseToCartItem(item, fallbackProducts));
-  } catch (error) {
-    console.warn('Cart API fetch warning/fallback:', error);
-    throw error;
+  } catch (error: any) {
+    if (error?.status !== 401) {
+      console.warn('Cart API fetch warning/fallback:', error);
+    }
+    return [];
   }
 }
 
