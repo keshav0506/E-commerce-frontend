@@ -173,32 +173,119 @@ export const LoginPage: React.FC = () => {
         className="w-full max-w-4xl bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12"
       >
         {/* Left Branding Visual Card (Desktop) */}
-        <div className="hidden md:flex md:col-span-5 bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 p-8 text-white flex-col justify-between relative overflow-hidden">
+        <div className="hidden md:flex md:col-span-5 relative text-white flex-col justify-between p-8 overflow-hidden">
+          {/* Base 3D Illustration with dynamic CSS hue/filter for each role */}
+          <img
+            src="/images/auth-illustration.png"
+            alt="Shoply Auth Visual"
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 transform scale-105 ${
+              selectedRole === 'CUSTOMER'
+                ? 'filter-none brightness-95'
+                : selectedRole === 'SUPPLIER'
+                ? 'hue-rotate-[145deg] saturate-125 brightness-90'
+                : 'hue-rotate-[245deg] saturate-125 brightness-90'
+            }`}
+          />
+
+          {/* Dynamic Gradient Overlay for contrast and role theme */}
+          <div
+            className={`absolute inset-0 transition-all duration-700 ${
+              selectedRole === 'CUSTOMER'
+                ? 'bg-gradient-to-t from-rose-950/95 via-rose-900/40 to-black/20'
+                : selectedRole === 'SUPPLIER'
+                ? 'bg-gradient-to-t from-emerald-950/95 via-emerald-900/50 to-black/30'
+                : 'bg-gradient-to-t from-slate-950/95 via-indigo-950/60 to-black/40'
+            }`}
+          />
+
+          {/* Content Layer */}
           <div className="relative z-10 space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 text-white backdrop-blur-md border border-white/30">
-              <Sparkles className="w-3.5 h-3.5" />
-              Shoply Member Access
-            </span>
-            <h2 className="text-3xl font-black tracking-tight leading-tight">
-              Enjoy Exclusive Deals & Perks
-            </h2>
-            <p className="text-xs text-white/90 leading-relaxed">
-              Sign in to manage your orders, save wishlists across devices, and unlock members-only express checkout.
-            </p>
+            {selectedRole === 'CUSTOMER' && (
+              <>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500/30 text-rose-100 backdrop-blur-md border border-rose-300/40 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-200" />
+                  Shoply Member Access
+                </span>
+                <h2 className="text-3xl font-black tracking-tight leading-tight drop-shadow-md">
+                  Enjoy Exclusive Deals & Perks
+                </h2>
+                <p className="text-xs text-rose-50/90 leading-relaxed font-medium drop-shadow-xs">
+                  Sign in to manage your orders, save wishlists across devices, and unlock members-only express checkout.
+                </p>
+              </>
+            )}
+
+            {selectedRole === 'SUPPLIER' && (
+              <>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-500/30 text-emerald-100 backdrop-blur-md border border-emerald-300/40 shadow-sm">
+                  <Building2 className="w-3.5 h-3.5 text-emerald-200" />
+                  Supplier Merchant Hub
+                </span>
+                <h2 className="text-3xl font-black tracking-tight leading-tight drop-shadow-md">
+                  Grow Your E-Commerce Business
+                </h2>
+                <p className="text-xs text-emerald-50/90 leading-relaxed font-medium drop-shadow-xs">
+                  Access your vendor portal to fulfill purchase orders, manage category listings, and review real-time revenue payouts.
+                </p>
+              </>
+            )}
+
+            {selectedRole === 'ADMIN' && (
+              <>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-indigo-500/30 text-indigo-100 backdrop-blur-md border border-indigo-300/40 shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-200" />
+                  Admin Command Center
+                </span>
+                <h2 className="text-3xl font-black tracking-tight leading-tight drop-shadow-md">
+                  Platform Command & Control
+                </h2>
+                <p className="text-xs text-indigo-50/90 leading-relaxed font-medium drop-shadow-xs">
+                  Supervise the entire ecosystem, approve supplier onboardings, audit catalog items, and monitor live orders.
+                </p>
+              </>
+            )}
           </div>
 
-          <div className="relative z-10 space-y-2 text-xs font-medium text-white/90">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-amber-300" />
-              <span>Fast 1-click checkout</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-amber-300" />
-              <span>Order tracking & digital receipts</span>
-            </div>
-          </div>
+          <div className="relative z-10 space-y-2.5 text-xs font-bold text-white/95">
+            {selectedRole === 'CUSTOMER' && (
+              <>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-rose-300 shrink-0" />
+                  <span>Fast 1-click checkout & instant order updates</span>
+                </div>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-rose-300 shrink-0" />
+                  <span>Track deliveries with live updates & digital receipts</span>
+                </div>
+              </>
+            )}
 
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            {selectedRole === 'SUPPLIER' && (
+              <>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span>Automated purchase orders & catalog sync</span>
+                </div>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span>Direct category-wide buyer reach & analytics</span>
+                </div>
+              </>
+            )}
+
+            {selectedRole === 'ADMIN' && (
+              <>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-300 shrink-0" />
+                  <span>Real-time platform metrics & store sales overview</span>
+                </div>
+                <div className="flex items-center gap-2 drop-shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-300 shrink-0" />
+                  <span>Complete merchant approvals & governance</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Right Authentication Form */}
@@ -224,7 +311,7 @@ export const LoginPage: React.FC = () => {
                 onClick={() => handleRoleSelect('CUSTOMER')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'CUSTOMER'
-                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/80'
+                    ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
                     : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
@@ -237,7 +324,7 @@ export const LoginPage: React.FC = () => {
                 onClick={() => handleRoleSelect('SUPPLIER')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'SUPPLIER'
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
                     : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
@@ -250,7 +337,7 @@ export const LoginPage: React.FC = () => {
                 onClick={() => handleRoleSelect('ADMIN')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'ADMIN'
-                    ? 'bg-slate-900 text-white shadow-sm'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
                     : 'text-gray-500 hover:text-gray-900'
                 }`}
               >

@@ -141,32 +141,40 @@ export const RegisterPage: React.FC = () => {
         className="w-full max-w-4xl bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12"
       >
         {/* Left Branding Visual (Desktop) */}
-        <div className="hidden md:flex md:col-span-5 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-8 text-white flex-col justify-between relative overflow-hidden">
+        <div className="hidden md:flex md:col-span-5 relative text-white flex-col justify-between p-8 overflow-hidden">
+          {/* Base 3D Illustration */}
+          <img
+            src="/images/auth-illustration.png"
+            alt="Shoply Registration Visual"
+            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 transform scale-105 filter-none brightness-95"
+          />
+
+          {/* Dynamic Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-rose-950/95 via-rose-900/40 to-black/20" />
+
           <div className="relative z-10 space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/30 text-indigo-200 backdrop-blur-md border border-indigo-400/30">
-              <Sparkles className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-rose-500/30 text-rose-100 backdrop-blur-md border border-rose-300/40 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-rose-200" />
               Join Shoply Community
             </span>
-            <h2 className="text-3xl font-black tracking-tight leading-tight">
+            <h2 className="text-3xl font-black tracking-tight leading-tight drop-shadow-md">
               Start Your Shopping Journey Today
             </h2>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-rose-50/90 leading-relaxed font-medium drop-shadow-xs">
               Create your account to unlock personalized recommendations, priority support, and rapid express deliveries.
             </p>
           </div>
 
-          <div className="relative z-10 space-y-2 text-xs font-medium text-slate-300">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>100% Free registration</span>
+          <div className="relative z-10 space-y-2.5 text-xs font-bold text-white/95">
+            <div className="flex items-center gap-2 drop-shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-rose-300 shrink-0" />
+              <span>100% Free registration & instant account setup</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Data encrypted and protected</span>
+            <div className="flex items-center gap-2 drop-shadow-xs">
+              <ShieldCheck className="w-4 h-4 text-rose-300 shrink-0" />
+              <span>Bank-grade security & encrypted data protection</span>
             </div>
           </div>
-
-          <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
         </div>
 
         {/* Right Registration Form */}
