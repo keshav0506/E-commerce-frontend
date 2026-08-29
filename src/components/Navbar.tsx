@@ -150,6 +150,12 @@ export const Navbar: React.FC = () => {
     return <Sparkles className="w-5 h-5 text-rose-500" />;
   };
 
+  const hideCategoryBar =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password';
+
   return (
     <header className="sticky top-0 z-40 bg-white shadow-xs border-b border-gray-100 transition-all duration-300">
       
@@ -359,61 +365,63 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* TIER 2: CATEGORIES ICON / TEXT STRIP (ZERO-SHIFT SMOOTH ANIMATION) */}
-      <div className="bg-gray-50/90 backdrop-blur-md border-t border-gray-100/90 h-12 flex items-center transition-colors duration-300">
-        <div className="max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto scrollbar-none py-1">
-            
-            {/* "For You" / "All Products" Option */}
-            <button
-              onClick={() => handleCategorySelect('all')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer shrink-0 ${
-                selectedCategoryId === 'all' && location.pathname === '/products'
-                  ? 'bg-rose-500 text-white font-bold shadow-xs'
-                  : 'text-gray-700 hover:text-rose-600 hover:bg-white/80'
-              }`}
-            >
-              {/* Category Icon */}
-              <span className={`transition-all duration-300 flex items-center justify-center overflow-hidden ${
-                isScrolled ? 'w-0 opacity-0 -ml-1 scale-0 pointer-events-none' : 'w-4.5 opacity-100 ml-0 scale-100'
-              }`}>
-                {getCategoryIcon('all')}
-              </span>
-              <span className="text-xs font-semibold whitespace-nowrap">
-                For You
-              </span>
-            </button>
+      {!hideCategoryBar && (
+        <div className="bg-gray-50/90 backdrop-blur-md border-t border-gray-100/90 h-12 flex items-center transition-colors duration-300">
+          <div className="max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto scrollbar-none py-1">
+              
+              {/* "For You" / "All Products" Option */}
+              <button
+                onClick={() => handleCategorySelect('all')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer shrink-0 ${
+                  selectedCategoryId === 'all' && location.pathname === '/products'
+                    ? 'bg-rose-500 text-white font-bold shadow-xs'
+                    : 'text-gray-700 hover:text-rose-600 hover:bg-white/80'
+                }`}
+              >
+                {/* Category Icon */}
+                <span className={`transition-all duration-300 flex items-center justify-center overflow-hidden ${
+                  isScrolled ? 'w-0 opacity-0 -ml-1 scale-0 pointer-events-none' : 'w-4.5 opacity-100 ml-0 scale-100'
+                }`}>
+                  {getCategoryIcon('all')}
+                </span>
+                <span className="text-xs font-semibold whitespace-nowrap">
+                  For You
+                </span>
+              </button>
 
-            <div className="w-px h-5 bg-gray-200 shrink-0 my-auto" />
+              <div className="w-px h-5 bg-gray-200 shrink-0 my-auto" />
 
-            {/* Dynamically Loaded Active Categories */}
-            {categories.map((cat) => {
-              const isSelected = selectedCategoryId === cat.id && location.pathname === '/products';
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer shrink-0 ${
-                    isSelected
-                      ? 'bg-rose-500 text-white font-bold shadow-xs'
-                      : 'text-gray-700 hover:text-rose-600 hover:bg-white/80'
-                  }`}
-                >
-                  {/* Category Icon */}
-                  <span className={`transition-all duration-300 flex items-center justify-center overflow-hidden ${
-                    isScrolled ? 'w-0 opacity-0 -ml-1 scale-0 pointer-events-none' : 'w-4.5 opacity-100 ml-0 scale-100'
-                  }`}>
-                    {getCategoryIcon(cat)}
-                  </span>
-                  <span className="text-xs font-semibold whitespace-nowrap">
-                    {cat.name}
-                  </span>
-                </button>
-              );
-            })}
+              {/* Dynamically Loaded Active Categories */}
+              {categories.map((cat) => {
+                const isSelected = selectedCategoryId === cat.id && location.pathname === '/products';
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySelect(cat.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer shrink-0 ${
+                      isSelected
+                        ? 'bg-rose-500 text-white font-bold shadow-xs'
+                        : 'text-gray-700 hover:text-rose-600 hover:bg-white/80'
+                    }`}
+                  >
+                    {/* Category Icon */}
+                    <span className={`transition-all duration-300 flex items-center justify-center overflow-hidden ${
+                      isScrolled ? 'w-0 opacity-0 -ml-1 scale-0 pointer-events-none' : 'w-4.5 opacity-100 ml-0 scale-100'
+                    }`}>
+                      {getCategoryIcon(cat)}
+                    </span>
+                    <span className="text-xs font-semibold whitespace-nowrap">
+                      {cat.name}
+                    </span>
+                  </button>
+                );
+              })}
 
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MOBILE MENU DRAWER */}
       {mobileMenuOpen && (
