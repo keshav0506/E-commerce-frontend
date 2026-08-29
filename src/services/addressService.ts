@@ -27,8 +27,10 @@ export async function fetchAddressesApi(): Promise<UserAddress[]> {
         isDefault: Boolean(a.isDefault || a.default)
       };
     });
-  } catch (err) {
-    console.warn('Failed to fetch remote addresses:', err);
+  } catch (err: any) {
+    if (err?.status !== 401 && err?.status !== 403) {
+      console.warn('Failed to fetch remote addresses:', err);
+    }
     return [];
   }
 }
