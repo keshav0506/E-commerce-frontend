@@ -12,10 +12,24 @@ export class ApiError extends Error {
   }
 }
 
+export function getGuestSessionId(): string {
+  try {
+    let id = localStorage.getItem('shoply_guest_session_id');
+    if (!id) {
+      id = 'gst_' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+      localStorage.setItem('shoply_guest_session_id', id);
+    }
+    return id;
+  } catch {
+    return 'gst_fallback_device';
+  }
+}
+
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const headers: Record<string, string> = {
+    'X-Guest-Session-ID': getGuestSessionId(),
     ...(options.headers as Record<string, string>),
   };
 

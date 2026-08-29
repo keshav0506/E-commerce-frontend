@@ -1,4 +1,4 @@
-import { apiFetch } from './api';
+import { apiFetch, getGuestSessionId } from './api';
 import type { UserProfile, UserAddress } from '../context/AuthContext';
 
 export interface LoginResponse {
@@ -21,20 +21,27 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
+  guestSessionId?: string;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  guestSessionId?: string;
 }
 
 /**
  * Login user (POST /api/auth/login)
  */
 export async function loginApi(credentials: LoginRequest): Promise<{ token: string; user: UserProfile }> {
+  const payload = {
+    ...credentials,
+    guestSessionId: credentials.guestSessionId || getGuestSessionId(),
+  };
+
   const data = await apiFetch<LoginResponse>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify(credentials),
+    body: JSON.stringify(payload),
   });
 
   const token = data.token || data.jwt || data.accessToken || '';
@@ -72,9 +79,14 @@ export async function loginApi(credentials: LoginRequest): Promise<{ token: stri
  * Register user (POST /api/auth/register)
  */
 export async function registerApi(userData: RegisterRequest): Promise<{ token: string; user: UserProfile }> {
+  const payload = {
+    ...userData,
+    guestSessionId: userData.guestSessionId || getGuestSessionId(),
+  };
+
   const data = await apiFetch<LoginResponse>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify(userData),
+    body: JSON.stringify(payload),
   });
 
   const token = data.token || data.jwt || data.accessToken || '';
@@ -130,10 +142,15 @@ export async function forgotPasswordApi(email: string): Promise<{ success: boole
 /**
  * Synchronize Firebase user with Spring Boot backend (POST /api/auth/firebase-sync)
  */
-export async function firebaseSyncApi(syncData: { idToken: string; name?: string; email?: string }): Promise<{ token: string; user: UserProfile }> {
+export async function firebaseSyncApi(syncData: { idToken: string; name?: string; email?: string; guestSessionId?: string }): Promise<{ token: string; user: UserProfile }> {
+  const payload = {
+    ...syncData,
+    guestSessionId: syncData.guestSessionId || getGuestSessionId(),
+  };
+
   const data = await apiFetch<LoginResponse>('/auth/firebase-sync', {
     method: 'POST',
-    body: JSON.stringify(syncData),
+    body: JSON.stringify(payload),
   });
 
   const token = data.token || data.jwt || data.accessToken || syncData.idToken || '';

@@ -423,17 +423,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setProducts(uniqueProducts);
 
-      // Load Wishlist from backend if logged in
-      const token = localStorage.getItem('token');
-      if (token && token !== 'mock-jwt-token-dev') {
-        try {
-          const { productIds } = await fetchWishlistApi();
-          if (productIds && productIds.length > 0) {
-            setWishlist(productIds);
-          }
-        } catch (e) {
-          console.warn('Backend wishlist fetch fallback to local:', e);
+      // Load Wishlist from backend (authenticated or guest session)
+      try {
+        const { productIds } = await fetchWishlistApi();
+        if (productIds && productIds.length > 0) {
+          setWishlist(productIds);
         }
+      } catch (e) {
+        // Silent fallback
       }
     } catch (err: any) {
       console.error('Failed to load initial data:', err);
@@ -490,9 +487,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [wishlist]);
 
-  // Load initial remote cart if token exists
+  // Load initial remote cart for authenticated user or guest device
   useEffect(() => {
-    if (localStorage.getItem('token') && products.length > 0) {
+    if (products.length > 0) {
       fetchCartApi(products)
         .then((remoteItems) => {
           if (remoteItems && remoteItems.length > 0) {
