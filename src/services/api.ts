@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api';
 
 export class ApiError extends Error {
   status: number;
@@ -56,7 +56,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   }
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       localStorage.removeItem('token');
     }
 

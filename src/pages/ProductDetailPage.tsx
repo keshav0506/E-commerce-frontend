@@ -162,7 +162,18 @@ export const ProductDetailPage: React.FC = () => {
       setCommentInput(reviewSummary.userReview.comment);
       // Restore existing review images if they exist (stored in userReview.images)
       const existing = (reviewSummary.userReview as any).images;
-      setReviewImages(Array.isArray(existing) ? existing : []);
+      if (Array.isArray(existing)) {
+        setReviewImages(existing);
+      } else if (typeof existing === 'string' && existing.trim()) {
+        try {
+          const parsed = JSON.parse(existing);
+          setReviewImages(Array.isArray(parsed) ? parsed : [existing]);
+        } catch {
+          setReviewImages(existing.includes(',') ? existing.split(',').map((s: string) => s.trim()) : [existing]);
+        }
+      } else {
+        setReviewImages([]);
+      }
     } else {
       setRatingInput(5);
       setTitleInput('');
@@ -252,7 +263,7 @@ export const ProductDetailPage: React.FC = () => {
         document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to submit review');
+      showToast(err?.message || err?.response?.data?.message || 'Failed to submit review');
     } finally {
       setIsSubmittingReview(false);
     }
@@ -266,7 +277,7 @@ export const ProductDetailPage: React.FC = () => {
       showToast('Your review has been removed');
       loadReviews(product.id);
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to delete review');
+      showToast(err?.message || err?.response?.data?.message || 'Failed to delete review');
     }
   };
 
@@ -704,24 +715,41 @@ export const ProductDetailPage: React.FC = () => {
                       </p>
 
                       {/* Review Images */}
-                      {Array.isArray(rev.images) && rev.images.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {rev.images.map((imgSrc: string, imgIdx: number) => (
-                            <button
-                              key={imgIdx}
-                              type="button"
-                              onClick={() => setLightboxImage(imgSrc)}
-                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-100 hover:border-rose-300 transition-all cursor-pointer shadow-xs hover:scale-105"
-                            >
-                              <img
-                                src={imgSrc}
-                                alt={`Review photo ${imgIdx + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const itemImages: string[] = Array.isArray(rev.images)
+                          ? rev.images
+                          : typeof rev.images === 'string' && rev.images.trim()
+                          ? (() => {
+                              try {
+                                const parsed = JSON.parse(rev.images);
+                                return Array.isArray(parsed) ? parsed : [rev.images];
+                              } catch {
+                                return rev.images.includes(',') ? rev.images.split(',').map((s: string) => s.trim()) : [rev.images];
+                              }
+                            })()
+                          : [];
+
+                        if (itemImages.length === 0) return null;
+
+                        return (
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {itemImages.map((imgSrc: string, imgIdx: number) => (
+                              <button
+                                key={imgIdx}
+                                type="button"
+                                onClick={() => setLightboxImage(imgSrc)}
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-100 hover:border-rose-300 transition-all cursor-pointer shadow-xs hover:scale-105"
+                              >
+                                <img
+                                  src={imgSrc}
+                                  alt={`Review photo ${imgIdx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })

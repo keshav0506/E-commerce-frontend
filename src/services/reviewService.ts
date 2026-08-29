@@ -71,15 +71,28 @@ export const deleteProductReviewApi = async (productId: string | number): Promis
 };
 
 /**
- * Upload a single image file to Cloudinary via the backend and return the CDN URL.
- * Uses multipart/form-data — no base64 needed.
+ * Upload a single image file to Cloudinary / storage via the backend and return the CDN/local URL.
+ * If backend upload fails for any reason, falls back to base64 Data URL so the user can still add photos seamlessly.
  */
 export const uploadReviewImageApi = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  const res = await apiFetch<{ imageUrl: string }>('/images/upload', {
-    method: 'POST',
-    body: formData,
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiFetch<{ imageUrl?: string; url?: string }>('/images/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    const url = res?.imageUrl || res?.url;
+    if (url) return url;
+  } catch (err) {
+    console.warn('Backend image upload endpoint failed, falling back to base64 Data URL:', err);
+  }
+
+  // Fallback to base64 Data URL
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (e) => reject(e);
+    reader.readAsDataURL(file);
   });
-  return res.imageUrl;
 };
