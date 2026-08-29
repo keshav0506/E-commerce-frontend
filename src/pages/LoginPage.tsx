@@ -8,7 +8,7 @@ import { useShop } from '../context/ShopContext';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { showToast } = useShop();
 
   const [email, setEmail] = useState('');
@@ -16,6 +16,7 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Errors
   const [emailError, setEmailError] = useState('');
@@ -47,6 +48,19 @@ export const LoginPage: React.FC = () => {
     return valid;
   };
 
+  const handleRedirectAfterLogin = () => {
+    const redirectParam = new URLSearchParams(location.search).get('redirect') || (location.state as any)?.from;
+    const savedUserStr = localStorage.getItem('shoply_user');
+    const parsed = savedUserStr ? JSON.parse(savedUserStr) : null;
+    const role = (parsed?.role || '').toUpperCase();
+
+    if (role === 'ADMIN' || role === 'ROLE_ADMIN' || redirectParam?.startsWith('/admin')) {
+      navigate(redirectParam || '/admin');
+    } else {
+      navigate(redirectParam || '/');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -56,18 +70,7 @@ export const LoginPage: React.FC = () => {
       const success = await login(email, password);
       if (success) {
         showToast('Signed in successfully!');
-        const redirectParam = new URLSearchParams(location.search).get('redirect') || (location.state as any)?.from;
-
-        // Check if admin
-        const savedUserStr = localStorage.getItem('shoply_user');
-        const parsed = savedUserStr ? JSON.parse(savedUserStr) : null;
-        const role = (parsed?.role || '').toUpperCase();
-
-        if (role === 'ADMIN' || role === 'ROLE_ADMIN' || redirectParam?.startsWith('/admin')) {
-          navigate(redirectParam || '/admin');
-        } else {
-          navigate(redirectParam || '/');
-        }
+        handleRedirectAfterLogin();
       } else {
         setGeneralError('Invalid email or password. Please try again.');
       }
@@ -78,8 +81,20 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleSocialLogin = () => {
-    showToast('Social login will be available soon.');
+  const handleSocialLogin = async () => {
+    setGeneralError('');
+    setIsGoogleLoading(true);
+    try {
+      const success = await loginWithGoogle();
+      if (success) {
+        showToast('Signed in with Google successfully!');
+        handleRedirectAfterLogin();
+      }
+    } catch (err: any) {
+      setGeneralError(err.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   const isLocalhost =
@@ -291,19 +306,29 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Social Login Button Placeholder */}
+          {/* Social Login Button */}
           <button
             type="button"
+            disabled={isGoogleLoading || isLoading}
             onClick={handleSocialLogin}
-            className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 rounded-2xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed border border-gray-200 text-gray-800 rounded-2xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
-              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z" />
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
-            </svg>
-            <span>Continue with Google</span>
+            {isGoogleLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+                <span>Connecting to Google...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                </svg>
+                <span>Continue with Google</span>
+              </>
+            )}
           </button>
 
           {/* Bottom Register Prompt */}

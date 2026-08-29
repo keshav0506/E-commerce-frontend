@@ -26,11 +26,20 @@ export const ForgotPasswordPage: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const res = await forgotPasswordApi(email.trim());
-      setSuccessMessage(res.message || 'Password reset OTP generated.');
-      setIsSuccess(true);
+      const { isFirebaseConfigured, auth } = await import('../lib/firebase');
+      if (isFirebaseConfigured()) {
+        const { sendPasswordResetEmail } = await import('firebase/auth');
+        await sendPasswordResetEmail(auth, email.trim());
+        setSuccessMessage('Password reset link has been sent directly to your email inbox by Firebase. Please follow the instructions in the email to reset your password.');
+        setIsSuccess(true);
+      } else {
+        const res = await forgotPasswordApi(email.trim());
+        setSuccessMessage(res.message || 'Password reset OTP generated.');
+        setIsSuccess(true);
+      }
     } catch (err: any) {
-      setEmailError(err.message || 'Unable to process password reset request.');
+      const { formatFirebaseAuthError } = await import('../lib/firebaseErrors');
+      setEmailError(formatFirebaseAuthError(err) || err.message || 'Unable to process password reset request.');
     } finally {
       setIsLoading(false);
     }

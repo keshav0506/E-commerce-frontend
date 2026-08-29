@@ -23,7 +23,20 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     headers['Content-Type'] = 'application/json';
   }
 
-  const token = localStorage.getItem('token');
+  let token = localStorage.getItem('token');
+  try {
+    const { auth } = await import('../lib/firebase');
+    if (auth.currentUser) {
+      const freshToken = await auth.currentUser.getIdToken();
+      if (freshToken) {
+        token = freshToken;
+        localStorage.setItem('token', freshToken);
+      }
+    }
+  } catch {
+    // If Firebase is uninitialized or offline, use stored localStorage token
+  }
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }

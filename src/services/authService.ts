@@ -128,6 +128,45 @@ export async function forgotPasswordApi(email: string): Promise<{ success: boole
 }
 
 /**
+ * Synchronize Firebase user with Spring Boot backend (POST /api/auth/firebase-sync)
+ */
+export async function firebaseSyncApi(syncData: { idToken: string; name?: string; email?: string }): Promise<{ token: string; user: UserProfile }> {
+  const data = await apiFetch<LoginResponse>('/auth/firebase-sync', {
+    method: 'POST',
+    body: JSON.stringify(syncData),
+  });
+
+  const token = data.token || data.jwt || data.accessToken || syncData.idToken || '';
+  if (token) {
+    localStorage.setItem('token', token);
+  }
+
+  const rawUser = data.user || data;
+  const nameParts = (rawUser.name || syncData.name || syncData.email?.split('@')[0] || 'User').split(' ');
+  const firstName = rawUser.firstName || nameParts[0] || 'User';
+  const lastName = rawUser.lastName || nameParts.slice(1).join(' ') || '';
+  const role = rawUser.role || (data as any).role || 'CUSTOMER';
+
+  const user: UserProfile = {
+    id: String(rawUser.id || `usr-${Date.now()}`),
+    firstName,
+    lastName,
+    name: rawUser.name || syncData.name || `${firstName} ${lastName}`.trim(),
+    email: rawUser.email || syncData.email || '',
+    phone: rawUser.phone || '',
+    role: String(role).toUpperCase(),
+    addresses: rawUser.addresses || [],
+    preferences: rawUser.preferences || {
+      emailNotifications: true,
+      orderUpdates: true,
+      promotionalEmails: false,
+    },
+  };
+
+  return { token, user };
+}
+
+/**
  * Reset Password with OTP/Token (POST /api/auth/reset-password)
  */
 export async function resetPasswordApi(data: { email: string; token: string; newPassword: string }): Promise<{ success: boolean; message: string }> {

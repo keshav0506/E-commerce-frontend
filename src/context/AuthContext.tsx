@@ -1,5 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginApi, registerApi } from '../services/authService';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  updateProfile as updateFirebaseProfile,
+  type User as FirebaseUser
+} from 'firebase/auth';
+import { auth, googleProvider, isFirebaseConfigured } from '../lib/firebase';
+import { formatFirebaseAuthError } from '../lib/firebaseErrors';
+import { loginApi, registerApi, firebaseSyncApi } from '../services/authService';
 import { fetchAddressesApi, createAddressApi, updateAddressApi, deleteAddressApi, setDefaultAddressApi } from '../services/addressService';
 
 export interface UserAddress {
@@ -23,6 +34,7 @@ export interface UserPreferences {
 
 export interface UserProfile {
   id: string;
+  firebaseUid?: string;
   firstName: string;
   lastName: string;
   name: string;
@@ -36,11 +48,13 @@ export interface UserProfile {
 
 interface AuthContextType {
   user: UserProfile | null;
+  loading: boolean;
   isLoggedIn: boolean;
   isAdmin: boolean;
   login: (email: string, pass: string) => Promise<boolean>;
   register: (name: string, email: string, pass: string) => Promise<boolean>;
-  logout: () => void;
+  loginWithGoogle: () => Promise<boolean>;
+  logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => void;
   addAddress: (address: Omit<UserAddress, 'id'>) => void;
   updateAddress: (id: string, address: Partial<UserAddress>) => void;
@@ -70,18 +84,6 @@ const DEFAULT_MOCK_USER: UserProfile = {
       state: 'Delhi',
       pincode: '110001',
       isDefault: true
-    },
-    {
-      id: 'addr-2',
-      type: 'WORK',
-      fullName: 'Keshav Khandelwal',
-      phone: '9876543210',
-      house: 'Suite 601, Cyber Tower',
-      street: 'DLF Phase 3, MG Road',
-      city: 'Gurugram',
-      state: 'Haryana',
-      pincode: '122002',
-      isDefault: false
     }
   ],
   preferences: {
@@ -114,14 +116,12 @@ function getRoleFromToken(token: string | null): string | null {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
-      // Only restore user if a real JWT token exists
       const token = localStorage.getItem('token');
-      if (!token || token === 'mock-jwt-token-dev') {
-        // No valid token - clear stale user and start as logged out
+      if (!token) {
         localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-        localStorage.removeItem('token');
         return null;
       }
       const saved = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
@@ -141,13 +141,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const tokenRole = getRoleFromToken(token)?.toUpperCase();
   const userRole = (user?.role || tokenRole || '').toUpperCase();
 
-  // Strict verification: user object AND valid backend JWT token must both have ADMIN role
   const isAdmin = Boolean(
-    user &&
-    (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') &&
-    (tokenRole === 'ADMIN' || tokenRole === 'ROLE_ADMIN')
+    user && (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN')
   );
 
+  // Sync state to local storage
   useEffect(() => {
     try {
       if (user) {
@@ -160,24 +158,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
+  // Firebase onAuthStateChanged listener to persist across refreshes
+  useEffect(() => {
+    if (!isFirebaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          localStorage.setItem('token', idToken);
+          const { user: syncedUser } = await firebaseSyncApi({
+            idToken,
+            name: firebaseUser.displayName || undefined,
+            email: firebaseUser.email || undefined
+          });
+          setUser(syncedUser);
+        } catch (err) {
+          console.warn('Backend Firebase sync error during state restore:', err);
+        }
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const login = async (email: string, pass: string): Promise<boolean> => {
+    if (isFirebaseConfigured()) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const idToken = await userCredential.user.getIdToken();
+        localStorage.setItem('token', idToken);
+
+        const { user: resUser } = await firebaseSyncApi({
+          idToken,
+          email: userCredential.user.email || email,
+          name: userCredential.user.displayName || undefined
+        });
+        setUser(resUser);
+        return true;
+      } catch (err: any) {
+        console.error('Firebase login error:', err);
+        throw new Error(formatFirebaseAuthError(err));
+      }
+    }
+
+    // Direct Spring Boot fallback
     try {
       const { user: resUser } = await loginApi({ email, password: pass });
       setUser(resUser);
       return true;
     } catch (err: any) {
       console.warn('Real backend login failed, trying fallback mock login if network error:', err);
-      // If network error/unreachable backend, allow login for dev verification
       if (err.name === 'TypeError' || err.status === 0 || err.message?.includes('fetch')) {
         const parts = email.split('@')[0].split('.');
-        const fName = parts[0] || 'Keshav';
-        const lName = parts[1] || 'Khandelwal';
+        const fName = parts[0] || 'User';
+        const lName = parts[1] || '';
         const mockUser: UserProfile = {
           ...DEFAULT_MOCK_USER,
           id: `usr-${Date.now()}`,
           firstName: fName.charAt(0).toUpperCase() + fName.slice(1),
-          lastName: lName.charAt(0).toUpperCase() + lName.slice(1),
-          name: `${fName} ${lName}`,
+          lastName: lName ? lName.charAt(0).toUpperCase() + lName.slice(1) : '',
+          name: `${fName} ${lName}`.trim(),
           email
         };
         setUser(mockUser);
@@ -189,6 +234,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, pass: string): Promise<boolean> => {
+    if (isFirebaseConfigured()) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateFirebaseProfile(userCredential.user, { displayName: name });
+        const idToken = await userCredential.user.getIdToken();
+        localStorage.setItem('token', idToken);
+
+        const { user: resUser } = await firebaseSyncApi({
+          idToken,
+          email: userCredential.user.email || email,
+          name
+        });
+        setUser(resUser);
+        return true;
+      } catch (err: any) {
+        console.error('Firebase register error:', err);
+        throw new Error(formatFirebaseAuthError(err));
+      }
+    }
+
+    // Direct Spring Boot fallback
     try {
       const { user: resUser } = await registerApi({ name, email, password: pass });
       setUser(resUser);
@@ -215,10 +281,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+  const loginWithGoogle = async (): Promise<boolean> => {
+    if (!isFirebaseConfigured()) {
+      throw new Error('Firebase credentials are not configured in .env.local yet. Please configure Firebase to use Google Sign-In.');
+    }
+
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const idToken = await userCredential.user.getIdToken();
+      localStorage.setItem('token', idToken);
+
+      const { user: resUser } = await firebaseSyncApi({
+        idToken,
+        email: userCredential.user.email || undefined,
+        name: userCredential.user.displayName || undefined
+      });
+      setUser(resUser);
+      return true;
+    } catch (err: any) {
+      console.error('Google Sign-In error:', err);
+      throw new Error(formatFirebaseAuthError(err));
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (isFirebaseConfigured()) {
+        await signOut(auth);
+      }
+    } catch (e) {
+      console.warn('Firebase signOut error:', e);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+    }
   };
 
   const updateProfile = (updated: Partial<UserProfile>) => {
@@ -354,10 +451,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
+        loading,
         isLoggedIn: !!user,
         isAdmin,
         login,
         register,
+        loginWithGoogle,
         logout,
         updateProfile,
         addAddress,
