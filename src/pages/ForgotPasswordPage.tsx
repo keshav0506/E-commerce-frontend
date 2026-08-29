@@ -27,7 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       setIsLoading(true);
       const { isFirebaseConfigured, auth } = await import('../lib/firebase');
-      if (isFirebaseConfigured()) {
+      if (isFirebaseConfigured() && auth) {
         const { sendPasswordResetEmail } = await import('firebase/auth');
         await sendPasswordResetEmail(auth, email.trim());
         setSuccessMessage('Password reset link has been sent directly to your email inbox by Firebase. Please follow the instructions in the email to reset your password.');

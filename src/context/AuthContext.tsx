@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Firebase onAuthStateChanged listener to persist across refreshes
   useEffect(() => {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseConfigured() || !auth) {
       setLoading(false);
       return;
     }
@@ -187,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, pass: string): Promise<boolean> => {
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && auth) {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         const idToken = await userCredential.user.getIdToken();
@@ -234,7 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, pass: string): Promise<boolean> => {
-    if (isFirebaseConfigured()) {
+    if (isFirebaseConfigured() && auth) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         await updateFirebaseProfile(userCredential.user, { displayName: name });
@@ -282,7 +282,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithGoogle = async (): Promise<boolean> => {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseConfigured() || !auth) {
       throw new Error('Firebase credentials are not configured in .env.local yet. Please configure Firebase to use Google Sign-In.');
     }
 
@@ -306,7 +306,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      if (isFirebaseConfigured()) {
+      if (isFirebaseConfigured() && auth) {
         await signOut(auth);
       }
     } catch (e) {

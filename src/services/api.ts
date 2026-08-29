@@ -26,7 +26,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   let token = localStorage.getItem('token');
   try {
     const { auth } = await import('../lib/firebase');
-    if (auth.currentUser) {
+    if (auth && auth.currentUser) {
       const freshToken = await auth.currentUser.getIdToken();
       if (freshToken) {
         token = freshToken;
