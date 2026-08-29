@@ -72,7 +72,9 @@ export const ContactPage: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-gray-900">Email Us</h4>
-              <p className="text-xs text-gray-400 mt-0.5">support@shoply.com</p>
+              <a href="mailto:keshavkhandelwal240@gmail.com" className="text-xs text-gray-600 hover:text-rose-600 font-semibold mt-0.5 block truncate">
+                keshavkhandelwal240@gmail.com
+              </a>
               <span className="text-[11px] font-semibold text-rose-600">Response within 24h</span>
             </div>
           </div>
@@ -83,7 +85,9 @@ export const ContactPage: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-gray-900">Phone Support</h4>
-              <p className="text-xs text-gray-400 mt-0.5">+91 (800) 123-4567</p>
+              <a href="tel:+919026230270" className="text-xs text-gray-600 hover:text-indigo-600 font-semibold mt-0.5 block">
+                +91 9026230270
+              </a>
               <span className="text-[11px] font-semibold text-indigo-600">Mon - Sat: 9 AM - 8 PM</span>
             </div>
           </div>
@@ -94,8 +98,8 @@ export const ContactPage: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-gray-900">Headquarters</h4>
-              <p className="text-xs text-gray-400 mt-0.5">Tech Park, Bengaluru, India</p>
-              <span className="text-[11px] font-semibold text-emerald-600">560100 Karnataka</span>
+              <p className="text-xs text-gray-600 font-semibold mt-0.5">Chandigarh, India</p>
+              <span className="text-[11px] font-semibold text-emerald-600">Corporate & Support Center</span>
             </div>
           </div>
         </div>
