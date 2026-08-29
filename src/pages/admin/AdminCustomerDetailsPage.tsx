@@ -28,9 +28,9 @@ export const AdminCustomerDetailsPage: React.FC = () => {
   if (!customer) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6 text-center">
-        <div className="bg-white rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-            <User className="w-8 h-8" />
+        <div className="bg-[#f3f4f6] rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
+          <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+            <User className="w-8 h-8 text-rose-500" />
           </div>
           <h2 className="text-xl font-extrabold text-gray-900">Customer Not Found</h2>
           <p className="text-xs text-gray-500">
@@ -38,7 +38,7 @@ export const AdminCustomerDetailsPage: React.FC = () => {
           </p>
           <Link
             to="/admin/customers"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Customers</span>
@@ -74,22 +74,22 @@ export const AdminCustomerDetailsPage: React.FC = () => {
     <div className="space-y-6 max-w-7xl mx-auto text-left pb-12">
       
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-2">
+      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-2">
         <Link to="/admin" className="hover:text-rose-600">Dashboard</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <Link to="/admin/customers" className="hover:text-rose-600">Customers</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 font-semibold">{customer.name}</span>
+        <span className="text-gray-900 font-extrabold">{customer.name}</span>
       </nav>
 
       {/* HEADER WITH ACTIONS */}
-      <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             {customer.avatar ? (
-              <img src={customer.avatar} alt={customer.name} className="w-16 h-16 rounded-full object-cover border-2 border-rose-100 shrink-0" />
+              <img src={customer.avatar} alt={customer.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-2xs shrink-0" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 font-black flex items-center justify-center text-xl shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 text-rose-600 font-black flex items-center justify-center text-xl shadow-2xs shrink-0">
                 {customer.name.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -108,10 +108,10 @@ export const AdminCustomerDetailsPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-3">
-                <span>{customer.email}</span>
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
+                <span className="font-semibold text-gray-700">{customer.email}</span>
                 <span>•</span>
-                <span>+91 {customer.phone}</span>
+                <span className="font-semibold text-gray-700">+91 {customer.phone}</span>
                 <span>•</span>
                 <span>Member since {customer.joinedDate}</span>
               </p>
@@ -120,7 +120,7 @@ export const AdminCustomerDetailsPage: React.FC = () => {
 
           <button
             onClick={() => toggleCustomerStatus(customer.id)}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer self-start sm:self-auto ${
+            className={`px-5 py-2.5 rounded-2xl font-bold text-xs shadow-xs transition-colors cursor-pointer self-start sm:self-auto ${
               customer.status === 'active'
                 ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200'
                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
@@ -132,44 +132,44 @@ export const AdminCustomerDetailsPage: React.FC = () => {
       </div>
 
       {/* METRICS CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-gray-400 block">Total Orders</span>
-          <span className="text-xl font-black text-gray-900 mt-0.5 block">{stats.totalOrders}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Total Orders</span>
+          <span className="text-xl font-black text-gray-900 mt-1 block">{stats.totalOrders}</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-gray-400 block">Lifetime Spend</span>
-          <span className="text-xl font-black text-rose-600 mt-0.5 block">₹{stats.totalSpent}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Lifetime Spend</span>
+          <span className="text-xl font-black text-rose-600 mt-1 block">₹{stats.totalSpent}</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-gray-400 block">Avg. Order Value</span>
-          <span className="text-xl font-black text-gray-900 mt-0.5 block">₹{avgOrderValue}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Avg. Order Value</span>
+          <span className="text-xl font-black text-gray-900 mt-1 block">₹{avgOrderValue}</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-gray-400 block">Account Status</span>
-          <span className={`text-xl font-black mt-0.5 block capitalize ${customer.status === 'active' ? 'text-emerald-600' : 'text-rose-600'}`}>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Account Status</span>
+          <span className={`text-xl font-black mt-1 block capitalize ${customer.status === 'active' ? 'text-emerald-600' : 'text-rose-600'}`}>
             {customer.status}
           </span>
         </div>
       </div>
 
       {/* TWO-COLUMN LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT COLUMN: ORDER HISTORY & SAVED ADDRESSES */}
         <div className="lg:col-span-8 space-y-6">
           
           {/* CUSTOMER ORDER HISTORY */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3 flex items-center justify-between">
               <span>Order History ({customerOrders.length})</span>
-              <ShoppingBag className="w-4 h-4 text-gray-400" />
+              <ShoppingBag className="w-4 h-4 text-rose-500" />
             </h3>
 
             {customerOrders.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200/80 shadow-2xs">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-gray-50 text-gray-500 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-100">
+                  <thead className="bg-[#f3f4f6] text-gray-600 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-200/80">
                     <tr>
                       <th className="py-3 px-4">Order ID</th>
                       <th className="py-3 px-4">Date</th>
@@ -183,7 +183,7 @@ export const AdminCustomerDetailsPage: React.FC = () => {
                     {customerOrders.map((ord) => {
                       const totalItems = ord.items.reduce((s, i) => s + i.quantity, 0);
                       return (
-                        <tr key={ord.id} className="hover:bg-gray-50/60">
+                        <tr key={ord.id} className="hover:bg-gray-50/70">
                           <td className="py-3 px-4 font-mono font-extrabold text-gray-900">{ord.id}</td>
                           <td className="py-3 px-4 text-gray-500 font-medium">{ord.createdAt}</td>
                           <td className="py-3 px-4">{totalItems} items</td>
@@ -192,7 +192,7 @@ export const AdminCustomerDetailsPage: React.FC = () => {
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => navigate(`/admin/orders/${encodeURIComponent(ord.id)}`)}
-                              className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                              className="px-3 py-1.5 bg-[#f3f4f6] hover:bg-rose-50 border border-gray-200/80 hover:border-rose-200 text-gray-800 hover:text-rose-600 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                             >
                               View
                             </button>
@@ -204,25 +204,25 @@ export const AdminCustomerDetailsPage: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <p className="text-xs text-gray-500 py-4 text-center">
+              <p className="text-xs text-gray-500 py-6 text-center bg-white rounded-2xl border border-gray-200/80">
                 This customer has not placed any orders yet.
               </p>
             )}
           </div>
 
           {/* SAVED ADDRESSES */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3 flex items-center justify-between">
               <span>Saved Delivery Addresses ({customer.addresses?.length || 0})</span>
               <MapPin className="w-4 h-4 text-rose-500" />
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {customer.addresses?.map((addr) => (
-                <div key={addr.id} className="p-4 rounded-2xl border border-gray-200 bg-gray-50/60 space-y-1 text-xs">
+                <div key={addr.id} className="p-4 rounded-2xl border border-gray-200/80 bg-white shadow-2xs space-y-1 text-xs">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-gray-900">{addr.fullName}</span>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-gray-200 text-gray-800 rounded">
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 text-gray-800 rounded-md">
                       {addr.type}
                     </span>
                   </div>
@@ -240,34 +240,34 @@ export const AdminCustomerDetailsPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Customer Details Card */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
               Customer Profile
             </h3>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-xs bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
               <div className="flex justify-between">
-                <span className="text-gray-500">Full Name</span>
+                <span className="text-gray-500 font-semibold">Full Name</span>
                 <span className="font-bold text-gray-900">{customer.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Email Address</span>
+                <span className="text-gray-500 font-semibold">Email Address</span>
                 <span className="font-bold text-gray-900">{customer.email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Phone Number</span>
+                <span className="text-gray-500 font-semibold">Phone Number</span>
                 <span className="font-bold text-gray-900">+91 {customer.phone}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Registration Date</span>
-                <span className="font-medium text-gray-700">{customer.joinedDate}</span>
+                <span className="text-gray-500 font-semibold">Registration Date</span>
+                <span className="font-bold text-gray-700">{customer.joinedDate}</span>
               </div>
             </div>
           </div>
 
           {/* Account Status Control */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-2">
               Account Status Control
             </h3>
             <p className="text-xs text-gray-500">
@@ -277,9 +277,9 @@ export const AdminCustomerDetailsPage: React.FC = () => {
             </p>
             <button
               onClick={() => toggleCustomerStatus(customer.id)}
-              className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer ${
+              className={`w-full py-3 rounded-2xl font-extrabold text-xs shadow-xs transition-colors cursor-pointer ${
                 customer.status === 'active'
-                  ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white'
               }`}
             >

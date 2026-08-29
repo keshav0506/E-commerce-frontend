@@ -32,9 +32,9 @@ export const AdminEditCategoryPage: React.FC = () => {
   if (!category) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6 text-center">
-        <div className="bg-white rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-            <Layers className="w-8 h-8" />
+        <div className="bg-[#f3f4f6] rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
+          <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+            <Layers className="w-8 h-8 text-rose-500" />
           </div>
           <h2 className="text-xl font-extrabold text-gray-900">Category Not Found</h2>
           <p className="text-xs text-gray-500">
@@ -42,7 +42,7 @@ export const AdminEditCategoryPage: React.FC = () => {
           </p>
           <Link
             to="/admin/categories"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Categories</span>
@@ -94,31 +94,36 @@ export const AdminEditCategoryPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto text-left">
+    <div className="space-y-6 max-w-4xl mx-auto text-left pb-12">
       
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-2">
+      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-2">
         <Link to="/admin" className="hover:text-rose-600">Dashboard</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <Link to="/admin/categories" className="hover:text-rose-600">Categories</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 font-semibold truncate max-w-xs">{category.name}</span>
+        <span className="text-gray-900 font-extrabold truncate max-w-xs">{category.name}</span>
       </nav>
 
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200/60">
+      {/* Header Banner */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+              Department Configuration
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Edit Category
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Update information for <strong className="text-gray-800">{category.name}</strong>.
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Update category name, department slug, thumbnail image, and store visibility.
           </p>
         </div>
 
         <Link
           to="/admin/categories"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl border border-gray-200/80 shadow-2xs self-start sm:self-auto transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Categories</span>
@@ -126,50 +131,50 @@ export const AdminEditCategoryPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-6">
+      <form onSubmit={handleSubmit} className="bg-[#f3f4f6] rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-6">
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+            <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
               Category Name *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
             />
             {errors.name && <p className="text-xs text-rose-500 font-bold mt-1">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+            <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
               Category Slug *
             </label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
             />
             {errors.slug && <p className="text-xs text-rose-500 font-bold mt-1">{errors.slug}</p>}
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+          <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
             Description
           </label>
           <textarea
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+            className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
           />
         </div>
 
         {/* Image & Preview */}
-        <div className="space-y-3 pt-2 border-t border-gray-100">
+        <div className="space-y-3 pt-4 border-t border-gray-200/70">
           <label className="block text-xs font-bold text-gray-800 uppercase flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-rose-500" />
             <span>Category Image URL / Preset Path</span>
@@ -178,27 +183,27 @@ export const AdminEditCategoryPage: React.FC = () => {
             type="text"
             value={image}
             onChange={(e) => setImage(e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+            className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 shadow-2xs"
           />
 
-          <div className="p-4 bg-[#f8f9fa] border border-gray-100 rounded-2xl flex items-center gap-4">
-            <div className="w-14 h-14 bg-white rounded-xl p-2 border border-gray-100 shrink-0 flex items-center justify-center">
+          <div className="p-4 bg-white border border-gray-200/80 rounded-2xl flex items-center gap-4 shadow-2xs">
+            <div className="w-14 h-14 bg-[#f3f4f6] rounded-xl p-2 border border-gray-200/70 shrink-0 flex items-center justify-center">
               <img src={image} alt="Preview" className="w-full h-full object-contain" />
             </div>
             <div>
-              <span className="text-xs font-bold text-gray-900 block">Thumbnail Preview</span>
-              <span className="text-[11px] text-gray-400">Preview of the category thumbnail.</span>
+              <span className="text-xs font-extrabold text-gray-900 block">Thumbnail Preview</span>
+              <span className="text-[11px] text-gray-400">Preview of the category thumbnail on store pages.</span>
             </div>
           </div>
         </div>
 
         {/* Status */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-4 border-t border-gray-200/70">
           <label className="block text-xs font-bold text-gray-800 uppercase mb-2">
             Status
           </label>
-          <div className="flex gap-3">
-            <label className="flex items-center space-x-2 text-xs font-bold text-gray-900 cursor-pointer">
+          <div className="flex gap-4">
+            <label className="flex items-center space-x-2 text-xs font-extrabold text-gray-900 cursor-pointer bg-white px-4 py-2.5 rounded-2xl border border-gray-200/80 shadow-2xs">
               <input
                 type="radio"
                 name="categoryStatus"
@@ -209,7 +214,7 @@ export const AdminEditCategoryPage: React.FC = () => {
               <span>Active (Visible in Store)</span>
             </label>
 
-            <label className="flex items-center space-x-2 text-xs font-bold text-gray-900 cursor-pointer">
+            <label className="flex items-center space-x-2 text-xs font-extrabold text-gray-900 cursor-pointer bg-white px-4 py-2.5 rounded-2xl border border-gray-200/80 shadow-2xs">
               <input
                 type="radio"
                 name="categoryStatus"
@@ -223,11 +228,11 @@ export const AdminEditCategoryPage: React.FC = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+        <div className="flex items-center gap-3 pt-4 border-t border-gray-200/70">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-3 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-2xl font-bold text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer transform active:scale-95"
+            className="px-6 py-3.5 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-2xl font-extrabold text-xs shadow-md shadow-rose-200 flex items-center gap-2 transition-all cursor-pointer transform active:scale-98"
           >
             {isSubmitting ? (
               <>
@@ -245,7 +250,7 @@ export const AdminEditCategoryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/admin/categories')}
-            className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-2xl cursor-pointer"
+            className="px-6 py-3.5 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl border border-gray-200/80 shadow-2xs cursor-pointer transition-colors"
           >
             Cancel
           </button>

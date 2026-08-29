@@ -118,85 +118,94 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto text-left">
+      
+      {/* PAGE HEADER BANNER */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight dark:text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+              Procurement & Inventory Inflow
+            </span>
+            <span className="text-xs text-gray-400 font-semibold">• B2B Supply Chain</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Procurement Purchase Orders
           </h1>
-          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
-            Issue wholesale purchase orders to approved suppliers and manage consignment fulfillment.
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Issue wholesale purchase orders to approved suppliers and manage consignment inventory fulfillment.
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold shadow-md shadow-primary-600/20 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 active:scale-98 text-white text-xs font-extrabold shadow-md shadow-rose-200 transition-all self-start sm:self-auto cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
-          Issue New Purchase Order
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Issue New Purchase Order</span>
         </button>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      {/* ORDERS TABLE */}
+      <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
         {loading ? (
-          <div className="p-16 flex flex-col items-center justify-center gap-3 text-slate-400 text-xs">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-            <p>Loading purchase orders...</p>
+          <div className="p-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-xs">
+            <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+            <p className="font-bold">Loading purchase orders...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="p-16 text-center text-slate-500 text-xs space-y-2">
-            <ClipboardList className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
-            <p className="font-semibold text-slate-700 dark:text-slate-300">No purchase orders found</p>
-            <p>Click "Issue New Purchase Order" to generate a procurement contract.</p>
+          <div className="p-16 text-center text-gray-500 text-xs space-y-2">
+            <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+              <ClipboardList className="w-8 h-8 text-rose-500" />
+            </div>
+            <p className="font-extrabold text-gray-900 text-sm">No purchase orders found</p>
+            <p className="text-gray-400">Click "Issue New Purchase Order" to generate a procurement contract.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200/80 shadow-2xs">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-[#f3f4f6] text-gray-600 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-200/80">
                 <tr>
-                  <th className="py-3.5 px-4 font-semibold">PO Number</th>
-                  <th className="py-3.5 px-4 font-semibold">Supplier Business</th>
-                  <th className="py-3.5 px-4 font-semibold">Issued Date</th>
-                  <th className="py-3.5 px-4 font-semibold">Total Amount</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
-                  <th className="py-3.5 px-4 font-semibold">Carrier / Tracking</th>
+                  <th className="py-3.5 px-5 font-bold">PO Number</th>
+                  <th className="py-3.5 px-4 font-bold">Supplier Business</th>
+                  <th className="py-3.5 px-4 font-bold">Issued Date</th>
+                  <th className="py-3.5 px-4 font-bold">Total Amount</th>
+                  <th className="py-3.5 px-4 font-bold">Fulfillment Status</th>
+                  <th className="py-3.5 px-5 font-bold">Carrier / Tracking</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
+              <tbody className="divide-y divide-gray-100 font-semibold text-gray-800">
                 {orders.map((po) => {
                   const statusColors: Record<string, string> = {
-                    PENDING: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
-                    ACCEPTED: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400',
-                    PROCESSING: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20 dark:text-cyan-400',
-                    SHIPPED: 'bg-purple-500/10 text-purple-600 border-purple-500/20 dark:text-purple-400',
-                    IN_TRANSIT: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20 dark:text-indigo-400',
-                    DELIVERED: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400',
-                    REJECTED: 'bg-rose-500/10 text-rose-600 border-rose-500/20 dark:text-rose-400',
-                    CANCELLED: 'bg-slate-700/20 text-slate-600 border-slate-700/30 dark:text-slate-400',
+                    PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+                    ACCEPTED: 'bg-blue-50 text-blue-700 border-blue-200',
+                    PROCESSING: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+                    SHIPPED: 'bg-purple-50 text-purple-700 border-purple-200',
+                    IN_TRANSIT: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                    DELIVERED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    REJECTED: 'bg-rose-50 text-rose-700 border-rose-200',
+                    CANCELLED: 'bg-gray-100 text-gray-700 border-gray-200',
                   };
 
                   return (
-                    <tr key={po.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-4 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                    <tr key={po.id} className="hover:bg-gray-50/70 transition-colors">
+                      <td className="py-4 px-5 font-mono font-extrabold text-gray-900">
                         {po.poNumber}
                       </td>
-                      <td className="py-4 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                      <td className="py-4 px-4 font-bold text-gray-800">
                         {po.supplierBusinessName}
                       </td>
-                      <td className="py-4 px-4 text-slate-500 dark:text-slate-400">
+                      <td className="py-4 px-4 text-gray-500 font-medium">
                         {new Date(po.orderDate).toLocaleDateString()}
                       </td>
-                      <td className="py-4 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="py-4 px-4 font-mono font-black text-gray-900 text-sm">
                         ₹{Number(po.totalAmount).toLocaleString()}
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[po.status] || 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${statusColors[po.status] || 'bg-gray-100 text-gray-600'}`}>
                           {po.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                      <td className="py-4 px-5 text-gray-600 font-mono text-[11px]">
                         {po.trackingNumber ? `${po.shippingCarrier || 'Freight'}: ${po.trackingNumber}` : '—'}
                       </td>
                     </tr>
@@ -210,21 +219,30 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
 
       {/* Issue PO Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 text-left shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              Issue Wholesale Purchase Order
-            </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-2xl bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 space-y-6 text-left shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+                New Procurement Order
+              </span>
+              <h2 className="text-xl font-extrabold text-gray-900 mt-2">
+                Issue Wholesale Purchase Order
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Generate a formal purchase order to replenish stock with approved suppliers.
+              </p>
+            </div>
+
             <form onSubmit={handleCreateSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                   Select Approved Supplier
                 </label>
                 <select
                   required
                   value={selectedSupplierId}
                   onChange={(e) => setSelectedSupplierId(Number(e.target.value))}
-                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-primary-500"
+                  className="w-full p-3.5 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 cursor-pointer"
                 >
                   <option value="">-- Choose Supplier --</option>
                   {approvedSuppliers.map((s) => (
@@ -238,21 +256,21 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
               {/* Line Items List */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-500">
                     Procurement Line Items
                   </label>
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline"
+                    className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
                   >
-                    + Add Item
+                    + Add Item Row
                   </button>
                 </div>
 
                 <div className="space-y-2">
                   {items.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div key={idx} className="flex items-center gap-2 bg-[#f3f4f6] p-3 rounded-2xl border border-gray-200/80">
                       <select
                         value={item.productId}
                         onChange={(e) => {
@@ -265,7 +283,7 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
                           }
                           setItems(newItems);
                         }}
-                        className="flex-1 p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white"
+                        className="flex-1 p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-semibold text-gray-900"
                       >
                         <option value={0}>-- Select Product --</option>
                         {productsList.map((p) => (
@@ -275,7 +293,7 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
                         ))}
                       </select>
 
-                      <div className="w-20">
+                      <div className="w-24">
                         <input
                           type="number"
                           min={1}
@@ -286,29 +304,29 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
                             newItems[idx].quantity = Number(e.target.value);
                             setItems(newItems);
                           }}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white text-center"
+                          className="w-full p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-gray-900 text-center"
                         />
                       </div>
 
-                      <div className="w-24">
+                      <div className="w-28">
                         <input
                           type="number"
                           min={1}
-                          placeholder="Wholesale ₹"
+                          placeholder="Unit ₹"
                           value={item.unitPrice}
                           onChange={(e) => {
                             const newItems = [...items];
                             newItems[idx].unitPrice = Number(e.target.value);
                             setItems(newItems);
                           }}
-                          className="w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white text-right"
+                          className="w-full p-2.5 bg-white border border-gray-200/80 rounded-xl text-xs font-bold text-gray-900 text-right"
                         />
                       </div>
 
                       <button
                         type="button"
                         onClick={() => handleRemoveItemRow(idx)}
-                        className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg"
+                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -316,16 +334,16 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="flex justify-between items-center p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-900 dark:text-white">
+                <div className="flex justify-between items-center p-4 bg-[#f3f4f6] rounded-2xl text-xs font-bold text-gray-900 border border-gray-200/80">
                   <span>Calculated Wholesale Subtotal:</span>
-                  <span className="text-base text-primary-600 dark:text-primary-400 font-mono">
+                  <span className="text-base text-rose-600 font-mono font-black">
                     ₹{calculateTotal().toLocaleString()}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                   Procurement Notes (Optional)
                 </label>
                 <textarea
@@ -333,22 +351,22 @@ export const AdminPurchaseOrdersPage: React.FC = () => {
                   placeholder="Special fulfillment instructions or dock delivery details..."
                   value={poNotes}
                   onChange={(e) => setPoNotes(e.target.value)}
-                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-primary-500"
+                  className="w-full p-3.5 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-rose-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+                  className="px-5 py-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold shadow-md shadow-primary-600/20 transition-all disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md shadow-rose-200 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {creating ? 'Issuing...' : 'Issue Purchase Order'}
                 </button>

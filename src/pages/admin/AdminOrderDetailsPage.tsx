@@ -35,9 +35,9 @@ export const AdminOrderDetailsPage: React.FC = () => {
   if (!order) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6 text-center">
-        <div className="bg-white rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-            <ShoppingBag className="w-8 h-8" />
+        <div className="bg-[#f3f4f6] rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
+          <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+            <ShoppingBag className="w-8 h-8 text-rose-500" />
           </div>
           <h2 className="text-xl font-extrabold text-gray-900">Order Not Found</h2>
           <p className="text-xs text-gray-500">
@@ -45,7 +45,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
           </p>
           <Link
             to="/admin/orders"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Orders</span>
@@ -112,24 +112,24 @@ export const AdminOrderDetailsPage: React.FC = () => {
     <div className="space-y-6 max-w-7xl mx-auto text-left pb-12">
       
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-2">
+      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-2">
         <Link to="/admin" className="hover:text-rose-600">Dashboard</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <Link to="/admin/orders" className="hover:text-rose-600">Orders</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 font-semibold">{order.id}</span>
+        <span className="text-gray-900 font-extrabold font-mono">{order.id}</span>
       </nav>
 
       {/* HEADER WITH ACTIONS */}
-      <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-black text-gray-900 font-mono tracking-tight">
                 {order.id}
               </h1>
               {renderStatusBadge(order.status)}
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+              <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                 Payment: {order.paymentStatus}
               </span>
             </div>
@@ -144,7 +144,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
                 setSelectedNextStatus(order.status);
                 setIsUpdateStatusModalOpen(true);
               }}
-              className="px-4 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-sm transition-colors cursor-pointer"
+              className="px-5 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-extrabold rounded-2xl shadow-sm transition-colors cursor-pointer"
             >
               Update Status
             </button>
@@ -152,7 +152,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
             {isCancellable && (
               <button
                 onClick={() => setIsCancelModalOpen(true)}
-                className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                className="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-extrabold rounded-2xl border border-rose-200 transition-colors cursor-pointer"
               >
                 Cancel Order
               </button>
@@ -162,22 +162,22 @@ export const AdminOrderDetailsPage: React.FC = () => {
       </div>
 
       {/* TWO-COLUMN LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT COLUMN: ORDER ITEMS, SUMMARY & TIMELINE */}
         <div className="lg:col-span-8 space-y-6">
           
           {/* ORDER ITEMS TABLE */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
               Ordered Products ({order.items.length})
             </h3>
 
-            <div className="divide-y divide-gray-100">
+            <div className="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-2xs divide-y divide-gray-100">
               {order.items.map((item, idx) => (
                 <div key={idx} className="py-4 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
                   <div className="flex items-center space-x-3 truncate">
-                    <img src={item.image} alt={item.productName} className="w-14 h-14 object-contain bg-gray-50 rounded-xl p-1.5 border border-gray-100 shrink-0" />
+                    <img src={item.image} alt={item.productName} className="w-14 h-14 object-contain bg-[#f3f4f6] rounded-xl p-1.5 border border-gray-200/80 shrink-0" />
                     <div className="truncate">
                       <h4 className="font-bold text-gray-900 text-xs truncate max-w-xs">{item.productName}</h4>
                       <span className="text-[11px] text-gray-400 font-mono block mt-0.5">{item.sku}</span>
@@ -195,7 +195,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
             </div>
 
             {/* ORDER SUMMARY BREAKDOWN */}
-            <div className="pt-4 border-t border-gray-100 space-y-2 text-xs font-semibold text-gray-600 max-w-xs ml-auto">
+            <div className="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-2xs space-y-2 text-xs font-semibold text-gray-600 max-w-xs ml-auto">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span className="font-bold text-gray-900">₹{order.subtotal}</span>
@@ -217,19 +217,19 @@ export const AdminOrderDetailsPage: React.FC = () => {
               <div className="h-px bg-gray-100 my-2" />
               <div className="flex justify-between text-sm font-black text-gray-900 pt-1">
                 <span>Grand Total</span>
-                <span className="text-rose-600">₹{order.total}</span>
+                <span className="text-rose-600 font-extrabold">₹{order.total}</span>
               </div>
             </div>
           </div>
 
           {/* VISUAL ORDER TIMELINE */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
               Order Timeline Tracker
             </h3>
 
             {order.status === 'Cancelled' ? (
-              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center space-x-3 text-rose-800 text-xs font-bold">
+              <div className="p-4 bg-white border border-rose-200 rounded-2xl flex items-center space-x-3 text-rose-800 text-xs font-bold shadow-2xs">
                 <XCircle className="w-6 h-6 text-rose-500 shrink-0" />
                 <div>
                   <p className="font-extrabold">Order Cancelled</p>
@@ -239,7 +239,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
+              <div className="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-2xs relative pl-8 space-y-6 before:absolute before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-gray-200">
                 {timelineSteps.map((step, idx) => (
                   <div key={idx} className="relative flex items-start space-x-3 text-xs">
                     <div
@@ -272,13 +272,13 @@ export const AdminOrderDetailsPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           
           {/* Customer Info Card */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-2 flex items-center gap-2">
               <User className="w-4 h-4 text-rose-500" />
               <span>Customer Information</span>
             </h3>
 
-            <div className="text-xs space-y-1">
+            <div className="text-xs space-y-1 bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
               <p className="font-extrabold text-gray-900 text-sm">{order.customer.name}</p>
               <p className="text-gray-600 font-medium">{order.customer.email}</p>
               <p className="text-gray-500">Phone: +91 {order.customer.phone}</p>
@@ -286,16 +286,16 @@ export const AdminOrderDetailsPage: React.FC = () => {
           </div>
 
           {/* Shipping Address Card */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-rose-500" />
               <span>Shipping Address</span>
             </h3>
 
-            <div className="text-xs text-gray-700 leading-relaxed space-y-1">
+            <div className="text-xs text-gray-700 leading-relaxed space-y-1 bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
               <div className="flex items-center justify-between mb-1">
                 <span className="font-bold text-gray-900">{order.shippingAddress.fullName}</span>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-gray-100 text-gray-700 rounded">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md">
                   {order.shippingAddress.type || 'HOME'}
                 </span>
               </div>
@@ -306,24 +306,24 @@ export const AdminOrderDetailsPage: React.FC = () => {
           </div>
 
           {/* Payment Info Card */}
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-2 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-rose-500" />
               <span>Payment Details</span>
             </h3>
 
-            <div className="text-xs space-y-2">
+            <div className="text-xs space-y-2 bg-white p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
               <div className="flex justify-between">
-                <span className="text-gray-500">Method</span>
+                <span className="text-gray-500 font-semibold">Method</span>
                 <span className="font-bold text-gray-900">{order.paymentMethod}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Payment Status</span>
-                <span className="font-extrabold text-emerald-600">{order.paymentStatus}</span>
+                <span className="text-gray-500 font-semibold">Payment Status</span>
+                <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">{order.paymentStatus}</span>
               </div>
               {order.transactionId && (
                 <div className="flex justify-between pt-1 border-t border-gray-100">
-                  <span className="text-gray-500">Txn ID</span>
+                  <span className="text-gray-500 font-semibold">Txn ID</span>
                   <span className="font-mono font-bold text-gray-900">{order.transactionId}</span>
                 </div>
               )}
@@ -339,10 +339,10 @@ export const AdminOrderDetailsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
           <div onClick={() => setIsUpdateStatusModalOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
 
-          <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 text-left shadow-2xl z-10 space-y-4">
+          <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 text-left shadow-2xl z-10 space-y-4 border border-gray-100">
             <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <h3 className="text-base font-bold text-gray-900">Update Order Status</h3>
-              <button onClick={() => setIsUpdateStatusModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <h3 className="text-base font-extrabold text-gray-900">Update Order Status</h3>
+              <button onClick={() => setIsUpdateStatusModalOpen(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -352,7 +352,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                   Current Status
                 </label>
-                <span className="text-xs font-extrabold text-gray-900 bg-gray-100 px-3 py-1 rounded-xl inline-block">
+                <span className="text-xs font-extrabold text-gray-900 bg-[#f3f4f6] px-3 py-1 rounded-xl inline-block border border-gray-200/80">
                   {order.status}
                 </span>
               </div>
@@ -364,7 +364,7 @@ export const AdminOrderDetailsPage: React.FC = () => {
                 <select
                   value={selectedNextStatus}
                   onChange={(e) => setSelectedNextStatus(e.target.value as OrderStatus)}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900"
+                  className="w-full px-3.5 py-2.5 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 cursor-pointer"
                 >
                   <option value="Pending">Pending</option>
                   <option value="Confirmed">Confirmed</option>
@@ -379,14 +379,14 @@ export const AdminOrderDetailsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsUpdateStatusModalOpen(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl"
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl cursor-pointer hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="flex-1 py-2.5 bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                  className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-2xl shadow-md cursor-pointer disabled:opacity-50"
                 >
                   Update Status
                 </button>
@@ -400,8 +400,8 @@ export const AdminOrderDetailsPage: React.FC = () => {
       {isCancelModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
           <div onClick={() => setIsCancelModalOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
-          <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl z-10 space-y-4">
-            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+          <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl z-10 space-y-4 border border-gray-100">
+            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto border border-rose-100">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -413,13 +413,13 @@ export const AdminOrderDetailsPage: React.FC = () => {
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => setIsCancelModalOpen(false)}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl cursor-pointer"
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl cursor-pointer hover:bg-gray-200"
               >
                 Keep Order
               </button>
               <button
                 onClick={handleConfirmCancel}
-                className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-2xl shadow-md cursor-pointer"
               >
                 Cancel Order
               </button>

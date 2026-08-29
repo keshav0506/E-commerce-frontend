@@ -106,13 +106,13 @@ export const AdminOrdersPage: React.FC = () => {
   const renderPaymentBadge = (payStatus: PaymentStatus) => {
     switch (payStatus) {
       case 'Paid':
-        return <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Paid</span>;
+        return <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Paid</span>;
       case 'Pending':
-        return <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">Pending</span>;
+        return <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Pending</span>;
       case 'Failed':
-        return <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Failed</span>;
+        return <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">Failed</span>;
       case 'Refunded':
-        return <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Refunded</span>;
+        return <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">Refunded</span>;
       default:
         return null;
     }
@@ -121,52 +121,58 @@ export const AdminOrdersPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto text-left">
       
-      {/* PAGE HEADER */}
-      <div className="pb-6 border-b border-gray-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* PAGE HEADER BANNER */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+              Order Fulfillment
+            </span>
+            <span className="text-xs text-gray-400 font-semibold">• {orders.length} Total Bookings</span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Orders Management
+            Customer Orders Management
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Track and process customer orders across all order stages.
+            Track, process, dispatch, and review customer purchase orders across all delivery stages.
           </p>
         </div>
 
-        <span className="text-xs font-bold text-gray-700 bg-white px-3.5 py-1.5 rounded-full border border-gray-200 shadow-xs self-start sm:self-auto">
-          {orders.length} Orders Total
+        <span className="text-xs font-extrabold text-gray-800 bg-white px-4 py-2 rounded-2xl border border-gray-200/80 shadow-2xs self-start sm:self-auto">
+          {orders.length} Orders Live
         </span>
       </div>
 
       {/* METRICS SUMMARY BAR */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-gray-400 block">Total</span>
-          <span className="text-lg font-black text-gray-900 mt-0.5 block">{metrics.total}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-gray-400 block">Total</span>
+          <span className="text-xl font-black text-gray-900 mt-1 block">{metrics.total}</span>
         </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-amber-600 block">Pending</span>
-          <span className="text-lg font-black text-amber-700 mt-0.5 block">{metrics.pending}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-amber-600 block">Pending</span>
+          <span className="text-xl font-black text-amber-700 mt-1 block">{metrics.pending}</span>
         </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-indigo-600 block">Processing</span>
-          <span className="text-lg font-black text-indigo-700 mt-0.5 block">{metrics.processing}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-indigo-600 block">Processing</span>
+          <span className="text-xl font-black text-indigo-700 mt-1 block">{metrics.processing}</span>
         </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-purple-600 block">Shipped</span>
-          <span className="text-lg font-black text-purple-700 mt-0.5 block">{metrics.shipped}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-purple-600 block">Shipped</span>
+          <span className="text-xl font-black text-purple-700 mt-1 block">{metrics.shipped}</span>
         </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-emerald-600 block">Delivered</span>
-          <span className="text-lg font-black text-emerald-700 mt-0.5 block">{metrics.delivered}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-emerald-600 block">Delivered</span>
+          <span className="text-xl font-black text-emerald-700 mt-1 block">{metrics.delivered}</span>
         </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-gray-200/80 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-rose-600 block">Cancelled</span>
-          <span className="text-lg font-black text-rose-700 mt-0.5 block">{metrics.cancelled}</span>
+        <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+          <span className="text-[10px] font-extrabold uppercase text-rose-600 block">Cancelled</span>
+          <span className="text-xl font-black text-rose-700 mt-1 block">{metrics.cancelled}</span>
         </div>
       </div>
 
       {/* TOOLBAR: SEARCH & FILTERS */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-gray-200/80 shadow-xs space-y-4">
+      <div className="bg-[#f3f4f6] rounded-3xl p-4 sm:p-5 border border-gray-200/80 shadow-xs space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           
           {/* Search Input */}
@@ -176,11 +182,11 @@ export const AdminOrdersPage: React.FC = () => {
               placeholder="Search by Order ID, customer, email, or product..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 text-xs sm:text-sm font-semibold text-gray-900 placeholder-gray-400 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-white text-xs sm:text-sm font-semibold text-gray-900 placeholder-gray-400 rounded-2xl border border-gray-200/80 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
             />
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <button onClick={() => setSearchTerm('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -191,7 +197,7 @@ export const AdminOrdersPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer"
+              className="w-full px-3 py-2.5 bg-white border border-gray-200/80 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer shadow-2xs"
             >
               <option value="all">All Statuses</option>
               <option value="Pending">Pending</option>
@@ -208,7 +214,7 @@ export const AdminOrdersPage: React.FC = () => {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer"
+              className="w-full px-3 py-2.5 bg-white border border-gray-200/80 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer shadow-2xs"
             >
               <option value="all">All Payments</option>
               <option value="Paid">Paid</option>
@@ -223,7 +229,7 @@ export const AdminOrdersPage: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer"
+              className="w-full px-3 py-2.5 bg-white border border-gray-200/80 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer shadow-2xs"
             >
               <option value="newest">Sort: Newest First</option>
               <option value="oldest">Sort: Oldest First</option>
@@ -236,8 +242,8 @@ export const AdminOrdersPage: React.FC = () => {
 
         {/* ACTIVE FILTER CHIPS */}
         {hasActiveFilters && (
-          <div className="flex items-center gap-2 pt-2 border-t border-gray-100 flex-wrap">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Active Filters:</span>
+          <div className="flex items-center gap-2 pt-2 border-t border-gray-200/70 flex-wrap">
+            <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">Active Filters:</span>
             {statusFilter !== 'all' && (
               <span className="inline-flex items-center gap-1 text-xs font-bold bg-rose-50 text-rose-600 px-2.5 py-0.5 rounded-full border border-rose-100">
                 Status: {statusFilter}
@@ -268,19 +274,19 @@ export const AdminOrdersPage: React.FC = () => {
 
       {/* OPERATIONAL DESKTOP ORDER TABLE */}
       {filteredOrders.length > 0 ? (
-        <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+          <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200/80 shadow-2xs">
             <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 text-gray-500 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-100">
+              <thead className="bg-[#f3f4f6] text-gray-600 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-200/80">
                 <tr>
-                  <th className="py-3.5 px-6">Order ID</th>
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Date</th>
-                  <th className="py-3.5 px-4">Items</th>
-                  <th className="py-3.5 px-4">Total</th>
+                  <th className="py-3.5 px-5">Order ID</th>
+                  <th className="py-3.5 px-4">Customer Details</th>
+                  <th className="py-3.5 px-4">Date Placed</th>
+                  <th className="py-3.5 px-4">Item Count</th>
+                  <th className="py-3.5 px-4">Order Total</th>
                   <th className="py-3.5 px-4">Payment</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-6 text-right">Actions</th>
+                  <th className="py-3.5 px-4">Fulfillment</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-semibold text-gray-800">
@@ -288,13 +294,13 @@ export const AdminOrdersPage: React.FC = () => {
                   const totalItems = order.items.reduce((s, i) => s + i.quantity, 0);
 
                   return (
-                    <tr key={order.id} className="hover:bg-gray-50/60 transition-colors">
+                    <tr key={order.id} className="hover:bg-gray-50/70 transition-colors">
                       
                       {/* Order ID */}
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-5">
                         <Link
                           to={`/admin/orders/${encodeURIComponent(order.id)}`}
-                          className="font-mono font-extrabold text-gray-900 hover:text-rose-600 transition-colors"
+                          className="font-mono font-extrabold text-gray-900 hover:text-rose-600 transition-colors block"
                         >
                           {order.id}
                         </Link>
@@ -329,7 +335,7 @@ export const AdminOrdersPage: React.FC = () => {
                       <td className="py-4 px-4">
                         <div className="space-y-0.5">
                           {renderPaymentBadge(order.paymentStatus)}
-                          <span className="block text-[10px] text-gray-400">{order.paymentMethod}</span>
+                          <span className="block text-[10px] text-gray-400 font-medium">{order.paymentMethod}</span>
                         </div>
                       </td>
 
@@ -339,13 +345,13 @@ export const AdminOrdersPage: React.FC = () => {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-4 px-5 text-right">
                         <button
                           onClick={() => navigate(`/admin/orders/${encodeURIComponent(order.id)}`)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#f3f4f6] hover:bg-rose-50 text-gray-800 hover:text-rose-600 font-bold text-xs rounded-xl border border-gray-200/80 hover:border-rose-200 transition-colors cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>View</span>
+                          <span>View Details</span>
                         </button>
                       </td>
 
@@ -358,9 +364,9 @@ export const AdminOrdersPage: React.FC = () => {
         </div>
       ) : (
         /* EMPTY STATE */
-        <div className="bg-white rounded-3xl p-12 text-center max-w-md mx-auto border border-gray-200/80 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-            <ShoppingBag className="w-8 h-8" />
+        <div className="bg-[#f3f4f6] rounded-3xl p-12 text-center max-w-md mx-auto border border-gray-200/80 shadow-xs space-y-4">
+          <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+            <ShoppingBag className="w-8 h-8 text-rose-500" />
           </div>
           <div>
             <h3 className="text-lg font-extrabold text-gray-900">No orders found</h3>
@@ -370,7 +376,7 @@ export const AdminOrdersPage: React.FC = () => {
           </div>
           <button
             onClick={resetFilters}
-            className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors cursor-pointer"
+            className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md transition-colors cursor-pointer"
           >
             Clear Filters
           </button>

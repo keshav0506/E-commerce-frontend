@@ -5,7 +5,9 @@ import {
   Plus,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ExternalLink,
+  Store
 } from 'lucide-react';
 import { getAdminSuppliersApi, updateAdminSupplierStatusApi } from '../../services/supplierService';
 import type { SupplierProfile, SupplierStatus } from '../../types/supplier';
@@ -80,28 +82,35 @@ export const AdminSuppliersPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 text-left">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto text-left">
+      
+      {/* PAGE HEADER BANNER */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight dark:text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+              Vendor Management
+            </span>
+            <span className="text-xs text-gray-400 font-semibold">• B2B Merchant Network</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Supplier Network Management
           </h1>
-          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
-            Review onboarding applications, verify merchant credentials, and manage supplier authorizations.
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Review onboarding applications, verify merchant credentials, and manage category supplier authorizations.
           </p>
         </div>
         <Link
           to="/admin/purchase-orders"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold shadow-md shadow-primary-600/20 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 active:scale-98 text-white text-xs font-extrabold shadow-md shadow-rose-200 transition-all self-start sm:self-auto cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
-          Issue Purchase Order
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Issue Purchase Order</span>
         </Link>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      {/* FILTER TABS */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-2.5 shadow-xs flex items-center gap-2 overflow-x-auto">
         {statusPills.map((pill) => (
           <button
             key={pill.value}
@@ -109,10 +118,10 @@ export const AdminSuppliersPage: React.FC = () => {
               setStatusFilter(pill.value);
               setPage(0);
             }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer ${
               statusFilter === pill.value
-                ? 'bg-slate-900 text-white shadow dark:bg-primary-600'
-                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white'
+                ? 'bg-rose-500 text-white shadow-xs'
+                : 'bg-white text-gray-700 hover:text-gray-900 border border-gray-200/80 shadow-2xs hover:bg-gray-50'
             }`}
           >
             {pill.label}
@@ -120,79 +129,97 @@ export const AdminSuppliersPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Suppliers Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      {/* SUPPLIERS TABLE */}
+      <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
         {loading ? (
-          <div className="p-16 flex flex-col items-center justify-center gap-3 text-slate-400 text-xs">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-            <p>Loading supplier records...</p>
+          <div className="p-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-xs">
+            <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+            <p className="font-bold">Loading supplier records...</p>
           </div>
         ) : suppliers.length === 0 ? (
-          <div className="p-16 text-center text-slate-500 text-xs space-y-2">
-            <Building2 className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
-            <p className="font-semibold text-slate-700 dark:text-slate-300">No suppliers found</p>
-            <p>No supplier profiles match the selected status filter.</p>
+          <div className="p-16 text-center text-gray-500 text-xs space-y-2">
+            <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+              <Building2 className="w-8 h-8 text-rose-500" />
+            </div>
+            <p className="font-extrabold text-gray-900 text-sm">No suppliers found</p>
+            <p className="text-gray-400">No supplier profiles currently match the selected status filter.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto bg-white rounded-2xl border border-gray-200/80 shadow-2xs">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-800">
+              <thead className="bg-[#f3f4f6] text-gray-600 uppercase font-extrabold text-[10px] tracking-wider border-b border-gray-200/80">
                 <tr>
-                  <th className="py-3.5 px-4 font-semibold">Business Entity</th>
-                  <th className="py-3.5 px-4 font-semibold">Contact & Email</th>
-                  <th className="py-3.5 px-4 font-semibold">Tax ID (GSTIN)</th>
-                  <th className="py-3.5 px-4 font-semibold">Category</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">Administrative Actions</th>
+                  <th className="py-3.5 px-5 font-bold">Business Entity</th>
+                  <th className="py-3.5 px-4 font-bold">Contact & Email</th>
+                  <th className="py-3.5 px-4 font-bold">Tax ID (GSTIN)</th>
+                  <th className="py-3.5 px-4 font-bold">Category</th>
+                  <th className="py-3.5 px-4 font-bold">Status</th>
+                  <th className="py-3.5 px-5 font-bold text-right">Administrative Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-slate-700 dark:text-slate-200">
+              <tbody className="divide-y divide-gray-100 font-semibold text-gray-800">
                 {suppliers.map((s) => {
                   const statusColors: Record<string, string> = {
-                    PENDING: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400',
-                    APPROVED: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400',
-                    REJECTED: 'bg-rose-500/10 text-rose-600 border-rose-500/20 dark:text-rose-400',
-                    SUSPENDED: 'bg-slate-700/20 text-slate-600 border-slate-700/30 dark:text-slate-400',
+                    PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+                    APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    REJECTED: 'bg-rose-50 text-rose-700 border-rose-200',
+                    SUSPENDED: 'bg-gray-100 text-gray-700 border-gray-200',
                   };
 
                   const isBusy = actionLoadingId === s.id;
 
                   return (
-                    <tr key={s.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-4 px-4 font-semibold">
-                        <div className="text-slate-900 dark:text-white font-bold">{s.businessName}</div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{s.city ? `${s.city}, ${s.state}` : s.country}</div>
+                    <tr key={s.id} className="hover:bg-gray-50/70 transition-colors">
+                      <td className="py-4 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#f3f4f6] border border-gray-200/80 flex items-center justify-center text-rose-500 shrink-0">
+                            <Building2 className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <Link
+                              to={`/supplier-store/${s.id}`}
+                              className="text-gray-900 font-extrabold hover:text-rose-600 transition-colors flex items-center gap-1"
+                              title="Preview Public Storefront"
+                            >
+                              <span>{s.businessName}</span>
+                              <ExternalLink className="w-3 h-3 text-gray-400" />
+                            </Link>
+                            <div className="text-[11px] text-gray-400">{s.city ? `${s.city}, ${s.state}` : s.country}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-4 px-4 space-y-0.5">
-                        <div className="text-slate-800 dark:text-slate-200 font-medium">{s.name || s.email}</div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{s.businessEmail}</div>
+                        <div className="text-gray-900 font-medium">{s.name || s.email}</div>
+                        <div className="text-[11px] text-gray-400 font-mono">{s.businessEmail}</div>
                       </td>
-                      <td className="py-4 px-4 font-mono font-bold text-slate-800 dark:text-slate-300">
+                      <td className="py-4 px-4 font-mono font-bold text-gray-800">
                         {s.taxIdentifier}
                       </td>
-                      <td className="py-4 px-4 text-slate-600 dark:text-slate-400">
-                        {s.category || 'General'}
+                      <td className="py-4 px-4 text-gray-700">
+                        <span className="inline-block px-2.5 py-0.5 bg-gray-100 rounded-lg text-[10px] font-extrabold uppercase">
+                          {s.category || 'General'}
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusColors[s.status] || 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${statusColors[s.status] || 'bg-gray-100 text-gray-600'}`}>
                           {s.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {s.status === 'PENDING' && (
                             <>
                               <button
                                 disabled={isBusy}
                                 onClick={() => handleQuickApprove(s.id)}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-colors shadow-sm disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
                               >
                                 Approve
                               </button>
                               <button
                                 disabled={isBusy}
                                 onClick={() => setModalSupplier({ id: s.id, nextStatus: 'REJECTED' })}
-                                className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:text-rose-400 text-[11px] font-semibold border border-rose-200 dark:border-rose-500/20 disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 disabled:opacity-50 cursor-pointer"
                               >
                                 Reject
                               </button>
@@ -202,15 +229,22 @@ export const AdminSuppliersPage: React.FC = () => {
                           {s.status === 'APPROVED' && (
                             <>
                               <Link
+                                to={`/supplier-store/${s.id}`}
+                                className="px-3 py-1.5 rounded-xl bg-[#f3f4f6] hover:bg-rose-50 border border-gray-200/80 hover:border-rose-200 text-gray-800 hover:text-rose-600 text-xs font-bold transition-all shadow-2xs flex items-center gap-1"
+                              >
+                                <Store className="w-3.5 h-3.5" />
+                                <span>Store</span>
+                              </Link>
+                              <Link
                                 to={`/admin/purchase-orders?supplierId=${s.id}`}
-                                className="px-2.5 py-1 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-500/10 dark:hover:bg-primary-500/20 dark:text-primary-400 text-[11px] font-semibold border border-primary-200 dark:border-primary-500/20 transition-colors"
+                                className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-colors shadow-2xs"
                               >
                                 Issue PO
                               </Link>
                               <button
                                 disabled={isBusy}
                                 onClick={() => setModalSupplier({ id: s.id, nextStatus: 'SUSPENDED' })}
-                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400 text-[11px] font-semibold transition-colors disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                               >
                                 Suspend
                               </button>
@@ -221,7 +255,7 @@ export const AdminSuppliersPage: React.FC = () => {
                             <button
                               disabled={isBusy}
                               onClick={() => handleQuickApprove(s.id)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-colors shadow-sm disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
                             >
                               Re-activate
                             </button>
@@ -238,20 +272,20 @@ export const AdminSuppliersPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Page {page + 1} of {totalPages}</span>
+          <div className="p-4 bg-white rounded-2xl border border-gray-200/80 shadow-2xs flex items-center justify-between text-xs text-gray-600 font-semibold">
+            <span>Page <strong className="text-gray-900">{page + 1}</strong> of <strong className="text-gray-900">{totalPages}</strong></span>
             <div className="flex items-center gap-2">
               <button
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40"
+                className="p-2 rounded-xl border border-gray-200/80 hover:bg-gray-50 text-gray-700 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 disabled={page >= totalPages - 1}
                 onClick={() => setPage((p) => p + 1)}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40"
+                className="p-2 rounded-xl border border-gray-200/80 hover:bg-gray-50 text-gray-700 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -262,9 +296,9 @@ export const AdminSuppliersPage: React.FC = () => {
 
       {/* Reason Modal */}
       {modalSupplier && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4 text-left shadow-2xl">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 text-left shadow-2xl">
+            <h3 className="text-base font-extrabold text-gray-900">
               Update Supplier Status to {modalSupplier.nextStatus}
             </h3>
             <form onSubmit={handleStatusSubmit} className="space-y-4">
@@ -274,19 +308,19 @@ export const AdminSuppliersPage: React.FC = () => {
                 placeholder="Reason or notes for this status transition..."
                 value={statusReason}
                 onChange={(e) => setStatusReason(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-primary-500"
+                className="w-full p-3.5 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-rose-500"
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setModalSupplier(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+                  className="px-4 py-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold"
+                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md cursor-pointer"
                 >
                   Confirm Transition
                 </button>

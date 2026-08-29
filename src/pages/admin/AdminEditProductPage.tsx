@@ -65,9 +65,9 @@ export const AdminEditProductPage: React.FC = () => {
   if (!product) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6 text-center">
-        <div className="bg-white rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
-          <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-            <Package className="w-8 h-8" />
+        <div className="bg-[#f3f4f6] rounded-3xl p-10 max-w-md w-full border border-gray-200/80 shadow-xs space-y-4">
+          <div className="w-16 h-16 bg-white text-gray-400 rounded-2xl flex items-center justify-center mx-auto border border-gray-200/80 shadow-2xs">
+            <Package className="w-8 h-8 text-rose-500" />
           </div>
           <h2 className="text-xl font-extrabold text-gray-900">Product Not Found</h2>
           <p className="text-xs text-gray-500">
@@ -75,7 +75,7 @@ export const AdminEditProductPage: React.FC = () => {
           </p>
           <Link
             to="/admin/products"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-bold text-xs shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-xs shadow-md transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Products</span>
@@ -139,70 +139,75 @@ export const AdminEditProductPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto text-left">
+    <div className="space-y-6 max-w-5xl mx-auto text-left pb-12">
       
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-medium text-gray-500 mb-2">
+      <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs font-semibold text-gray-500 mb-2">
         <Link to="/admin" className="hover:text-rose-600">Dashboard</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
         <Link to="/admin/products" className="hover:text-rose-600">Products</Link>
         <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-        <span className="text-gray-900 font-semibold truncate max-w-xs">{product.name}</span>
+        <span className="text-gray-900 font-extrabold truncate max-w-xs">{product.name}</span>
       </nav>
 
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200/60">
+      {/* PAGE HEADER BANNER */}
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+              SKU #{product.id.slice(-6).toUpperCase()}
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Edit Product
+            Edit Product Details
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
-            Update product details for <strong className="text-gray-800">{product.name}</strong>.
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Update pricing, stock levels, variants, images, and category specifications.
           </p>
         </div>
 
         <Link
           to="/admin/products"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs rounded-2xl border border-gray-200/80 shadow-2xs self-start sm:self-auto transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Products</span>
+          <span>Back to Catalog</span>
         </Link>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT COLUMN */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
-              Basic Information
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
+              Basic Product Information
             </h3>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
-                Product Name *
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
+                Product Title *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
               />
               {errors.name && <p className="text-xs text-rose-500 font-bold mt-1">{errors.name}</p>}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
                   Category *
                 </label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 cursor-pointer"
+                  className="w-full px-3.5 py-3 bg-white border border-gray-200/80 text-xs font-bold text-gray-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 cursor-pointer shadow-2xs"
                 >
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -213,40 +218,40 @@ export const AdminEditProductPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
                   Brand Name
                 </label>
                 <input
                   type="text"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                  className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 shadow-2xs"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
-                Description *
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
+                Product Description *
               </label>
               <textarea
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs leading-relaxed"
               />
               {errors.description && <p className="text-xs text-rose-500 font-bold mt-1">{errors.description}</p>}
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3 flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-rose-500" />
               <span>Product Image Media</span>
             </h3>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
                 Upload Image or Enter URL
               </label>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -254,9 +259,9 @@ export const AdminEditProductPage: React.FC = () => {
                   type="text"
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                  className="flex-1 px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 shadow-2xs"
                 />
-                <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition-colors shrink-0 border border-rose-200">
+                <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hover:bg-rose-50 text-rose-600 rounded-2xl text-xs font-bold transition-colors shrink-0 border border-gray-200/80 hover:border-rose-200 shadow-2xs">
                   {isUploading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -273,8 +278,8 @@ export const AdminEditProductPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-[#f8f9fa] border border-gray-100 rounded-2xl flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-xl p-2 border border-gray-100 shrink-0 flex items-center justify-center overflow-hidden">
+            <div className="p-4 bg-white border border-gray-200/80 rounded-2xl flex items-center gap-4 shadow-2xs">
+              <div className="w-16 h-16 bg-[#f3f4f6] rounded-xl p-2 border border-gray-200/70 shrink-0 flex items-center justify-center overflow-hidden">
                 {image ? (
                   <img src={image} alt="Preview" className="w-full h-full object-contain" />
                 ) : (
@@ -282,8 +287,8 @@ export const AdminEditProductPage: React.FC = () => {
                 )}
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-900 block">Image Preview</span>
-                <span className="text-[11px] text-gray-400">Live preview of the product image.</span>
+                <span className="text-xs font-extrabold text-gray-900 block">Catalog Card Preview</span>
+                <span className="text-[11px] text-gray-400">Live preview of how this product thumbnail renders on the storefront.</span>
               </div>
             </div>
           </div>
@@ -293,69 +298,69 @@ export const AdminEditProductPage: React.FC = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
               Pricing & Discounts
             </h3>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
                 Current Sale Price (₹) *
               </label>
               <input
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-black text-gray-900 shadow-2xs"
               />
               {errors.price && <p className="text-xs text-rose-500 font-bold mt-1">{errors.price}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
-                Original Price (₹)
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
+                Original MRP Price (₹)
               </label>
               <input
                 type="number"
                 value={originalPrice}
                 onChange={(e) => setOriginalPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-bold text-gray-900 shadow-2xs"
               />
               {errors.originalPrice && <p className="text-xs text-rose-500 font-bold mt-1">{errors.originalPrice}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
                 Badge Tag
               </label>
               <input
                 type="text"
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-semibold text-gray-900 shadow-2xs"
               />
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
+          <div className="bg-[#f3f4f6] rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 border-b border-gray-200/70 pb-3">
               Inventory & Status
             </h3>
 
             <div>
-              <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
-                Stock Quantity
+              <label className="block text-xs font-bold text-gray-800 uppercase mb-1.5">
+                Available Stock Units
               </label>
               <input
                 type="number"
                 value={stock}
                 onChange={(e) => setStock(Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900"
+                className="w-full px-4 py-3 bg-white border border-gray-200/80 rounded-2xl text-xs font-bold text-gray-900 shadow-2xs"
               />
             </div>
 
-            <label className="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer">
-              <span className="text-xs font-bold text-gray-900">Active Status</span>
+            <label className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-gray-200/80 shadow-2xs cursor-pointer">
+              <span className="text-xs font-extrabold text-gray-900">Active On Storefront</span>
               <input
                 type="checkbox"
                 checked={inStock}
@@ -367,7 +372,7 @@ export const AdminEditProductPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-2xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer transform active:scale-95"
+              className="w-full py-4 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white rounded-2xl font-extrabold text-xs shadow-md shadow-rose-200 flex items-center justify-center gap-2 transition-all cursor-pointer transform active:scale-98"
             >
               {isSubmitting ? (
                 <>
@@ -377,7 +382,7 @@ export const AdminEditProductPage: React.FC = () => {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Save Changes</span>
+                  <span>Save Product Updates</span>
                 </>
               )}
             </button>
