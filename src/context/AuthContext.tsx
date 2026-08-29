@@ -332,18 +332,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Fetch remote addresses if token exists
+  // Fetch remote addresses if token exists and user is loaded
   useEffect(() => {
-    if (localStorage.getItem('token') && user) {
+    if (!loading && user && localStorage.getItem('token')) {
       fetchAddressesApi()
         .then((remoteAddrs) => {
-          if (remoteAddrs && remoteAddrs.length > 0) {
+          if (remoteAddrs && Array.isArray(remoteAddrs)) {
             setUser((prev) => (prev ? { ...prev, addresses: remoteAddrs } : null));
           }
         })
         .catch(() => {});
     }
-  }, []);
+  }, [loading, user?.id]);
 
   const addAddress = (addressData: Omit<UserAddress, 'id'>) => {
     if (!user) return;
