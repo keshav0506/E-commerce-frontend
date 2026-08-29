@@ -72,8 +72,8 @@ export const ContactPage: React.FC = () => {
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-gray-900">Email Us</h4>
-              <a href="mailto:keshavkhandelwal240@gmail.com" className="text-xs text-gray-600 hover:text-rose-600 font-semibold mt-0.5 block truncate">
-                keshavkhandelwal240@gmail.com
+              <a href="mailto:keshavkhandelwal300@gmail.com" className="text-xs text-gray-600 hover:text-rose-600 font-semibold mt-0.5 block truncate">
+                keshavkhandelwal300@gmail.com
               </a>
               <span className="text-[11px] font-semibold text-rose-600">Response within 24h</span>
             </div>

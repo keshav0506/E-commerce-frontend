@@ -48,7 +48,7 @@ const FAQS: FaqItem[] = [
   {
     category: 'returns',
     question: 'How do I initiate a return or replacement?',
-    answer: 'Go to "Account > Order History", find your order, and click "Request Return" or contact our customer support team at keshavkhandelwal240@gmail.com with your Order ID and product photos.'
+    answer: 'Go to "Account > Order History", find your order, and click "Request Return" or contact our customer support team at keshavkhandelwal300@gmail.com with your Order ID and product photos.'
   },
   {
     category: 'account',
