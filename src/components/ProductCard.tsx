@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Heart, Plus, Star, Check, AlertCircle } from 'lucide-react';
+import { Heart, Plus, Star, Check, AlertCircle, Building2, ShieldCheck } from 'lucide-react';
 import type { Product } from '../types';
 import { useShop } from '../context/ShopContext';
 
@@ -25,6 +25,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
   };
+
+  const supplierName = product.supplier?.businessName || `${product.categoryName || 'Brand'} Supplier`;
+  const supplierId = product.supplier?.id || product.categoryId || 1;
 
   return (
     <motion.div
@@ -143,6 +146,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {product.discountPercent}% OFF
             </span>
           )}
+        </div>
+
+        {/* PROMINENT SUPPLIER ATTRIBUTION & DIRECT STOREFRONT HATEOAS LINK */}
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/supplier-store/${supplierId}`);
+          }}
+          className="pt-2 mt-1 border-t border-gray-200/70 flex items-center justify-between text-[11px] text-gray-500 hover:text-rose-600 transition-all group/supplier cursor-pointer"
+          title={`Click to view all products from ${supplierName}`}
+        >
+          <div className="flex items-center gap-1.5 truncate min-w-0">
+            <Building2 className="w-3.5 h-3.5 text-rose-500 shrink-0 group-hover/supplier:scale-110 transition-transform" />
+            <span className="text-gray-400 text-[10px]">Sold by:</span>
+            <span className="font-bold text-gray-800 group-hover/supplier:text-rose-600 truncate text-[11px]">
+              {supplierName}
+            </span>
+          </div>
+          <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200/80 shrink-0 ml-1">
+            <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
+            Verified
+          </span>
         </div>
       </div>
     </motion.div>

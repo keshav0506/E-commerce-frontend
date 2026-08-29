@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SlidersHorizontal, ArrowUpDown, RefreshCw, ShoppingBag, AlertTriangle, Sparkles } from 'lucide-react';
+import { Search, X, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SlidersHorizontal, ArrowUpDown, RefreshCw, ShoppingBag, AlertTriangle, Sparkles, Building2 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 
@@ -32,6 +32,7 @@ export const ProductsPage: React.FC = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
   const [selectedMinRating, setSelectedMinRating] = useState<number>(0);
   const [selectedMinDiscount, setSelectedMinDiscount] = useState<number>(0);
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [sortOption, setSortOption] = useState<string>('recommended');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
@@ -43,7 +44,7 @@ export const ProductsPage: React.FC = () => {
   // Reset page to 1 whenever filters, search, sort, or page size change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategoryId, searchQuery, selectedPriceRange, selectedMinRating, selectedMinDiscount, inStockOnly, sortOption, pageSize]);
+  }, [selectedCategoryId, searchQuery, selectedPriceRange, selectedMinRating, selectedMinDiscount, selectedSupplier, inStockOnly, sortOption, pageSize]);
 
   // Sync category change to URL
   const handleCategoryChange = (catId: string) => {
@@ -74,11 +75,22 @@ export const ProductsPage: React.FC = () => {
           }
         }
 
+        // Supplier Filter
+        if (selectedSupplier !== 'all') {
+          const sName = (p.supplier?.businessName || '').toLowerCase();
+          const sId = String(p.supplier?.id || '');
+          if (sId !== selectedSupplier && !sName.includes(selectedSupplier.toLowerCase())) {
+            return false;
+          }
+        }
+
         // Search Query Filter
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
+          const sName = (p.supplier?.businessName || '').toLowerCase();
           const matches =
             p.name.toLowerCase().includes(q) ||
+            sName.includes(q) ||
             (p.brand && p.brand.toLowerCase().includes(q)) ||
             (p.sku && p.sku.toLowerCase().includes(q)) ||
             p.categoryName.toLowerCase().includes(q) ||
@@ -122,9 +134,24 @@ export const ProductsPage: React.FC = () => {
     sortOption
   ]);
 
+  // Unique suppliers from products
+  const uniqueSuppliers = useMemo(() => {
+    const map = new Map<string, { id: string | number; name: string; count: number }>();
+    products.forEach((p) => {
+      if (p.supplier?.businessName) {
+        const key = p.supplier.businessName;
+        const current = map.get(key) || { id: p.supplier.id, name: p.supplier.businessName, count: 0 };
+        current.count++;
+        map.set(key, current);
+      }
+    });
+    return Array.from(map.values());
+  }, [products]);
+
   // Active Filter Count & Chips
   const activeFiltersCount =
     (selectedCategoryId !== 'all' ? 1 : 0) +
+    (selectedSupplier !== 'all' ? 1 : 0) +
     (selectedPriceRange !== 'all' ? 1 : 0) +
     (selectedMinRating > 0 ? 1 : 0) +
     (selectedMinDiscount > 0 ? 1 : 0) +
@@ -133,6 +160,7 @@ export const ProductsPage: React.FC = () => {
 
   const clearAllFilters = () => {
     setSelectedCategoryId('all');
+    setSelectedSupplier('all');
     setSelectedPriceRange('all');
     setSelectedMinRating(0);
     setSelectedMinDiscount(0);
@@ -364,6 +392,56 @@ export const ProductsPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Verified Suppliers Filter */}
+              {uniqueSuppliers.length > 0 && (
+                <div className="pt-4 border-t border-gray-200/60">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-rose-500" />
+                      Verified Merchants
+                    </h3>
+                    {selectedSupplier !== 'all' && (
+                      <button
+                        onClick={() => setSelectedSupplier('all')}
+                        className="text-[10px] font-bold text-rose-600 hover:underline cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                    <button
+                      onClick={() => setSelectedSupplier('all')}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                        selectedSupplier === 'all'
+                          ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/80 shadow-2xs'
+                          : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                      }`}
+                    >
+                      <span>All Merchants</span>
+                      <span className="text-[10px] text-gray-400 font-bold">{products.length}</span>
+                    </button>
+                    {uniqueSuppliers.map((s) => {
+                      const isSelected = selectedSupplier === String(s.id) || selectedSupplier.toLowerCase() === s.name.toLowerCase();
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => setSelectedSupplier(isSelected ? 'all' : String(s.id))}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/80 shadow-2xs'
+                              : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                          }`}
+                        >
+                          <span className="truncate pr-1">{s.name}</span>
+                          <span className="text-[10px] text-gray-400 font-bold shrink-0">{s.count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Price Range Filter */}
               <div className="pt-4 border-t border-gray-200/60">
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Price Range</h3>
@@ -534,6 +612,16 @@ export const ProductsPage: React.FC = () => {
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     {selectedMinRating}★ & above
                     <button onClick={() => setSelectedMinRating(0)} className="hover:text-rose-800">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+
+                {selectedSupplier !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                    <Building2 className="w-3 h-3 text-emerald-600" />
+                    Merchant: {uniqueSuppliers.find((s) => String(s.id) === selectedSupplier || s.name.toLowerCase() === selectedSupplier.toLowerCase())?.name || selectedSupplier}
+                    <button onClick={() => setSelectedSupplier('all')} className="hover:text-emerald-900">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -766,6 +854,45 @@ export const ProductsPage: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {uniqueSuppliers.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold text-gray-900 uppercase mb-2 flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-rose-500" />
+                    Verified Merchants
+                  </h4>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedSupplier('all');
+                        setIsMobileFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium ${
+                        selectedSupplier === 'all' ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700'
+                      }`}
+                    >
+                      All Merchants
+                    </button>
+                    {uniqueSuppliers.map((s) => {
+                      const isSelected = selectedSupplier === String(s.id) || selectedSupplier.toLowerCase() === s.name.toLowerCase();
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => {
+                            setSelectedSupplier(isSelected ? 'all' : String(s.id));
+                            setIsMobileFilterOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium truncate ${
+                            isSelected ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-700'
+                          }`}
+                        >
+                          {s.name} ({s.count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h4 className="text-xs font-bold text-gray-900 uppercase mb-2">Price</h4>

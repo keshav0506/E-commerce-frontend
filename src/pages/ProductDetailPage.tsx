@@ -590,6 +590,38 @@ export const ProductDetailPage: React.FC = () => {
               )}
             </div>
 
+            {/* Verified Merchant & Storefront Link */}
+            <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-2xl p-4 shadow-xs flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 rounded-2xl bg-white border border-gray-200/80 flex items-center justify-center text-rose-500 shadow-2xs shrink-0">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Sold & Fulfilled by</span>
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
+                      <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
+                      Verified
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-extrabold text-gray-900 truncate">
+                    {product.supplier?.businessName || `${product.categoryName || 'Category'} Supplier`}
+                  </h4>
+                  <p className="text-[10px] text-gray-500 truncate">
+                    {product.supplier?.city ? `${product.supplier.city}, ${product.supplier.state || 'India'}` : 'Authorized Distribution Hub'} • 100% Genuine Stock
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to={`/supplier-store/${product.supplier?.id || product.categoryId || 1}`}
+                className="px-3 py-2 bg-white hover:bg-rose-50 border border-gray-200/80 hover:border-rose-200 text-gray-800 hover:text-rose-600 rounded-xl text-xs font-bold transition-all shadow-2xs shrink-0 flex items-center gap-1 group"
+              >
+                <span>Storefront</span>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-rose-500 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-3 pt-2">
               <div className="p-3 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-center space-y-1 shadow-xs">
