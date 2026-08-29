@@ -50,36 +50,36 @@ export const SupplierInvoicesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-between shadow-xs">
+        <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Delivered & Settled Revenue</p>
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Delivered & Settled Revenue</p>
             <div className="text-2xl font-black text-emerald-600 mt-1">
               ₹{totalPayable.toLocaleString()}
             </div>
             <p className="text-[11px] text-gray-400 mt-1">Eligible for scheduled bank disbursement</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center text-emerald-500 shadow-2xs">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-between shadow-xs">
+        <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">In-Transit / Unsettled Pipeline</p>
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">In-Transit / Unsettled Pipeline</p>
             <div className="text-2xl font-black text-amber-600 mt-1">
               ₹{pendingSettlement.toLocaleString()}
             </div>
             <p className="text-[11px] text-gray-400 mt-1">Disbursed once warehouse delivery is verified</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center text-amber-500 shadow-2xs">
             <Clock className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {/* Invoice Statements List */}
-      <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xs">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl overflow-hidden shadow-xs">
+        <div className="p-6 border-b border-gray-200/60">
           <h2 className="text-base font-extrabold text-gray-900">Purchase Order Invoices</h2>
         </div>
 

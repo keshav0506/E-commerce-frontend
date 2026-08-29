@@ -146,18 +146,18 @@ export const SupplierDashboard: React.FC = () => {
             <Link
               key={idx}
               to={stat.link}
-              className="bg-white border border-gray-100 hover:border-rose-100 rounded-3xl p-5 flex flex-col justify-between transition-all hover:translate-y-[-2px] hover:shadow-md shadow-xs group relative overflow-hidden"
+              className="bg-[#f3f4f6] border border-gray-200/80 hover:border-rose-200/90 rounded-3xl p-5 flex flex-col justify-between transition-all hover:translate-y-[-2px] hover:shadow-md shadow-xs group relative overflow-hidden"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className={`w-10 h-10 rounded-2xl ${stat.color} flex items-center justify-center`}>
+                <div className={`w-10 h-10 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center shadow-2xs ${stat.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-50 text-gray-600 border border-gray-100">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-gray-700 border border-gray-200 shadow-2xs">
                   {stat.badge}
                 </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{stat.title}</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{stat.title}</p>
                 <div className="text-2xl font-black text-gray-900 mt-1 group-hover:text-rose-600 transition-colors">
                   {stat.value}
                 </div>
@@ -169,8 +169,8 @@ export const SupplierDashboard: React.FC = () => {
 
       {/* Performance & Revenue Summary Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
+        <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center text-rose-500 shadow-2xs">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
@@ -184,8 +184,8 @@ export const SupplierDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+        <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center text-blue-500 shadow-2xs">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
@@ -199,8 +199,8 @@ export const SupplierDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-500">
+        <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-5 flex items-center gap-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-gray-200/60 flex items-center justify-center text-purple-500 shadow-2xs">
             <Boxes className="w-6 h-6" />
           </div>
           <div>
@@ -246,8 +246,8 @@ export const SupplierDashboard: React.FC = () => {
       </div>
 
       {/* Recent Purchase Orders Table */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-xs overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl shadow-xs overflow-hidden">
+        <div className="p-6 border-b border-gray-200/60 flex items-center justify-between">
           <div>
             <h2 className="text-base font-extrabold text-gray-900">Recent Purchase Orders</h2>
             <p className="text-xs text-gray-500">Latest procurement requests assigned to your supplier profile.</p>

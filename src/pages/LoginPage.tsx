@@ -16,9 +16,21 @@ export const LoginPage: React.FC = () => {
 
   const DEFAULT_CREDENTIALS = {
     CUSTOMER: { email: 'user@ecommerce.com', password: 'user123' },
-    SUPPLIER: { email: 'supplier@ecommerce.com', password: 'supplier123' },
+    SUPPLIER: { email: 'electronicsSupplier@shoply.com', password: 'supplier123' },
     ADMIN: { email: 'admin@ecommerce.com', password: 'admin123' }
   };
+
+  const SEEDED_SUPPLIERS = [
+    { name: 'Electronics', email: 'electronicsSupplier@shoply.com', person: 'Rohan Mehta', company: 'ElectraTech Logistics' },
+    { name: 'Beverages', email: 'beveragesSupplier@shoply.com', person: 'Vikram Malhotra', company: 'Valley Brews Corp' },
+    { name: 'Snacks', email: 'snacksSupplier@shoply.com', person: 'Suresh Nair', company: 'CrunchCraft Foods' },
+    { name: 'Dairy', email: 'dairySupplier@shoply.com', person: 'Deepak Patel', company: 'Vedic Farms' },
+    { name: 'Personal Care', email: 'personalCareSupplier@shoply.com', person: 'Ananya Sen', company: 'Botanica Pure' },
+    { name: 'Household', email: 'householdSupplier@shoply.com', person: 'Sunita Rao', company: 'CleanNest Solutions' },
+    { name: 'Accessories', email: 'accessoriesSupplier@shoply.com', person: 'Amit Roy', company: 'UrbanVibe Gear' },
+    { name: 'Clothing', email: 'clothingSupplier@shoply.com', person: 'Priya Sharma', company: 'Aura Apparel Guild' },
+    { name: 'Footwear', email: 'footwearSupplier@shoply.com', person: 'Karan Verma', company: 'Strider Athletic' }
+  ];
 
   const [selectedRole, setSelectedRole] = useState<'CUSTOMER' | 'SUPPLIER' | 'ADMIN'>(() => {
     if (initialRoleParam === 'SUPPLIER') return 'SUPPLIER';
@@ -143,7 +155,7 @@ export const LoginPage: React.FC = () => {
       setPassword('admin123');
     } else if (roleType === 'supplier') {
       setSelectedRole('SUPPLIER');
-      setEmail('supplier@ecommerce.com');
+      setEmail('electronicsSupplier@shoply.com');
       setPassword('supplier123');
     } else {
       setSelectedRole('CUSTOMER');
@@ -248,8 +260,46 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Seeded Category Supplier Picker for Supplier Role */}
+          {selectedRole === 'SUPPLIER' && (
+            <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-emerald-700" />
+                  Select Dummy Supplier Account
+                </span>
+                <span className="text-[10px] text-emerald-600 font-normal">Password: supplier123</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {SEEDED_SUPPLIERS.map((s) => (
+                  <button
+                    key={s.email}
+                    type="button"
+                    onClick={() => {
+                      setEmail(s.email);
+                      setPassword('supplier123');
+                      setEmailError('');
+                      setPasswordError('');
+                      setGeneralError('');
+                    }}
+                    className={`p-1.5 text-left rounded-xl border text-[10px] transition-all cursor-pointer ${
+                      email === s.email
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-white text-gray-700 border-emerald-200 hover:bg-emerald-100/50'
+                    }`}
+                  >
+                    <div className="font-bold truncate">{s.name}</div>
+                    <div className={`text-[9px] truncate ${email === s.email ? 'text-emerald-100' : 'text-gray-400'}`}>
+                      {s.person}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Localhost Quick Fill Buttons */}
-          {isLocalhost && (
+          {isLocalhost && selectedRole !== 'SUPPLIER' && (
             <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">

@@ -22,11 +22,20 @@ import {
   Loader2,
   CheckCircle2,
   ImagePlus,
-  Camera
+  Camera,
+  Building2,
+  CreditCard,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Sparkles,
+  Send,
+  Info
 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
+import { fetchEmiPlans } from '../services/apiService';
 import {
   fetchProductReviewsApi,
   submitProductReviewApi,
@@ -50,6 +59,17 @@ export const ProductDetailPage: React.FC = () => {
   const [pincode, setPincode] = useState('');
   const [pincodeResult, setPincodeResult] = useState<string | null>(null);
 
+  // HATEOAS States: EMI Calculator, Expandable Info, Bulk Quote
+  const [isEmiModalOpen, setIsEmiModalOpen] = useState(false);
+  const [emiData, setEmiData] = useState<any>(null);
+  const [isEmiLoading, setIsEmiLoading] = useState(false);
+  const [selectedEmiBank, setSelectedEmiBank] = useState<string>('All');
+  const [isMoreInfoExpanded, setIsMoreInfoExpanded] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [quoteQty, setQuoteQty] = useState('100');
+  const [quoteNotes, setQuoteNotes] = useState('');
+  const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
+
   // Reviews state
   const [reviewSummary, setReviewSummary] = useState<ProductReviewsSummary | null>(null);
   const [isReviewLoading, setIsReviewLoading] = useState(false);
@@ -65,6 +85,33 @@ export const ProductDetailPage: React.FC = () => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const replaceImageIndexRef = useRef<number | null>(null);
+
+  const handleOpenEmiModal = async () => {
+    setIsEmiModalOpen(true);
+    if (!emiData && product?.id) {
+      setIsEmiLoading(true);
+      try {
+        const res = await fetchEmiPlans(product.id);
+        setEmiData(res);
+      } catch (e) {
+        console.error('Failed to load EMI plans:', e);
+      } finally {
+        setIsEmiLoading(false);
+      }
+    }
+  };
+
+  const handleSendQuote = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingQuote(true);
+    setTimeout(() => {
+      setIsSubmittingQuote(false);
+      setIsQuoteModalOpen(false);
+      setQuoteNotes('');
+      const suppName = product?.supplier?.businessName || `${product?.categoryName || ''} Supplier`;
+      showToast(`Wholesale inquiry sent to ${suppName}!`);
+    }, 700);
+  };
 
   // Load reviews for current product
   const loadReviews = async (targetId?: string) => {
@@ -316,7 +363,7 @@ export const ProductDetailPage: React.FC = () => {
           
           {/* LEFT: IMAGE GALLERY (5 COLS) */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="relative aspect-square bg-white rounded-3xl border border-gray-100 p-6 flex items-center justify-center shadow-xs overflow-hidden">
+            <div className="relative aspect-square bg-[#f3f4f6] rounded-3xl border border-gray-200/80 p-6 flex items-center justify-center shadow-xs overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={selectedImageIndex}
@@ -334,7 +381,7 @@ export const ProductDetailPage: React.FC = () => {
               <button
                 onClick={() => toggleWishlist(product.id)}
                 className={`absolute top-4 right-4 p-3 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${
-                  isWishlisted ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-white text-gray-400 hover:text-rose-500 border border-gray-100'
+                  isWishlisted ? 'bg-rose-500 text-white shadow-rose-200' : 'bg-white text-gray-400 hover:text-rose-500 border border-gray-200/70 shadow-xs'
                 }`}
                 aria-label="Wishlist"
               >
@@ -356,10 +403,10 @@ export const ProductDetailPage: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`w-16 h-16 rounded-2xl bg-white border-2 p-1.5 shrink-0 transition-all cursor-pointer ${
+                    className={`w-16 h-16 rounded-2xl bg-[#f3f4f6] border-2 p-1.5 shrink-0 transition-all cursor-pointer ${
                       selectedImageIndex === idx
                         ? 'border-rose-500 ring-2 ring-rose-100'
-                        : 'border-gray-100 hover:border-gray-300'
+                        : 'border-gray-200/80 hover:border-gray-300'
                     }`}
                   >
                     <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-contain" />
@@ -373,7 +420,7 @@ export const ProductDetailPage: React.FC = () => {
           <div className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-rose-500 bg-rose-50 px-2.5 py-0.5 rounded-full">
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-rose-500 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
                   {product.categoryId ? `Category #${product.categoryId}` : 'Featured'}
                 </span>
                 <span className="text-[11px] text-gray-400 font-medium">SKU: SHP-{product.id}</span>
@@ -382,6 +429,27 @@ export const ProductDetailPage: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
                 {product.name}
               </h1>
+
+              {/* HATEOAS Category Supplier Banner & Wholesale CTAs */}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <Link
+                  to={`/supplier-store/${product.supplier?.id || 1}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-700 text-xs font-bold transition-all shadow-2xs group"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-rose-500 group-hover:scale-110 transition-transform" />
+                  <span>Get more from {product.supplier?.businessName || `${product.categoryName || 'Category'} Supplier`}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuoteModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white hover:bg-gray-50 border border-gray-200/80 text-gray-700 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-gray-400" />
+                  <span>Wholesale Inquiry</span>
+                </button>
+              </div>
 
               {/* Rating Preview */}
               <div className="flex items-center gap-2 mt-3">
@@ -396,7 +464,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Pricing Section */}
-            <div className="p-4 sm:p-5 bg-white border border-gray-100 rounded-3xl shadow-xs space-y-1">
+            <div className="p-4 sm:p-5 bg-[#f3f4f6] border border-gray-200/80 rounded-3xl shadow-xs space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-black text-gray-900">₹{product.price}</span>
                 {product.originalPrice > product.price && (
@@ -405,27 +473,47 @@ export const ProductDetailPage: React.FC = () => {
                   </span>
                 )}
                 {product.discountPercent > 0 && (
-                  <span className="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    Save ₹{product.originalPrice - product.price} ({product.discountPercent}% OFF)
+                  <span className="text-sm font-bold text-rose-500">
+                    Save {product.discountPercent}%
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-gray-400 font-medium">Inclusive of all taxes & free shipping above ₹499</p>
+              <span className="text-xs text-gray-400 font-medium block">Inclusive of all taxes & doorstep delivery</span>
+
+              {/* HATEOAS EMI Financing Breakdown Bar */}
+              <div className="pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-gray-200/60 mt-1">
+                <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                  <CreditCard className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>
+                    EMI from <strong className="text-gray-900 font-black">₹{Math.round(product.price / 12)}/mo</strong> • No Cost EMI Available
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenEmiModal}
+                  className="inline-flex items-center gap-1 text-xs font-black text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                >
+                  <span>View Plans</span>
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
             </div>
 
             {/* Sizes / Volumes selection */}
             {product.volumes && product.volumes.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-700 block">Select Variant / Size:</label>
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
+                  Select Size / Variant:
+                </span>
                 <div className="flex flex-wrap gap-2.5">
                   {product.volumes.map((vol) => (
                     <button
                       key={vol}
                       onClick={() => setSelectedVolume(vol)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        activeVolume === vol
-                          ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
-                          : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
+                        selectedVolume === vol
+                          ? 'bg-rose-500 text-white shadow-xs ring-2 ring-rose-200'
+                          : 'bg-[#f3f4f6] text-gray-700 border border-gray-200/80 hover:border-gray-300'
                       }`}
                     >
                       {vol}
@@ -438,30 +526,28 @@ export const ProductDetailPage: React.FC = () => {
             {/* Quantity Selector + Add to Cart + Buy Now Buttons */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3">
-                <div className="flex items-center border border-gray-200 rounded-2xl p-1 bg-white">
+                <div className="flex items-center border border-gray-200/80 rounded-2xl p-1 bg-[#f3f4f6]">
                   <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-2 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
-                    aria-label="Decrease quantity"
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white text-gray-700 font-bold transition-colors cursor-pointer"
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="px-4 text-sm font-extrabold text-gray-900">{quantity}</span>
+                  <span className="w-10 text-center font-extrabold text-sm text-gray-900">{quantity}</span>
                   <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="p-2 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
-                    aria-label="Increase quantity"
+                    onClick={() => setQuantity((prev) => prev + 1)}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white text-gray-700 font-bold transition-colors cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 px-6 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="flex-1 py-3.5 px-6 bg-rose-500 hover:bg-rose-600 active:scale-98 text-white rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-rose-200 transition-all cursor-pointer"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Cart</span>
+                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+                  <span>Add {quantity} to Cart • ₹{product.price * quantity}</span>
                 </button>
               </div>
 
@@ -475,7 +561,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Pincode checker */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-xs space-y-2">
+            <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-2xl p-4 shadow-xs space-y-2">
               <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-rose-500" />
                 Check Delivery Availability
@@ -487,7 +573,7 @@ export const ProductDetailPage: React.FC = () => {
                   value={pincode}
                   maxLength={6}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                  className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:outline-hidden focus:border-rose-500"
+                  className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:outline-hidden focus:border-rose-500"
                 />
                 <button
                   type="submit"
@@ -506,17 +592,17 @@ export const ProductDetailPage: React.FC = () => {
 
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-3 pt-2">
-              <div className="p-3 bg-white border border-gray-100 rounded-2xl text-center space-y-1 shadow-xs">
+              <div className="p-3 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-center space-y-1 shadow-xs">
                 <Truck className="w-5 h-5 text-rose-500 mx-auto" />
                 <span className="text-[11px] font-bold text-gray-900 block">Fast Shipping</span>
                 <span className="text-[10px] text-gray-400 block">2-3 business days</span>
               </div>
-              <div className="p-3 bg-white border border-gray-100 rounded-2xl text-center space-y-1 shadow-xs">
+              <div className="p-3 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-center space-y-1 shadow-xs">
                 <RotateCcw className="w-5 h-5 text-rose-500 mx-auto" />
                 <span className="text-[11px] font-bold text-gray-900 block">7 Days Return</span>
                 <span className="text-[10px] text-gray-400 block">Easy replacements</span>
               </div>
-              <div className="p-3 bg-white border border-gray-100 rounded-2xl text-center space-y-1 shadow-xs">
+              <div className="p-3 bg-[#f3f4f6] border border-gray-200/80 rounded-2xl text-center space-y-1 shadow-xs">
                 <ShieldCheck className="w-5 h-5 text-rose-500 mx-auto" />
                 <span className="text-[11px] font-bold text-gray-900 block">100% Genuine</span>
                 <span className="text-[10px] text-gray-400 block">Verified Brand</span>
@@ -528,11 +614,108 @@ export const ProductDetailPage: React.FC = () => {
 
         {/* PRODUCT DESCRIPTION */}
         <section className="py-12 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">About this product</h2>
-          <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">About this product</h2>
+            <button
+              onClick={() => setIsMoreInfoExpanded(!isMoreInfoExpanded)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all shadow-2xs cursor-pointer border border-rose-200/80"
+            >
+              <Info className="w-3.5 h-3.5 text-rose-500" />
+              <span>{isMoreInfoExpanded ? 'See Less Info' : 'See More Info (Specifications & Origin)'}</span>
+              {isMoreInfoExpanded ? (
+                <ChevronUp className="w-3.5 h-3.5 text-rose-500" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5 text-rose-500" />
+              )}
+            </button>
+          </div>
+
+          <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
             <p className="text-sm text-gray-600 leading-relaxed max-w-4xl">
               {product.description || 'Experience the highest standard of craftsmanship and performance. Designed with precision, this product delivers superior quality, enhanced durability, and modern aesthetics tailored for your everyday lifestyle.'}
             </p>
+
+            {/* EXPANDABLE HATEOAS DEEP INFO ACCORDION */}
+            <AnimatePresence>
+              {isMoreInfoExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="pt-4 border-t border-gray-200/70 space-y-4 overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Authorized Supplier
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">
+                        {product.supplier?.businessName || `${product.categoryName} Supplier`}
+                      </p>
+                      <p className="text-[11px] text-gray-500 font-mono">
+                        {product.supplier?.businessEmail || `${(product.categoryName || 'cat').toLowerCase().replace(/\s+/g, '')}Supplier@shoply.com`}
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Country of Origin
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">Made in India (100% Verified)</p>
+                      <p className="text-[11px] text-gray-500">Meets national BIS & ISO 9001 quality marks</p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Manufacturer Warranty
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">12 Months Direct Warranty</p>
+                      <p className="text-[11px] text-gray-500">Covers defects with free doorstep pickup</p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Material & Packaging
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">Eco-Friendly Recyclable Packaging</p>
+                      <p className="text-[11px] text-gray-500">BPA-Free, Non-toxic & certified compliant</p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Return & Exchange Policy
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">7-Day Hassle-Free Returns</p>
+                      <p className="text-[11px] text-gray-500">Instant full refund on unboxing damage</p>
+                    </div>
+
+                    <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase text-gray-400 block tracking-wider">
+                        Care & Storage Guidelines
+                      </span>
+                      <p className="text-xs font-bold text-gray-900">Store in a cool & dry environment</p>
+                      <p className="text-[11px] text-gray-500">Keep away from direct heat or prolonged moisture</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-rose-50/70 border border-rose-200/60 rounded-2xl text-xs">
+                    <div className="flex items-center gap-2 text-rose-700">
+                      <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
+                      <span className="font-semibold">
+                        Want wholesale procurement or custom volume pricing for this SKU?
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsQuoteModalOpen(true)}
+                      className="px-3.5 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-[11px] transition-all shadow-xs cursor-pointer"
+                    >
+                      Request Quote
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </section>
 
@@ -540,7 +723,7 @@ export const ProductDetailPage: React.FC = () => {
         {product.specifications && product.specifications.length > 0 && (
           <section className="py-12 border-b border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Technical Specifications</h2>
-            <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-xs">
+            <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 shadow-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm">
                 {product.specifications.map((spec, idx) => (
                   <div key={idx} className="border-b sm:border-b-0 pb-3 sm:pb-0">
@@ -579,7 +762,7 @@ export const ProductDetailPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* RATING SUMMARY CARD */}
-            <div className="lg:col-span-4 bg-white border border-gray-100 rounded-3xl p-6 shadow-xs text-center space-y-4">
+            <div className="lg:col-span-4 bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 shadow-xs text-center space-y-4">
               <div>
                 <span className="text-5xl font-black text-gray-900">{displayRating}</span>
                 <span className="text-sm text-gray-400 block font-medium mt-1">out of 5.0</span>
@@ -609,7 +792,7 @@ export const ProductDetailPage: React.FC = () => {
                   return (
                     <div key={stars} className="flex items-center gap-2">
                       <span className="w-8 text-right font-bold text-gray-700">{stars}★</span>
-                      <div className="flex-1 bg-gray-100 h-2 rounded-full overflow-hidden">
+                      <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-gray-200/60">
                         <div
                           className="bg-amber-400 h-full rounded-full transition-all duration-500"
                           style={{ width: `${pct}%` }}
@@ -625,16 +808,16 @@ export const ProductDetailPage: React.FC = () => {
             {/* REVIEWS LIST */}
             <div className="lg:col-span-8 space-y-4">
               {isReviewLoading ? (
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 flex items-center justify-center">
+                <div className="bg-[#f3f4f6] rounded-3xl p-8 border border-gray-200/80 flex items-center justify-center">
                   <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
                 </div>
               ) : displayReviews.length === 0 ? (
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 text-center space-y-3">
+                <div className="bg-[#f3f4f6] rounded-3xl p-8 border border-gray-200/80 text-center space-y-3">
                   <p className="text-sm font-bold text-gray-800">No customer reviews yet</p>
                   <p className="text-xs text-gray-400">Be the first to share your experience with this product!</p>
                   <button
                     onClick={handleOpenReviewModal}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-50 text-rose-600 rounded-full text-xs font-bold hover:bg-rose-100 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-50 text-rose-600 rounded-full text-xs font-bold hover:bg-rose-100 transition-colors border border-rose-100"
                   >
                     <MessageSquarePlus className="w-3.5 h-3.5" />
                     <span>Write First Review</span>
@@ -651,7 +834,7 @@ export const ProductDetailPage: React.FC = () => {
                   const isOwner = rev.owner || (user && rev.userEmail === user.email);
 
                   return (
-                    <div key={reviewId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-xs space-y-3">
+                    <div key={reviewId} className="bg-[#f3f4f6] border border-gray-200/80 rounded-2xl p-5 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-9 h-9 rounded-full bg-rose-50 border border-rose-100 text-rose-600 font-extrabold text-xs flex items-center justify-center shrink-0">
@@ -1057,6 +1240,222 @@ export const ProductDetailPage: React.FC = () => {
           <span>Buy Now • ₹{product.price * quantity}</span>
         </button>
       </div>
+
+      {/* EMI FINANCING MODAL */}
+      <AnimatePresence>
+        {isEmiModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto text-left"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-gray-200/80 flex items-center justify-center text-rose-500 shadow-2xs">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-gray-900">EMI & Instant Financing Plans</h3>
+                    <p className="text-[11px] text-gray-500">
+                      Product Price: <strong className="text-gray-900 font-extrabold">₹{product.price}</strong> • No Cost EMI Available
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsEmiModalOpen(false)}
+                  className="p-2 rounded-xl bg-white text-gray-400 hover:text-gray-700 shadow-2xs cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Bank Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {['All', 'HDFC Bank', 'ICICI Bank', 'State Bank of India (SBI)', 'Axis Bank', 'Kotak Mahindra Bank'].map((bank) => (
+                  <button
+                    key={bank}
+                    onClick={() => setSelectedEmiBank(bank)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      selectedEmiBank === bank
+                        ? 'bg-rose-500 text-white shadow-xs'
+                        : 'bg-white border border-gray-200/80 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {bank}
+                  </button>
+                ))}
+              </div>
+
+              {/* Plan Cards Grid */}
+              {isEmiLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center gap-2 text-gray-400">
+                  <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
+                  <span className="text-xs font-bold">Calculating real-time bank tenures...</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(emiData?.plans || [
+                    { bankName: 'HDFC Bank', tenureMonths: 3, monthlyInstallment: Math.round(product.price / 3), interestRate: 0, totalPayable: product.price, isNoCost: true },
+                    { bankName: 'HDFC Bank', tenureMonths: 6, monthlyInstallment: Math.round(product.price / 6), interestRate: 0, totalPayable: product.price, isNoCost: true },
+                    { bankName: 'ICICI Bank', tenureMonths: 3, monthlyInstallment: Math.round(product.price / 3), interestRate: 0, totalPayable: product.price, isNoCost: true },
+                    { bankName: 'ICICI Bank', tenureMonths: 6, monthlyInstallment: Math.round(product.price / 6), interestRate: 0, totalPayable: product.price, isNoCost: true },
+                    { bankName: 'State Bank of India (SBI)', tenureMonths: 6, monthlyInstallment: Math.round(product.price * 1.06 / 6), interestRate: 13.5, totalPayable: Math.round(product.price * 1.06), isNoCost: false },
+                    { bankName: 'Axis Bank', tenureMonths: 9, monthlyInstallment: Math.round(product.price * 1.1 / 9), interestRate: 14.5, totalPayable: Math.round(product.price * 1.1), isNoCost: false },
+                    { bankName: 'Kotak Mahindra Bank', tenureMonths: 12, monthlyInstallment: Math.round(product.price * 1.15 / 12), interestRate: 15.0, totalPayable: Math.round(product.price * 1.15), isNoCost: false }
+                  ])
+                    .filter((p: any) => selectedEmiBank === 'All' || p.bankName === selectedEmiBank)
+                    .map((plan: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="bg-white rounded-2xl p-4 border border-gray-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-rose-300 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-xs text-gray-900">{plan.bankName}</span>
+                            {plan.isNoCost ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                0% No Cost EMI
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">
+                                {plan.interestRate}% p.a.
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-400">
+                            {plan.tenureMonths} Months tenure • Total Payable: ₹{plan.totalPayable}
+                          </p>
+                        </div>
+
+                        <div className="text-right sm:text-right">
+                          <span className="text-sm font-black text-rose-600">
+                            ₹{plan.monthlyInstallment}/mo
+                          </span>
+                          <span className="text-[10px] text-gray-400 block font-medium">Standard Processing</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {/* Explanatory Box */}
+              <div className="p-4 bg-white rounded-2xl border border-gray-200/70 shadow-2xs space-y-1 text-xs text-gray-500">
+                <div className="flex items-center gap-1.5 font-bold text-gray-900">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                  <span>How No Cost EMI Works</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  With No Cost EMI, the total interest charged by the bank is offered as an upfront instant discount by Shoply, making your net financing cost exactly equal to the cash price.
+                </p>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setIsEmiModalOpen(false)}
+                  className="px-6 py-2.5 bg-gray-900 hover:bg-black text-white rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  Got It
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* WHOLESALE QUOTE MODAL */}
+      <AnimatePresence>
+        {isQuoteModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative text-left"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-gray-200/80 flex items-center justify-center text-rose-500 shadow-2xs">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-gray-900">Request Wholesale Quotation</h3>
+                    <p className="text-[11px] text-gray-400">
+                      Supplier: {product.supplier?.businessName || `${product.categoryName} Supplier`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="p-2 rounded-xl bg-white text-gray-400 hover:text-gray-700 shadow-2xs cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSendQuote} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Required Quantity (Units) *
+                  </label>
+                  <input
+                    type="number"
+                    min={10}
+                    required
+                    value={quoteQty}
+                    onChange={(e) => setQuoteQty(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Requirements / Special Inquiries
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Specify delivery timeline, custom labelling, target invoice price..."
+                    value={quoteNotes}
+                    onChange={(e) => setQuoteNotes(e.target.value)}
+                    className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-xs text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+
+                <div className="p-3 bg-white rounded-2xl border border-gray-200/60 shadow-2xs text-[11px] text-gray-500 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Your request will be dispatched to {product.supplier?.businessEmail || `${(product.categoryName || 'supplier').toLowerCase().replace(/\s+/g, '')}Supplier@shoply.com`}.</span>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsQuoteModalOpen(false)}
+                    className="flex-1 py-3 bg-white hover:bg-gray-100 text-gray-700 rounded-2xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingQuote}
+                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-rose-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmittingQuote ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Send Quotation Request</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

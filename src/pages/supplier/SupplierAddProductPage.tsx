@@ -165,7 +165,7 @@ export const SupplierAddProductPage: React.FC = () => {
       )}
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 shadow-xs p-6 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-[#f3f4f6] rounded-3xl border border-gray-200/80 shadow-xs p-6 sm:p-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Left Column: Core Info */}

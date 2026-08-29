@@ -134,7 +134,7 @@ export const SupplierProfilePage: React.FC = () => {
       </div>
 
       {/* Edit Form */}
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+      <form onSubmit={handleSubmit} className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
@@ -147,7 +147,7 @@ export const SupplierProfilePage: React.FC = () => {
                 required
                 value={formData.businessName}
                 onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                className="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+                className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
               />
             </div>
           </div>
@@ -161,7 +161,7 @@ export const SupplierProfilePage: React.FC = () => {
               required
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+              className="w-full p-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
             />
           </div>
 
@@ -175,7 +175,7 @@ export const SupplierProfilePage: React.FC = () => {
                 type="email"
                 disabled
                 value={profile.businessEmail}
-                className="w-full pl-10 pr-3 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-500 cursor-not-allowed font-mono"
+                className="w-full pl-10 pr-3 py-3 bg-gray-200/60 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-500 cursor-not-allowed font-mono shadow-2xs"
               />
             </div>
           </div>
@@ -191,7 +191,7 @@ export const SupplierProfilePage: React.FC = () => {
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+                className="w-full pl-10 pr-3 py-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
               />
             </div>
           </div>
@@ -205,7 +205,7 @@ export const SupplierProfilePage: React.FC = () => {
               rows={2}
               value={formData.businessAddress}
               onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+              className="w-full p-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
             />
           </div>
 
@@ -215,7 +215,7 @@ export const SupplierProfilePage: React.FC = () => {
               type="text"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+              className="w-full p-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
             />
           </div>
 
@@ -225,7 +225,7 @@ export const SupplierProfilePage: React.FC = () => {
               type="text"
               value={formData.state}
               onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+              className="w-full p-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
             />
           </div>
 
@@ -235,7 +235,7 @@ export const SupplierProfilePage: React.FC = () => {
               type="text"
               value={formData.postalCode}
               onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
+              className="w-full p-3 bg-white border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium shadow-2xs"
             />
           </div>
 

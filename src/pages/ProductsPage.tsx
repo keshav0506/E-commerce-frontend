@@ -291,8 +291,8 @@ export const ProductsPage: React.FC = () => {
 
           {/* DESKTOP FILTER SIDEBAR */}
           <aside className="hidden lg:block lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs space-y-6 sticky top-24">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div className="bg-[#f3f4f6] rounded-2xl p-5 border border-gray-200/80 shadow-xs space-y-6 sticky top-24">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200/60">
                 <div className="flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-rose-500" />
                   <h2 className="text-sm font-bold text-gray-900">Filter By</h2>
@@ -315,8 +315,8 @@ export const ProductsPage: React.FC = () => {
                     onClick={() => handleCategoryChange('all')}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
                       selectedCategoryId === 'all'
-                        ? 'bg-rose-50 text-rose-600 font-bold'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ? 'bg-rose-50 text-rose-600 font-bold border border-rose-100 shadow-2xs'
+                        : 'text-gray-600 hover:bg-white hover:text-gray-900'
                     }`}
                   >
                     <span>All Products</span>
@@ -327,8 +327,8 @@ export const ProductsPage: React.FC = () => {
                     onClick={() => handleCategoryChange('for-you')}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
                       isForYouSelected
-                        ? 'bg-rose-50 text-rose-600 font-bold'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ? 'bg-rose-50 text-rose-600 font-bold border border-rose-100 shadow-2xs'
+                        : 'text-gray-600 hover:bg-white hover:text-gray-900'
                     }`}
                   >
                     <span className="flex items-center gap-1.5">
@@ -352,8 +352,8 @@ export const ProductsPage: React.FC = () => {
                         onClick={() => handleCategoryChange(cat.id)}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-rose-50 text-rose-600 font-bold'
-                            : 'text-gray-600 hover:bg-gray-50'
+                            ? 'bg-rose-50 text-rose-600 font-bold border border-rose-100 shadow-2xs'
+                            : 'text-gray-600 hover:bg-white hover:text-gray-900'
                         }`}
                       >
                         <span className="truncate">{cat.name}</span>
@@ -365,7 +365,7 @@ export const ProductsPage: React.FC = () => {
               </div>
 
               {/* Price Range Filter */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-200/60">
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Price Range</h3>
                 <div className="space-y-1.5 text-xs">
                   {[
@@ -393,7 +393,7 @@ export const ProductsPage: React.FC = () => {
               </div>
 
               {/* Rating Filter */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-200/60">
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Customer Rating</h3>
                 <div className="space-y-1.5 text-xs">
                   {[
@@ -404,8 +404,8 @@ export const ProductsPage: React.FC = () => {
                     <button
                       key={r.rating}
                       onClick={() => setSelectedMinRating(selectedMinRating === r.rating ? 0 : r.rating)}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg transition-colors flex items-center justify-between ${
-                        selectedMinRating === r.rating ? 'bg-amber-50 text-amber-800 font-bold' : 'text-gray-600 hover:bg-gray-50'
+                      className={`w-full text-left px-3 py-1.5 rounded-lg transition-colors flex items-center justify-between cursor-pointer ${
+                        selectedMinRating === r.rating ? 'bg-amber-50 text-amber-800 font-bold border border-amber-200/60' : 'text-gray-600 hover:bg-white'
                       }`}
                     >
                       <span>{r.label}</span>
@@ -416,7 +416,7 @@ export const ProductsPage: React.FC = () => {
               </div>
 
               {/* Stock Status */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-200/60">
                 <label className="flex items-center space-x-2.5 text-xs font-semibold text-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
@@ -435,7 +435,7 @@ export const ProductsPage: React.FC = () => {
           <main id="products-grid-top" className="lg:col-span-3 space-y-5">
             
             {/* Top Toolbar: Sorting, Page Size & Count */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:px-5 rounded-2xl border border-gray-100 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f3f4f6] p-3.5 sm:px-5 rounded-2xl border border-gray-200/80 shadow-2xs">
               <div className="text-xs font-bold text-gray-700">
                 Showing{' '}
                 <span className="text-rose-600 font-extrabold">

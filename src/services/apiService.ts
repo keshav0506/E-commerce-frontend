@@ -154,3 +154,80 @@ export async function fetchCategories(): Promise<Category[]> {
     return [];
   }
 }
+
+/**
+ * Fetch EMI Financing Plans for product (GET /api/products/{id}/emi-plans)
+ */
+export async function fetchEmiPlans(productId: string | number): Promise<any> {
+  try {
+    return await apiFetch<any>(`/products/${productId}/emi-plans`);
+  } catch (error) {
+    console.error(`Error fetching EMI plans for product ${productId}:`, error);
+    return null;
+  }
+}
+
+export interface PublicSupplierCatalogResponse {
+  supplier: {
+    id: number | string;
+    businessName: string;
+    businessEmail: string;
+    category: string;
+    city?: string;
+    state?: string;
+    status?: string;
+  };
+  products: {
+    content: Product[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+    first: boolean;
+    last: boolean;
+    empty: boolean;
+  };
+  totalProducts: number;
+}
+
+/**
+ * Fetch Public Supplier Storefront Catalog (GET /api/suppliers/{id}/public-catalog)
+ */
+export async function fetchPublicSupplierCatalog(
+  supplierId: string | number,
+  params: { search?: string; page?: number; size?: number } = {}
+): Promise<PublicSupplierCatalogResponse | null> {
+  try {
+    const queryParts: string[] = [];
+    if (params.search && params.search.trim()) {
+      queryParts.push(`search=${encodeURIComponent(params.search.trim())}`);
+    }
+    if (params.page !== undefined) {
+      queryParts.push(`page=${params.page}`);
+    }
+    const size = params.size !== undefined ? params.size : 12;
+    queryParts.push(`size=${size}`);
+
+    const queryString = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
+    const res = await apiFetch<any>(`/suppliers/${supplierId}/public-catalog${queryString}`);
+    if (!res) return null;
+
+    return {
+      supplier: res.supplier,
+      products: {
+        content: (res.products?.content || []).map(mapProductResponseToProduct),
+        totalElements: res.products?.totalElements || 0,
+        totalPages: res.products?.totalPages || 0,
+        size: res.products?.size || 12,
+        number: res.products?.number || 0,
+        first: res.products?.first ?? true,
+        last: res.products?.last ?? true,
+        empty: res.products?.empty ?? false
+      },
+      totalProducts: res.totalProducts || 0
+    };
+  } catch (error) {
+    console.error(`Error fetching public supplier catalog for supplier ${supplierId}:`, error);
+    return null;
+  }
+}

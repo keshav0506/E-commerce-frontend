@@ -174,9 +174,9 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
       </div>
 
       {/* Main Order Card */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 space-y-8 shadow-xs">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 sm:p-8 space-y-8 shadow-xs">
         {/* Header Information */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-gray-100">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-gray-200/60">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-black text-gray-900 tracking-tight font-mono">
@@ -199,16 +199,17 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                 <button
                   disabled={actionLoading}
                   onClick={handleAccept}
-                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition-all disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition-all cursor-pointer flex items-center gap-2"
                 >
-                  Accept PO
+                  <CheckCircle2 className="w-4 h-4" />
+                  Accept Purchase Order
                 </button>
                 <button
                   disabled={actionLoading}
                   onClick={() => setShowRejectModal(true)}
-                  className="px-5 py-2.5 rounded-2xl bg-gray-50 hover:bg-rose-50 text-gray-600 hover:text-rose-600 font-bold text-xs border border-gray-200 transition-all disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 text-rose-600 font-bold text-xs transition-all cursor-pointer"
                 >
-                  Decline
+                  Decline Order
                 </button>
               </>
             )}
@@ -217,21 +218,20 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               <button
                 disabled={actionLoading}
                 onClick={handleProcess}
-                className="px-5 py-2.5 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs shadow-md shadow-cyan-600/20 transition-all cursor-pointer flex items-center gap-2"
               >
                 <Package className="w-4 h-4" />
-                Start Packing & Processing
+                Start Fulfillment Batch
               </button>
             )}
 
             {order.status === 'PROCESSING' && (
               <button
-                disabled={actionLoading}
                 onClick={() => setShowShipModal(true)}
-                className="px-5 py-2.5 rounded-2xl bg-purple-500 hover:bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/20 transition-all cursor-pointer flex items-center gap-2"
               >
                 <Truck className="w-4 h-4" />
-                Mark as Dispatched / Shipped
+                Mark Dispatched & Add Tracking
               </button>
             )}
 
@@ -239,7 +239,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               <button
                 disabled={actionLoading}
                 onClick={handleDeliver}
-                className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Confirm Warehouse Delivery
@@ -264,7 +264,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                       className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border transition-all ${
                         isPassed
                           ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20'
-                          : 'bg-gray-100 text-gray-400 border-gray-200'
+                          : 'bg-white text-gray-400 border-gray-200 shadow-2xs'
                       }`}
                     >
                       {isPassed ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
@@ -302,7 +302,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
           <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
             Order Items & SKUs
           </h3>
-          <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-2xs">
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-gray-50/80 text-gray-400 uppercase text-[10px] font-bold tracking-wider border-b border-gray-100">
                 <tr>

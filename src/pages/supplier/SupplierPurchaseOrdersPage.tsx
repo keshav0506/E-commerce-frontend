@@ -200,7 +200,7 @@ export const SupplierPurchaseOrdersPage: React.FC = () => {
               className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedStatus === s.value
                   ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
-                  : 'bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
+                  : 'bg-[#f3f4f6] text-gray-700 hover:text-gray-900 hover:bg-white border border-gray-200/80 shadow-2xs'
               }`}
             >
               {s.label}
@@ -217,7 +217,7 @@ export const SupplierPurchaseOrdersPage: React.FC = () => {
               placeholder="Search PO # or Product..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-2xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-2xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-2xs"
             />
           </div>
           <button
@@ -230,7 +230,7 @@ export const SupplierPurchaseOrdersPage: React.FC = () => {
       </div>
 
       {/* Orders Table Container */}
-      <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xs">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl overflow-hidden shadow-xs">
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-xs">
             <Loader2 className="w-8 h-8 animate-spin text-rose-500" />

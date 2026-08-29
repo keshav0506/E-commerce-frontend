@@ -88,8 +88,8 @@ export const CartPage: React.FC = () => {
 
         {cart.length === 0 ? (
           /* EMPTY CART STATE */
-          <div className="bg-white rounded-3xl p-8 sm:p-12 text-center max-w-md mx-auto my-8 sm:my-12 border border-gray-100 shadow-xs space-y-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <div className="bg-[#f3f4f6] rounded-3xl p-8 sm:p-12 text-center max-w-md mx-auto my-8 sm:my-12 border border-gray-200/80 shadow-xs space-y-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner border border-rose-100">
               <ShoppingBag className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
             <div>
@@ -148,13 +148,13 @@ export const CartPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-gray-100 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4"
+                        className="bg-[#f3f4f6] rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4"
                       >
                         {/* Top: Product Thumbnail & Title/Price Info */}
                         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                           <Link
                             to={`/products/${item.product.id}`}
-                            className="w-16 h-16 sm:w-20 sm:h-20 bg-[#f8f9fa] rounded-xl sm:rounded-2xl p-2 shrink-0 border border-gray-100 flex items-center justify-center group"
+                            className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-xl sm:rounded-2xl p-2 shrink-0 border border-gray-100 shadow-2xs flex items-center justify-center group"
                           >
                             <img
                               src={item.product.image}
@@ -165,7 +165,7 @@ export const CartPage: React.FC = () => {
 
                           <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-extrabold text-rose-600 uppercase tracking-wider bg-rose-50 px-1.5 py-0.2 rounded">
+                              <span className="text-[10px] font-extrabold text-rose-600 uppercase tracking-wider bg-rose-50 px-1.5 py-0.2 rounded border border-rose-100">
                                 {item.product.categoryName}
                               </span>
                               {item.product.brand && (
@@ -182,60 +182,56 @@ export const CartPage: React.FC = () => {
                               {item.product.name}
                             </Link>
 
-                            {item.selectedVolume && (
-                              <span className="text-[11px] text-gray-400 font-medium block">
-                                Size: {item.selectedVolume}
-                              </span>
-                            )}
-
-                            {/* Price Row */}
-                            <div className="flex items-center gap-2 pt-0.5">
-                              <span className="text-xs sm:text-sm font-extrabold text-gray-900">
-                                ₹{item.product.price}
-                              </span>
-
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="font-extrabold text-gray-900">₹{item.product.price}</span>
                               {item.product.originalPrice > item.product.price && (
-                                <span className="text-[11px] text-gray-400 line-through">
+                                <span className="text-gray-400 line-through text-[11px]">
                                   ₹{item.product.originalPrice}
                                 </span>
                               )}
-
-                              {item.product.discountPercent > 0 && (
-                                <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.2 rounded">
-                                  {item.product.discountPercent}% OFF
+                              {item.selectedVolume && (
+                                <span className="text-[10px] bg-white px-2 py-0.5 rounded-md font-semibold text-gray-600 border border-gray-200/60">
+                                  {item.selectedVolume}
                                 </span>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        {/* Bottom (Mobile) / Right (Desktop): Quantity Controls & Actions */}
-                        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                          {/* Quantity Pill */}
-                          <div className="flex items-center border border-gray-200 rounded-xl p-0.5 sm:p-1 bg-gray-50/80">
+                        {/* Bottom / Right Controls: Quantity & Actions */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200/60">
+                          {/* Quantity Counter */}
+                          <div className="flex items-center border border-gray-200 rounded-xl p-0.5 bg-white">
                             <button
                               onClick={() => updateQuantity(item.product.id, -1, item.selectedVolume)}
-                              className="p-1 sm:p-1.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-white transition-colors cursor-pointer"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 text-gray-700 font-bold transition-colors cursor-pointer"
                               aria-label="Decrease quantity"
                             >
-                              <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              <Minus className="w-3 h-3" />
                             </button>
-                            <span className="px-2.5 sm:px-3 text-xs font-bold text-gray-900 min-w-[20px] text-center">
+                            <span className="w-8 text-center font-bold text-xs text-gray-900">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(item.product.id, 1, item.selectedVolume)}
-                              className="p-1 sm:p-1.5 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-white transition-colors cursor-pointer"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 text-gray-700 font-bold transition-colors cursor-pointer"
                               aria-label="Increase quantity"
                             >
-                              <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              <Plus className="w-3 h-3" />
                             </button>
                           </div>
 
+                          {/* Line Total */}
+                          <div className="text-right min-w-[70px]">
+                            <span className="text-xs sm:text-sm font-black text-gray-900 block">
+                              ₹{item.product.price * item.quantity}
+                            </span>
+                          </div>
+
+                          {/* Action Buttons: Wishlist & Remove */}
                           <div className="flex items-center gap-1">
-                            {/* Wishlist Button */}
+                            {/* Wishlist Toggle Button */}
                             <button
-                              type="button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -244,7 +240,7 @@ export const CartPage: React.FC = () => {
                               className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
                                 isWishlisted
                                   ? 'text-rose-500 bg-rose-50 border border-rose-100 shadow-xs'
-                                  : 'text-gray-400 hover:text-rose-500 hover:bg-gray-100 border border-transparent'
+                                  : 'text-gray-400 hover:text-rose-500 hover:bg-white border border-gray-200/60 shadow-2xs'
                               }`}
                               title={isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
                               aria-label="Wishlist"
@@ -266,7 +262,6 @@ export const CartPage: React.FC = () => {
                               title="Remove item"
                             >
                               <Trash2 className="w-4 h-4" />
-                              <span className="hidden md:inline">Remove</span>
                             </button>
                           </div>
                         </div>
@@ -277,7 +272,7 @@ export const CartPage: React.FC = () => {
               </div>
 
               {/* COUPON SECTION */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 shadow-xs space-y-3">
+              <div className="bg-[#f3f4f6] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200/80 shadow-xs space-y-3">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2">
                   <Tag className="w-4 h-4 text-rose-500" />
                   <span>Have a Promo / Coupon Code?</span>
@@ -306,7 +301,7 @@ export const CartPage: React.FC = () => {
                       placeholder="Try SAVE10 or WELCOME100"
                       value={couponInput}
                       onChange={(e) => setCouponInput(e.target.value)}
-                      className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 uppercase"
+                      className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 uppercase"
                     />
                     <button
                       type="submit"
@@ -344,9 +339,9 @@ export const CartPage: React.FC = () => {
 
             {/* RIGHT COLUMN: ORDER SUMMARY */}
             <div className="lg:col-span-4">
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-xs space-y-4 sm:space-y-5 sticky top-24">
+              <div className="bg-[#f3f4f6] rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-xs space-y-4 sm:space-y-5 sticky top-24">
                 
-                <h2 className="text-sm sm:text-base font-extrabold text-gray-900 pb-3 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-sm sm:text-base font-extrabold text-gray-900 pb-3 border-b border-gray-200/60 flex items-center justify-between">
                   <span>Order Summary</span>
                   <span className="text-xs font-semibold text-gray-400">{cartTotalCount} items</span>
                 </h2>

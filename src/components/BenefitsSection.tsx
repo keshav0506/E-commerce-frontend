@@ -53,7 +53,7 @@ export const BenefitsSection: React.FC = () => {
 
   return (
     <section aria-label="Customer Benefits" id="benefits-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div className="bg-[#f8f9fa] border border-gray-200/60 rounded-2xl py-5 px-6 sm:px-8">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-2xl py-5 px-6 sm:px-8 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {BENEFITS.map((benefit) => (
             <div

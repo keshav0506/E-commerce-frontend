@@ -52,7 +52,7 @@ export const SupplierShipmentsPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xs">
+      <div className="bg-[#f3f4f6] border border-gray-200/80 rounded-3xl overflow-hidden shadow-xs">
         {loading ? (
           <div className="p-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-xs">
             <Loader2 className="w-8 h-8 animate-spin text-rose-500" />

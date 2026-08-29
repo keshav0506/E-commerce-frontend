@@ -37,6 +37,7 @@ import { SupplierShipmentsPage } from './pages/supplier/SupplierShipmentsPage';
 import { SupplierInvoicesPage } from './pages/supplier/SupplierInvoicesPage';
 import { SupplierProfilePage } from './pages/supplier/SupplierProfilePage';
 import { SupplierApplyPage } from './pages/supplier/SupplierApplyPage';
+import { SupplierStorefrontPage } from './pages/SupplierStorefrontPage';
 
 // Admin Imports
 import { AdminRoute } from './components/AdminRoute';
@@ -127,6 +128,8 @@ export function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/products" element={<ProductsPage />} />
                         <Route path="/products/:id" element={<ProductDetailPage />} />
+                        <Route path="/supplier-store/:id" element={<SupplierStorefrontPage />} />
+                        <Route path="/suppliers/:id/products" element={<SupplierStorefrontPage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />

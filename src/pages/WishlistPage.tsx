@@ -69,8 +69,8 @@ export const WishlistPage: React.FC = () => {
 
         {wishlistedProducts.length === 0 ? (
           /* POLISHED EMPTY WISHLIST STATE */
-          <div className="bg-white rounded-3xl p-12 text-center max-w-md mx-auto my-12 border border-gray-100 shadow-xs space-y-4">
-            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <div className="bg-[#f3f4f6] rounded-3xl p-12 text-center max-w-md mx-auto my-12 border border-gray-200/80 shadow-xs space-y-4">
+            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner border border-rose-100">
               <Heart className="w-10 h-10 fill-rose-500" />
             </div>
             <div>

@@ -17,6 +17,42 @@ export interface RatingDistribution {
   percentage: number;
 }
 
+export interface HateoasLink {
+  rel: string;
+  href: string;
+  method: string;
+  title: string;
+  description?: string;
+}
+
+export interface SupplierSummary {
+  id: number | string;
+  businessName: string;
+  businessEmail: string;
+  category: string;
+  city?: string;
+  state?: string;
+  status?: string;
+}
+
+export interface EmiOption {
+  bankName: string;
+  cardType: string;
+  tenureMonths: number;
+  interestRate: number;
+  monthlyInstallment: number;
+  totalPayable: number;
+  processingFee: number;
+  isNoCost: boolean;
+}
+
+export interface EmiPlan {
+  productPrice: number;
+  minEmiAmount: number;
+  bestTenureText: string;
+  plans: EmiOption[];
+}
+
 export interface Product {
   id: string;
   sku?: string;
@@ -26,6 +62,8 @@ export interface Product {
   categoryId: string;
   categoryName: string;
   categorySlug?: string;
+  supplier?: SupplierSummary;
+  _links?: Record<string, HateoasLink>;
   price: number;
   originalPrice: number;
   discountPrice?: number;
@@ -297,6 +335,21 @@ export function mapProductResponseToProduct(dto: any): Product {
     categoryId: String(dto.categoryId ?? dto.category?.id ?? 'all'),
     categoryName: dto.categoryName || dto.category?.name || 'General',
     categorySlug: dto.categorySlug || (dto.categoryName ? dto.categoryName.toLowerCase().replace(/\s+/g, '-') : undefined),
+    supplier: dto.supplier ? {
+      id: dto.supplier.id,
+      businessName: dto.supplier.businessName || `${dto.categoryName || 'Brand'} Supplier`,
+      businessEmail: dto.supplier.businessEmail || `${(dto.categoryName || 'brand').toLowerCase().replace(/\s+/g, '')}Supplier@shoply.com`,
+      category: dto.supplier.category || dto.categoryName || 'General',
+      city: dto.supplier.city,
+      state: dto.supplier.state,
+      status: dto.supplier.status
+    } : {
+      id: dto.supplierId || 1,
+      businessName: `${dto.categoryName || 'Brand'} Supplier`,
+      businessEmail: `${(dto.categoryName || 'brand').toLowerCase().replace(/\s+/g, '')}Supplier@shoply.com`,
+      category: dto.categoryName || 'General'
+    },
+    _links: dto._links || undefined,
     price,
     originalPrice,
     discountPrice,
