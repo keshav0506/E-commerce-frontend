@@ -28,6 +28,7 @@ export interface LoginRequest {
   email: string;
   password: string;
   guestSessionId?: string;
+  role?: string;
 }
 
 /**

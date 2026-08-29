@@ -51,7 +51,8 @@ interface AuthContextType {
   loading: boolean;
   isLoggedIn: boolean;
   isAdmin: boolean;
-  login: (email: string, pass: string) => Promise<boolean>;
+  isSupplier: boolean;
+  login: (email: string, pass: string, requestedRole?: string) => Promise<boolean>;
   register: (name: string, email: string, pass: string) => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   logout: () => Promise<void>;
@@ -145,6 +146,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user && (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN')
   );
 
+  const isSupplier = Boolean(
+    user && (userRole === 'SUPPLIER' || userRole === 'ROLE_SUPPLIER')
+  );
+
   // Sync state to local storage
   useEffect(() => {
     try {
@@ -186,48 +191,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, pass: string): Promise<boolean> => {
-    if (isFirebaseConfigured() && auth) {
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        const idToken = await userCredential.user.getIdToken();
-        localStorage.setItem('token', idToken);
-
-        const { user: resUser } = await firebaseSyncApi({
-          idToken,
-          email: userCredential.user.email || email,
-          name: userCredential.user.displayName || undefined
-        });
-        setUser(resUser);
-        return true;
-      } catch (err: any) {
-        console.error('Firebase login error:', err);
-        throw new Error(formatFirebaseAuthError(err));
-      }
-    }
-
-    // Direct Spring Boot fallback
+  const login = async (email: string, pass: string, requestedRole?: string): Promise<boolean> => {
+    // 1. Direct Spring Boot Multi-Role Authentication with zero-trust role verification
     try {
-      const { user: resUser } = await loginApi({ email, password: pass });
+      const { user: resUser } = await loginApi({ email, password: pass, role: requestedRole });
       setUser(resUser);
       return true;
     } catch (err: any) {
-      console.warn('Real backend login failed, trying fallback mock login if network error:', err);
-      if (err.name === 'TypeError' || err.status === 0 || err.message?.includes('fetch')) {
-        const parts = email.split('@')[0].split('.');
-        const fName = parts[0] || 'User';
-        const lName = parts[1] || '';
-        const mockUser: UserProfile = {
-          ...DEFAULT_MOCK_USER,
-          id: `usr-${Date.now()}`,
-          firstName: fName.charAt(0).toUpperCase() + fName.slice(1),
-          lastName: lName ? lName.charAt(0).toUpperCase() + lName.slice(1) : '',
-          name: `${fName} ${lName}`.trim(),
-          email
-        };
-        setUser(mockUser);
-        localStorage.setItem('token', 'mock-jwt-token-dev');
-        return true;
+      // If backend threw an explicit error (invalid credentials, wrong role, pending approval), bubble it up
+      if (err?.message && !err.message.includes('fetch') && !err.message.includes('NetworkError')) {
+        throw err;
+      }
+
+      // 2. Firebase authentication fallback for Customers if backend network offline
+      if (isFirebaseConfigured() && auth && (!requestedRole || requestedRole.toUpperCase() === 'CUSTOMER')) {
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+          const idToken = await userCredential.user.getIdToken();
+          localStorage.setItem('token', idToken);
+
+          const { user: resUser } = await firebaseSyncApi({
+            idToken,
+            email: userCredential.user.email || email,
+            name: userCredential.user.displayName || undefined
+          });
+          setUser(resUser);
+          return true;
+        } catch (firebaseErr: any) {
+          console.error('Firebase login error:', firebaseErr);
+          throw new Error(formatFirebaseAuthError(firebaseErr));
+        }
       }
       throw err;
     }
@@ -468,6 +461,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isLoggedIn: !!user,
         isAdmin,
+        isSupplier,
         login,
         register,
         loginWithGoogle,

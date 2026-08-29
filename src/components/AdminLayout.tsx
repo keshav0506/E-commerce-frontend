@@ -11,7 +11,9 @@ import {
   LogOut,
   Menu,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
@@ -35,6 +37,8 @@ export const AdminLayout: React.FC = () => {
     { label: 'Products', path: '/admin/products', icon: Package, enabled: true },
     { label: 'Categories', path: '/admin/categories', icon: Layers, enabled: true },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag, enabled: true },
+    { label: 'Suppliers', path: '/admin/suppliers', icon: Building2, enabled: true },
+    { label: 'Purchase Orders', path: '/admin/purchase-orders', icon: ClipboardList, enabled: true },
     { label: 'Customers', path: '/admin/customers', icon: Users, enabled: true },
     { label: 'Promotions', path: '/admin/promotions', icon: Tag, enabled: false }
   ];

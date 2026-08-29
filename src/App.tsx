@@ -24,6 +24,17 @@ import { ReturnsPage } from './pages/ReturnsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { TermsPage } from './pages/TermsPage';
 
+// Supplier Imports
+import { SupplierRoute } from './components/SupplierRoute';
+import { SupplierLayout } from './components/SupplierLayout';
+import { SupplierDashboard } from './pages/supplier/SupplierDashboard';
+import { SupplierPurchaseOrdersPage } from './pages/supplier/SupplierPurchaseOrdersPage';
+import { SupplierPurchaseOrderDetailPage } from './pages/supplier/SupplierPurchaseOrderDetailPage';
+import { SupplierShipmentsPage } from './pages/supplier/SupplierShipmentsPage';
+import { SupplierInvoicesPage } from './pages/supplier/SupplierInvoicesPage';
+import { SupplierProfilePage } from './pages/supplier/SupplierProfilePage';
+import { SupplierApplyPage } from './pages/supplier/SupplierApplyPage';
+
 // Admin Imports
 import { AdminRoute } from './components/AdminRoute';
 import { AdminLayout } from './components/AdminLayout';
@@ -38,6 +49,8 @@ import { AdminOrdersPage } from './pages/admin/AdminOrdersPage';
 import { AdminOrderDetailsPage } from './pages/admin/AdminOrderDetailsPage';
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage';
 import { AdminCustomerDetailsPage } from './pages/admin/AdminCustomerDetailsPage';
+import { AdminSuppliersPage } from './pages/admin/AdminSuppliersPage';
+import { AdminPurchaseOrdersPage } from './pages/admin/AdminPurchaseOrdersPage';
 
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
@@ -53,6 +66,26 @@ export function App() {
         <ShopProvider>
           <div className="min-h-screen flex flex-col bg-[#fcfcfc] text-gray-900 font-sans selection:bg-rose-500 selection:text-white">
             <Routes>
+              {/* SUPPLIER ONBOARDING (PUBLIC FORM) */}
+              <Route path="/supplier/apply" element={<SupplierApplyPage />} />
+
+              {/* SUPPLIER PORTAL (PROTECTED BY SUPPLIER ROUTE GUARD) */}
+              <Route
+                path="/supplier"
+                element={
+                  <SupplierRoute>
+                    <SupplierLayout />
+                  </SupplierRoute>
+                }
+              >
+                <Route index element={<SupplierDashboard />} />
+                <Route path="purchase-orders" element={<SupplierPurchaseOrdersPage />} />
+                <Route path="purchase-orders/:id" element={<SupplierPurchaseOrderDetailPage />} />
+                <Route path="shipments" element={<SupplierShipmentsPage />} />
+                <Route path="invoices" element={<SupplierInvoicesPage />} />
+                <Route path="profile" element={<SupplierProfilePage />} />
+              </Route>
+
               {/* ADMIN ROUTES (PROTECTED BY ADMIN ROUTE GUARD) */}
               <Route
                 path="/admin"
@@ -73,6 +106,8 @@ export function App() {
                 <Route path="orders/:id" element={<AdminOrderDetailsPage />} />
                 <Route path="customers" element={<AdminCustomersPage />} />
                 <Route path="customers/:id" element={<AdminCustomerDetailsPage />} />
+                <Route path="suppliers" element={<AdminSuppliersPage />} />
+                <Route path="purchase-orders" element={<AdminPurchaseOrdersPage />} />
               </Route>
 
               {/* CUSTOMER STOREFRONT ROUTES (WITH PERSISTENT NAVBAR & FOOTER) */}

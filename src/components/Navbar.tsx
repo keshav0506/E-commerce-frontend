@@ -20,7 +20,8 @@ import {
   Shirt,
   Footprints,
   Smartphone,
-  ShieldCheck
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,7 +37,7 @@ export const Navbar: React.FC = () => {
     setSelectedCategoryId
   } = useShop();
 
-  const { user, isLoggedIn, isAdmin, logout } = useAuth();
+  const { user, isLoggedIn, isAdmin, isSupplier, logout } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -201,6 +202,19 @@ export const Navbar: React.FC = () => {
           {/* RIGHT ACTION BUTTONS: ADMIN, ACCOUNT, WISHLIST, CART, HAMBURGER */}
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
 
+            {/* SUPPLIER PORTAL TOGGLE */}
+            {isSupplier && (
+              <button
+                onClick={() => navigate('/supplier')}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-emerald-950 to-slate-900 hover:from-emerald-900 hover:to-slate-800 text-white rounded-xl shadow-xs border border-emerald-700/60 transition-all cursor-pointer group"
+                title="Switch to Supplier Portal"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <Building2 className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-12 transition-transform" />
+                <span className="text-xs font-bold text-emerald-100 tracking-tight hidden sm:inline">Supplier</span>
+              </button>
+            )}
+
             {/* ADMIN PANEL TOGGLE (STRICTLY FOR LOGGED-IN ADMINS ONLY) */}
             {isAdmin && (
               <button
@@ -237,6 +251,11 @@ export const Navbar: React.FC = () => {
                           ADMIN
                         </span>
                       )}
+                      {isSupplier && (
+                        <span className="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.2 rounded">
+                          SUPPLIER
+                        </span>
+                      )}
                     </div>
                     <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
                   </div>
@@ -260,6 +279,20 @@ export const Navbar: React.FC = () => {
                     <Heart className="w-3.5 h-3.5 text-rose-500" />
                     <span>My Wishlist ({wishlist.length})</span>
                   </button>
+
+                  {/* Supplier Portal Link */}
+                  {(isSupplier || isAdmin) && (
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        navigate('/supplier');
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-50 transition-colors flex items-center gap-2 cursor-pointer"
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Supplier Portal</span>
+                    </button>
+                  )}
 
                   {/* ONLY show Admin Panel option if user is verified ADMIN */}
                   {isAdmin && (
