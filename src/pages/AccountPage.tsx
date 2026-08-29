@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -16,7 +16,15 @@ import {
   Eye,
   EyeOff,
   Bell,
-  Camera
+  Camera,
+  Package,
+  ShoppingBag,
+  Clock,
+  CheckCircle2,
+  Truck,
+  AlertCircle,
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import type { UserAddress } from '../context/AuthContext';
@@ -36,7 +44,7 @@ export const AccountPage: React.FC = () => {
     setDefaultAddress,
     updatePreferences
   } = useAuth();
-  const { showToast } = useShop();
+  const { showToast, orders } = useShop();
 
   // Guard: Redirect to /login if not logged in
   useEffect(() => {
@@ -45,8 +53,46 @@ export const AccountPage: React.FC = () => {
     }
   }, [isLoggedIn, user, navigate]);
 
-  // Active Tab: 'profile' | 'addresses' | 'settings'
-  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'settings'>('profile');
+  // Active Tab: 'profile' | 'addresses' | 'orders' | 'settings'
+  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'orders' | 'settings'>('profile');
+
+  // Avatar Upload Ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  // Filter orders for the active user
+  const userOrders = (orders || []).filter(
+    (o) => !user?.email || o.customer?.email?.toLowerCase() === user.email.toLowerCase() || !o.customer?.email
+  );
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file (PNG, JPG, WebP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image size must be under 5MB.');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      updateProfile({ avatar: base64 });
+      setIsUploadingPhoto(false);
+      showToast('Profile picture updated successfully!');
+    };
+    reader.onerror = () => {
+      setIsUploadingPhoto(false);
+      showToast('Failed to read image file.');
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -295,6 +341,7 @@ export const AccountPage: React.FC = () => {
           {[
             { id: 'profile', label: 'Profile', icon: User },
             { id: 'addresses', label: 'Saved Addresses', icon: MapPin },
+            { id: 'orders', label: 'My Orders', icon: Package, count: userOrders.length },
             { id: 'settings', label: 'Settings', icon: Settings }
           ].map((tab) => {
             const IconComponent = tab.icon;
@@ -311,6 +358,11 @@ export const AccountPage: React.FC = () => {
               >
                 <IconComponent className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -332,9 +384,17 @@ export const AccountPage: React.FC = () => {
               
               {/* User Identity Mini Card */}
               <div className="p-3 bg-[#f8f9fa] rounded-2xl flex items-center space-x-3 mb-3 border border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-rose-500 text-white font-extrabold text-sm flex items-center justify-center shadow-sm">
-                  {initials}
-                </div>
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-10 h-10 rounded-full object-cover shadow-xs border border-white"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-rose-500 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
+                    {initials}
+                  </div>
+                )}
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-gray-900 truncate">{user.name}</h4>
                   <p className="text-[11px] text-gray-400 truncate">{user.email}</p>
@@ -370,6 +430,25 @@ export const AccountPage: React.FC = () => {
                 </div>
                 <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold">
                   {user.addresses.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-colors flex items-center justify-between cursor-pointer ${
+                  activeTab === 'orders'
+                    ? 'bg-rose-50 text-rose-600 font-extrabold'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Package className="w-4 h-4" />
+                  <span>My Orders</span>
+                </div>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                  activeTab === 'orders' ? 'bg-rose-200 text-rose-700' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {userOrders.length}
                 </span>
               </button>
 
@@ -428,26 +507,58 @@ export const AccountPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Avatar Display */}
+                {/* Avatar Display with Live File Upload */}
                 <div className="flex items-center space-x-4">
                   <div className="relative group">
-                    <div className="w-20 h-20 rounded-full bg-rose-500 text-white font-black text-2xl flex items-center justify-center shadow-md">
-                      {initials}
-                    </div>
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-rose-500 text-white font-black text-2xl flex items-center justify-center shadow-md">
+                        {initials}
+                      </div>
+                    )}
+                    
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleAvatarUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+
                     <button
-                      onClick={() => showToast('Photo upload capability is enabled.')}
-                      className="absolute bottom-0 right-0 p-1.5 bg-gray-900 hover:bg-black text-white rounded-full shadow-md cursor-pointer transition-transform group-hover:scale-110"
-                      title="Change photo"
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingPhoto}
+                      className="absolute bottom-0 right-0 p-2 bg-gray-900 hover:bg-black text-white rounded-full shadow-md cursor-pointer transition-transform group-hover:scale-110 flex items-center justify-center"
+                      title="Upload profile picture"
                     >
-                      <Camera className="w-3.5 h-3.5" />
+                      {isUploadingPhoto ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   </div>
                   <div>
                     <h3 className="text-base font-extrabold text-gray-900">{user.name}</h3>
                     <p className="text-xs text-gray-400 font-medium">{user.email}</p>
-                    <span className="inline-block mt-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                      Account Verified
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="inline-block text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                        Account Verified
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"
+                      >
+                        Change Photo
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -486,13 +597,13 @@ export const AccountPage: React.FC = () => {
                         Phone Number
                       </span>
                       <span className="text-sm font-bold text-gray-900 mt-1 block">
-                        +91 {user.phone}
+                        {user.phone || 'Not provided'}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  /* Edit Profile Form */
-                  <form onSubmit={handleSaveProfile} className="space-y-4 pt-2 border-t border-gray-100">
+                  /* Profile Details Edit View */
+                  <form onSubmit={handleSaveProfile} className="space-y-4 pt-2">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
@@ -502,9 +613,11 @@ export const AccountPage: React.FC = () => {
                           type="text"
                           value={editFirstName}
                           onChange={(e) => setEditFirstName(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-hidden focus:border-rose-500 focus:bg-white"
                         />
-                        {profileErrors.firstName && <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.firstName}</p>}
+                        {profileErrors.firstName && (
+                          <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.firstName}</p>
+                        )}
                       </div>
 
                       <div>
@@ -515,9 +628,11 @@ export const AccountPage: React.FC = () => {
                           type="text"
                           value={editLastName}
                           onChange={(e) => setEditLastName(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-hidden focus:border-rose-500 focus:bg-white"
                         />
-                        {profileErrors.lastName && <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.lastName}</p>}
+                        {profileErrors.lastName && (
+                          <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.lastName}</p>
+                        )}
                       </div>
 
                       <div>
@@ -528,9 +643,11 @@ export const AccountPage: React.FC = () => {
                           type="email"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-hidden focus:border-rose-500 focus:bg-white"
                         />
-                        {profileErrors.email && <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.email}</p>}
+                        {profileErrors.email && (
+                          <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.email}</p>
+                        )}
                       </div>
 
                       <div>
@@ -542,25 +659,27 @@ export const AccountPage: React.FC = () => {
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
                           maxLength={10}
-                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900"
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-semibold text-gray-900 focus:outline-hidden focus:border-rose-500 focus:bg-white"
                         />
-                        {profileErrors.phone && <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.phone}</p>}
+                        {profileErrors.phone && (
+                          <p className="text-xs text-rose-500 font-bold mt-1">{profileErrors.phone}</p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-3">
-                      <button
-                        type="submit"
-                        className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
-                      >
-                        Save Changes
-                      </button>
+                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                       <button
                         type="button"
                         onClick={() => setIsEditingProfile(false)}
-                        className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer"
+                        className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-2xl transition-colors cursor-pointer"
                       >
                         Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-2xl shadow-md transition-colors cursor-pointer"
+                      >
+                        Save Changes
                       </button>
                     </div>
                   </form>
@@ -576,10 +695,15 @@ export const AccountPage: React.FC = () => {
                 className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
               >
                 <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                  <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-rose-500" />
-                    <span>Saved Delivery Addresses</span>
-                  </h2>
+                  <div>
+                    <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-rose-500" />
+                      <span>Saved Delivery Addresses</span>
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Add, update and manage default delivery addresses for rapid checkout.
+                    </p>
+                  </div>
 
                   <button
                     onClick={handleOpenAddAddress}
@@ -591,63 +715,60 @@ export const AccountPage: React.FC = () => {
                 </div>
 
                 {user.addresses.length === 0 ? (
-                  /* EMPTY ADDRESS STATE */
-                  <div className="text-center py-12 space-y-3 max-w-sm mx-auto">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
-                      <MapPin className="w-8 h-8" />
+                  <div className="text-center py-12 space-y-3 bg-[#f8f9fa] rounded-3xl border border-dashed border-gray-200">
+                    <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                      <MapPin className="w-6 h-6" />
                     </div>
-                    <h3 className="text-base font-bold text-gray-900">No saved addresses</h3>
-                    <p className="text-xs text-gray-500">
+                    <h3 className="text-sm font-bold text-gray-800">No saved addresses</h3>
+                    <p className="text-xs text-gray-400 max-w-xs mx-auto">
                       Add an address to make checkout faster during your next order!
                     </p>
                     <button
                       onClick={handleOpenAddAddress}
-                      className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full text-xs font-bold shadow-md cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-5 py-2 bg-rose-500 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
                     >
-                      Add Address
+                      <span>Add Address</span>
                     </button>
                   </div>
                 ) : (
-                  /* ADDRESS CARDS GRID */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {user.addresses.map((addr) => (
                       <div
                         key={addr.id}
-                        className={`p-5 rounded-3xl border transition-all relative flex flex-col justify-between space-y-4 ${
+                        className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
                           addr.isDefault
-                            ? 'border-rose-500 bg-rose-50/30 ring-2 ring-rose-500/20 shadow-xs'
+                            ? 'border-rose-300 bg-rose-50/20 shadow-xs'
                             : 'border-gray-100 bg-[#f8f9fa] hover:border-gray-200'
                         }`}
                       >
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded bg-gray-200 text-gray-800">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-gray-200/60 rounded-md text-gray-700">
                               {addr.type}
                             </span>
-
                             {addr.isDefault && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                              <span className="text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <Check className="w-3 h-3" /> Default
                               </span>
                             )}
                           </div>
 
-                          <h4 className="text-sm font-bold text-gray-900">{addr.fullName}</h4>
-                          <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                            {addr.house}, {addr.street}<br />
-                            {addr.city}, {addr.state} — <strong>{addr.pincode}</strong>
-                          </p>
-                          <p className="text-xs text-gray-400 font-medium mt-1">
-                            Phone: +91 {addr.phone}
+                          <div>
+                            <h4 className="text-sm font-extrabold text-gray-900">{addr.fullName}</h4>
+                            <p className="text-xs text-gray-500">{addr.phone}</p>
+                          </div>
+
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            {addr.house}, {addr.street && `${addr.street}, `}
+                            {addr.city}, {addr.state} - {addr.pincode}
                           </p>
                         </div>
 
-                        {/* Actions */}
-                        <div className="pt-3 border-t border-gray-200/60 flex items-center justify-between text-xs font-bold">
+                        <div className="pt-4 mt-4 border-t border-gray-200/50 flex items-center justify-between text-xs font-bold">
                           {!addr.isDefault ? (
                             <button
                               onClick={() => handleSetDefault(addr.id)}
-                              className="text-gray-500 hover:text-rose-600 transition-colors cursor-pointer"
+                              className="text-rose-600 hover:text-rose-700 cursor-pointer"
                             >
                               Set as Default
                             </button>
@@ -655,22 +776,21 @@ export const AccountPage: React.FC = () => {
                             <span className="text-gray-300">Default Address</span>
                           )}
 
-                          <div className="flex items-center space-x-3">
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={() => handleOpenEditAddress(addr)}
-                              className="text-gray-600 hover:text-gray-900 cursor-pointer flex items-center gap-1"
+                              className="text-gray-500 hover:text-gray-800 cursor-pointer"
                             >
-                              <Edit2 className="w-3.5 h-3.5" /> Edit
+                              Edit
                             </button>
                             <button
                               onClick={() => setDeletingAddressId(addr.id)}
-                              className="text-rose-500 hover:text-rose-700 cursor-pointer flex items-center gap-1"
+                              className="text-rose-500 hover:text-rose-700 cursor-pointer"
                             >
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                              Delete
                             </button>
                           </div>
                         </div>
-
                       </div>
                     ))}
                   </div>
@@ -678,7 +798,156 @@ export const AccountPage: React.FC = () => {
               </motion.div>
             )}
 
-            {/* SECTION 3: ACCOUNT SETTINGS */}
+            {/* SECTION 3: MY ORDERS & PAST ORDERS */}
+            {activeTab === 'orders' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
+              >
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
+                      <Package className="w-5 h-5 text-rose-500" />
+                      <span>My Orders ({userOrders.length})</span>
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Review order details, shipments, invoices and past item purchases.
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/products"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Continue Shopping</span>
+                  </Link>
+                </div>
+
+                {userOrders.length === 0 ? (
+                  <div className="text-center py-16 space-y-3 bg-[#f8f9fa] rounded-3xl border border-dashed border-gray-200">
+                    <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                      <ShoppingBag className="w-7 h-7" />
+                    </div>
+                    <h3 className="text-base font-extrabold text-gray-800">No Past Orders Found</h3>
+                    <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                      You have not placed any orders yet. Explore our fresh inventory and place your first order!
+                    </p>
+                    <Link
+                      to="/products"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md transition-colors cursor-pointer mt-2"
+                    >
+                      <span>Explore Catalog</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userOrders.map((order) => {
+                      const isDelivered = order.status === 'Delivered';
+                      const isCancelled = order.status === 'Cancelled';
+                      const isShipped = order.status === 'Shipped';
+
+                      return (
+                        <div
+                          key={order.id}
+                          className="bg-[#f8f9fa] rounded-2xl p-5 sm:p-6 border border-gray-100 hover:border-gray-200 transition-all space-y-4"
+                        >
+                          {/* Order Card Header */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200/60 gap-2">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-rose-500 shadow-xs">
+                                <Package className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-extrabold text-gray-900 flex items-center gap-2">
+                                  <span>Order #{order.id}</span>
+                                </h4>
+                                <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>Placed on {order.createdAt}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 ${
+                                  isDelivered
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : isCancelled
+                                    ? 'bg-red-50 text-red-600 border border-red-200'
+                                    : isShipped
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}
+                              >
+                                {isDelivered && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                                {isShipped && <Truck className="w-3.5 h-3.5 text-blue-600" />}
+                                {isCancelled && <AlertCircle className="w-3.5 h-3.5 text-red-600" />}
+                                <span>{order.status}</span>
+                              </span>
+
+                              <span className="text-sm font-black text-gray-900">
+                                ₹{(order.finalTotal || order.total || 0).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Order Items Breakdown */}
+                          <div className="space-y-3">
+                            {(order.items || []).map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={item.image}
+                                    alt={item.productName}
+                                    className="w-12 h-12 rounded-lg object-cover border border-gray-100 bg-gray-50 shrink-0"
+                                  />
+                                  <div>
+                                    <h5 className="text-xs font-bold text-gray-900 line-clamp-1">
+                                      {item.productName}
+                                    </h5>
+                                    <p className="text-[11px] text-gray-400">
+                                      Qty: {item.quantity} • SKU: {item.sku || 'N/A'}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-xs font-bold text-gray-900">
+                                    ₹{((item.priceAtPurchase || 0) * item.quantity).toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Delivery Destination & Summary Footer */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-gray-500 pt-2 gap-2">
+                            <p className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              <span className="truncate max-w-xs sm:max-w-md">
+                                Deliver to: {order.shippingAddress?.fullName || user.name}, {order.shippingAddress?.city || 'Local Area'}
+                              </span>
+                            </p>
+
+                            <p className="text-[11px] font-semibold text-gray-400">
+                              Payment: <span className="uppercase text-gray-700 font-bold">{order.paymentMethod || 'ONLINE'}</span>
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* SECTION 4: ACCOUNT SETTINGS */}
             {activeTab === 'settings' && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

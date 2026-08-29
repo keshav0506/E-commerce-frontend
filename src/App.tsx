@@ -43,10 +43,12 @@ import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
 import { QuickViewModal } from './components/QuickViewModal';
 import { ToastNotification } from './components/ToastNotification';
+import { ScrollToTop } from './components/ScrollToTop';
 
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <ShopProvider>
           <div className="min-h-screen flex flex-col bg-[#fcfcfc] text-gray-900 font-sans selection:bg-rose-500 selection:text-white">

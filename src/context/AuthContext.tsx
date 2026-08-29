@@ -345,41 +345,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [loading, user?.id]);
 
-  const addAddress = (addressData: Omit<UserAddress, 'id'>) => {
-    if (!user) return;
-    const newAddr: UserAddress = {
+  const addAddress = async (addressData: Omit<UserAddress, 'id'>) => {
+    const isFirst = !user || !user.addresses || user.addresses.length === 0;
+    const isDef = isFirst ? true : Boolean(addressData.isDefault);
+
+    const tempAddr: UserAddress = {
       ...addressData,
       id: `addr-${Date.now()}`,
-      isDefault: user.addresses.length === 0 ? true : addressData.isDefault || false
+      isDefault: isDef
     };
 
     setUser((prev) => {
       if (!prev) return null;
-      let updatedAddresses = [...prev.addresses];
-      if (newAddr.isDefault) {
-        updatedAddresses = updatedAddresses.map((a) => ({ ...a, isDefault: false }));
-      }
-      return { ...prev, addresses: [...updatedAddresses, newAddr] };
+      const prevList = prev.addresses || [];
+      const sanitized = isDef
+        ? prevList.map((a) => ({ ...a, isDefault: false }))
+        : [...prevList];
+      return { ...prev, addresses: [...sanitized, tempAddr] };
     });
 
     if (localStorage.getItem('token')) {
-      createAddressApi(addressData).then((resAddr) => {
+      try {
+        const resAddr = await createAddressApi({ ...addressData, isDefault: isDef });
         if (resAddr && resAddr.id) {
           setUser((prev) => {
             if (!prev) return null;
-            const updated = prev.addresses.map((a) => (a.id === newAddr.id ? resAddr : a));
+            const updated = (prev.addresses || []).map((a) => (a.id === tempAddr.id ? resAddr : a));
             return { ...prev, addresses: updated };
           });
         }
-      }).catch(() => {});
+      } catch (err) {
+        console.warn('Backend address sync error, kept in local state:', err);
+      }
     }
   };
 
-  const updateAddress = (id: string, updatedFields: Partial<UserAddress>) => {
-    if (!user) return;
+  const updateAddress = async (id: string, updatedFields: Partial<UserAddress>) => {
     setUser((prev) => {
       if (!prev) return null;
-      let updatedList = prev.addresses.map((a) => {
+      let updatedList = (prev.addresses || []).map((a) => {
         if (a.id === id) {
           return { ...a, ...updatedFields };
         }
@@ -394,16 +398,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (localStorage.getItem('token')) {
-      updateAddressApi(id, updatedFields).catch(() => {});
+      try {
+        await updateAddressApi(id, updatedFields);
+      } catch (err) {
+        console.warn('Backend address update error:', err);
+      }
     }
   };
 
-  const deleteAddress = (id: string) => {
-    if (!user) return;
+  const deleteAddress = async (id: string) => {
     setUser((prev) => {
       if (!prev) return null;
-      const wasDefault = prev.addresses.find((a) => a.id === id)?.isDefault;
-      const remaining = prev.addresses.filter((a) => a.id !== id);
+      const wasDefault = (prev.addresses || []).find((a) => a.id === id)?.isDefault;
+      const remaining = (prev.addresses || []).filter((a) => a.id !== id);
 
       if (wasDefault && remaining.length > 0) {
         remaining[0].isDefault = true;
@@ -413,15 +420,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (localStorage.getItem('token')) {
-      deleteAddressApi(id).catch(() => {});
+      try {
+        await deleteAddressApi(id);
+      } catch (err) {
+        console.warn('Backend address delete error:', err);
+      }
     }
   };
 
-  const setDefaultAddress = (id: string) => {
-    if (!user) return;
+  const setDefaultAddress = async (id: string) => {
     setUser((prev) => {
       if (!prev) return null;
-      const updated = prev.addresses.map((a) => ({
+      const updated = (prev.addresses || []).map((a) => ({
         ...a,
         isDefault: a.id === id
       }));
@@ -429,7 +439,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (localStorage.getItem('token')) {
-      setDefaultAddressApi(id).catch(() => {});
+      try {
+        await setDefaultAddressApi(id);
+      } catch (err) {
+        console.warn('Backend setDefaultAddress error:', err);
+      }
     }
   };
 
