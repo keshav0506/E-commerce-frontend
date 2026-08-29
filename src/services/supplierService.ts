@@ -6,7 +6,9 @@ import type {
   SupplierDashboardMetrics,
   SupplierNotification,
   PurchaseOrderStatus,
-  SupplierStatus
+  SupplierStatus,
+  SupplierProduct,
+  SupplierProductRequest
 } from '../types/supplier';
 
 export interface PageResponse<T> {
@@ -146,6 +148,88 @@ export async function markNotificationReadApi(id: number | string): Promise<void
     method: 'PUT',
   });
 }
+
+// ==========================================
+// SUPPLIER PRODUCT CATALOG MANAGEMENT APIS
+// ==========================================
+
+export async function getSupplierProductsApi(params?: {
+  search?: string;
+  page?: number;
+  size?: number;
+}): Promise<PageResponse<SupplierProduct>> {
+  const query = new URLSearchParams();
+  if (params?.search) query.append('search', params.search);
+  if (params?.page !== undefined) query.append('page', String(params.page));
+  if (params?.size !== undefined) query.append('size', String(params.size));
+
+  return await apiFetch<PageResponse<SupplierProduct>>(
+    `/supplier/products${query.toString() ? `?${query.toString()}` : ''}`
+  );
+}
+
+export async function createSupplierProductApi(data: SupplierProductRequest): Promise<SupplierProduct> {
+  return await apiFetch<SupplierProduct>('/supplier/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getSupplierProductByIdApi(id: number | string): Promise<SupplierProduct> {
+  return await apiFetch<SupplierProduct>(`/supplier/products/${id}`);
+}
+
+export async function updateSupplierProductApi(
+  id: number | string,
+  data: SupplierProductRequest
+): Promise<SupplierProduct> {
+  return await apiFetch<SupplierProduct>(`/supplier/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSupplierProductApi(id: number | string): Promise<void> {
+  await apiFetch<void>(`/supplier/products/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function updateSupplierProductStockApi(
+  id: number | string,
+  stock: number
+): Promise<SupplierProduct> {
+  return await apiFetch<SupplierProduct>(`/supplier/products/${id}/stock`, {
+    method: 'PATCH',
+    body: JSON.stringify({ stock }),
+  });
+}
+
+/**
+ * Upload Product Image to Cloudinary (POST /api/images/upload)
+ * Automatically uploads to Cloudinary (with local fallback if unconfigured).
+ */
+export async function uploadSupplierProductImageApi(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await apiFetch<any>('/images/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    return res.imageUrl || res.url || res.secure_url || res;
+  } catch (err) {
+    // If upload fails or network is offline, fallback to local Data URL
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
 
 // ==========================================
 // ADMIN SUPPLIER MANAGEMENT APIS

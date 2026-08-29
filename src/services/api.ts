@@ -1,4 +1,15 @@
+import { apiCache } from './cacheManager';
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api';
+
+export { apiCache } from './cacheManager';
+
+export interface ApiFetchOptions extends RequestInit {
+  skipCache?: boolean;
+  cacheTTL?: number;
+  forceRefresh?: boolean;
+  invalidatePatterns?: (string | RegExp)[];
+}
 
 export class ApiError extends Error {
   status: number;
@@ -25,13 +36,43 @@ export function getGuestSessionId(): string {
   }
 }
 
-export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+/**
+ * Invalidate cache helper
+ */
+export function invalidateApiCache(pattern?: string | RegExp) {
+  apiCache.invalidate(pattern);
+}
 
+/**
+ * Clear all cache helper
+ */
+export function clearApiCache() {
+  apiCache.clear();
+}
+
+/**
+ * Peek at cached data synchronously
+ */
+export function peekApiCache<T>(endpoint: string): T | null {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  return apiCache.peek<T>(url);
+}
+
+/**
+ * Execute actual HTTP network request
+ */
+/**
+ * Execute actual HTTP network request with conditional ETag headers
+ */
+async function performNetworkFetch<T>(url: string, options: ApiFetchOptions, etag?: string): Promise<{ data: T; etag?: string; notModified?: boolean }> {
   const headers: Record<string, string> = {
     'X-Guest-Session-ID': getGuestSessionId(),
     ...(options.headers as Record<string, string>),
   };
+
+  if (etag && (options.method || 'GET').toUpperCase() === 'GET') {
+    headers['If-None-Match'] = etag;
+  }
 
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
@@ -62,9 +103,15 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   const response = await fetch(url, config);
 
-  if (response.status === 204) {
-    return {} as T;
+  if (response.status === 304) {
+    return { data: null as any, notModified: true };
   }
+
+  if (response.status === 204) {
+    return { data: {} as T };
+  }
+
+  const responseEtag = response.headers.get('ETag') || response.headers.get('etag') || undefined;
 
   let responseData: any;
   const contentType = response.headers.get('content-type');
@@ -84,7 +131,6 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) {
-      // If server rejects the token as unauthorized/forbidden, clean up stale session token
       localStorage.removeItem('token');
     }
 
@@ -96,5 +142,121 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     throw new ApiError(response.status, message, responseData);
   }
 
-  return responseData as T;
+  return { data: responseData as T, etag: responseEtag };
 }
+
+/**
+ * Auto-invalidate related caches for mutating requests
+ */
+function autoInvalidateMutationCaches(url: string) {
+  if (url.includes('/supplier/products') || url.includes('/products')) {
+    apiCache.invalidate('/supplier/products');
+    apiCache.invalidate('/products');
+    apiCache.invalidate('/categories');
+    apiCache.invalidate('/supplier/dashboard');
+  }
+  if (url.includes('/supplier/purchase-orders') || url.includes('/admin/purchase-orders')) {
+    apiCache.invalidate('/supplier/purchase-orders');
+    apiCache.invalidate('/supplier/dashboard');
+    apiCache.invalidate('/admin/purchase-orders');
+  }
+  if (url.includes('/cart')) {
+    apiCache.invalidate('/cart');
+  }
+  if (url.includes('/wishlist')) {
+    apiCache.invalidate('/wishlist');
+  }
+  if (url.includes('/orders')) {
+    apiCache.invalidate('/orders');
+    apiCache.invalidate('/supplier/dashboard');
+  }
+  if (url.includes('/supplier/profile') || url.includes('/suppliers')) {
+    apiCache.invalidate('/supplier/profile');
+    apiCache.invalidate('/suppliers');
+    apiCache.invalidate('/supplier/dashboard');
+  }
+  if (url.includes('/reviews')) {
+    apiCache.invalidate('/reviews');
+    apiCache.invalidate('/products');
+  }
+}
+
+/**
+ * High-Performance API Fetch with Multi-Tier SWR Caching & Server Load Optimization
+ */
+export async function apiFetch<T>(endpoint: string, options: ApiFetchOptions = {}): Promise<T> {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const method = (options.method || 'GET').toUpperCase();
+  const isGet = method === 'GET';
+
+  // For non-GET requests (mutations: POST, PUT, DELETE, PATCH), execute directly and invalidate caches
+  if (!isGet) {
+    const res = await performNetworkFetch<T>(url, options);
+    
+    // Auto-invalidate domain caches
+    autoInvalidateMutationCaches(url);
+    if (options.invalidatePatterns) {
+      options.invalidatePatterns.forEach((p) => apiCache.invalidate(p));
+    }
+    return res.data;
+  }
+
+  // GET Requests: Multi-Tier Cache Check
+  const shouldCache = !options.skipCache;
+  const cacheKey = url;
+  // Default TTL: 10 minutes for catalog endpoints, 3 minutes for others
+  const defaultTTL = url.includes('/categories') || url.includes('/products') ? 600000 : 180000;
+  const ttl = options.cacheTTL || defaultTTL;
+
+  if (shouldCache && !options.forceRefresh) {
+    const { data: cachedData, isStale, etag } = apiCache.get<T>(cacheKey, ttl);
+
+    if (cachedData !== null) {
+      // If stale, trigger background revalidation quietly with ETag
+      if (isStale) {
+        performNetworkFetch<T>(url, options, etag)
+          .then((res) => {
+            if (res.notModified) {
+              apiCache.touch(cacheKey);
+            } else if (res.data) {
+              apiCache.set(cacheKey, res.data, res.etag);
+            }
+          })
+          .catch((err) => {
+            console.debug('[apiFetch] Background SWR refresh failed silently:', err);
+          });
+      }
+      return cachedData;
+    }
+  }
+
+  // Check if there is already an in-flight promise for this exact GET URL
+  const inFlightPromise = apiCache.getInFlight<T>(cacheKey);
+  if (inFlightPromise && shouldCache) {
+    return inFlightPromise;
+  }
+
+  // Create network promise and register as in-flight
+  const existingEtag = apiCache.getEtag(cacheKey);
+  const networkPromise = performNetworkFetch<T>(url, options, existingEtag)
+    .then((res) => {
+      if (res.notModified) {
+        apiCache.touch(cacheKey);
+        return apiCache.peek<T>(cacheKey) as T;
+      }
+      if (shouldCache && res.data) {
+        apiCache.set(cacheKey, res.data, res.etag);
+      }
+      return res.data;
+    })
+    .finally(() => {
+      apiCache.removeInFlight(cacheKey);
+    });
+
+  if (shouldCache) {
+    apiCache.setInFlight(cacheKey, networkPromise);
+  }
+
+  return networkPromise;
+}
+

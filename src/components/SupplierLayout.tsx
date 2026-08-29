@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   ClipboardList,
+  Package,
   Truck,
   Receipt,
   Building2,
@@ -22,10 +23,52 @@ import type { SupplierNotification } from '../types/supplier';
 export const SupplierLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<SupplierNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const desktopNotifRef = useRef<HTMLDivElement>(null);
+  const mobileNotifRef = useRef<HTMLDivElement>(null);
+
+  // Close notifications on outside click or touch anywhere on screen
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node;
+      const clickedDesktop = desktopNotifRef.current && desktopNotifRef.current.contains(target);
+      const clickedMobile = mobileNotifRef.current && mobileNotifRef.current.contains(target);
+
+      if (!clickedDesktop && !clickedMobile) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setNotificationsOpen(false);
+        setSidebarOpen(false);
+      }
+    };
+
+    if (notificationsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [notificationsOpen]);
+
+  // Close on route changes
+  useEffect(() => {
+    setNotificationsOpen(false);
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const fetchNotifs = async () => {
     try {
@@ -62,6 +105,7 @@ export const SupplierLayout: React.FC = () => {
 
   const navLinks = [
     { to: '/supplier', label: 'Overview', icon: LayoutDashboard, end: true },
+    { to: '/supplier/products', label: 'Products Catalog', icon: Package },
     { to: '/supplier/purchase-orders', label: 'Purchase Orders', icon: ClipboardList },
     { to: '/supplier/shipments', label: 'Shipments', icon: Truck },
     { to: '/supplier/invoices', label: 'Invoices & Payouts', icon: Receipt },
@@ -69,38 +113,79 @@ export const SupplierLayout: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-[#fcfcfc] text-gray-900 flex flex-col md:flex-row font-sans">
       {/* Mobile Top Header */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg bg-slate-800 text-slate-200 hover:text-white"
+            className="p-2 rounded-xl bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer"
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           <Link to="/supplier" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center font-black text-slate-950 text-sm">
-              S
-            </div>
-            <span className="font-bold text-base tracking-tight text-white">
-              Shoply <span className="text-emerald-400 font-semibold text-xs px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded">Supplier</span>
+            <span className="font-extrabold text-xl tracking-tight text-gray-900">
+              Shoply<span className="text-rose-500">.</span>
+            </span>
+            <span className="text-rose-600 font-bold text-[10px] px-2 py-0.5 bg-rose-50 border border-rose-100 rounded-full uppercase tracking-wider">
+              Supplier
             </span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="relative" ref={mobileNotifRef}>
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+            className="relative p-2 rounded-xl bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer"
           >
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center">
                 {unreadCount}
               </span>
             )}
           </button>
+
+          {/* Mobile Notification Dropdown */}
+          {notificationsOpen && (
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 overflow-hidden text-left animate-in fade-in slide-in-from-top-2">
+              <div className="p-3.5 border-b border-gray-100 flex items-center justify-between bg-rose-50/40">
+                <div className="flex items-center gap-1.5">
+                  <Bell className="w-3.5 h-3.5 text-rose-500" />
+                  <span className="text-xs font-extrabold text-gray-900 uppercase tracking-wider">
+                    Supplier Alerts
+                  </span>
+                </div>
+                {unreadCount > 0 && (
+                  <span className="text-[10px] text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full font-bold">
+                    {unreadCount} new
+                  </span>
+                )}
+              </div>
+              <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-gray-400">
+                    No notifications yet. You're all caught up!
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => handleMarkRead(n.id)}
+                      className={`p-3 hover:bg-rose-50/40 transition-colors cursor-pointer text-left ${
+                        !n.isRead ? 'bg-rose-50/20' : ''
+                      }`}
+                    >
+                      <p className={`text-xs font-bold ${!n.isRead ? 'text-rose-600' : 'text-gray-800'}`}>
+                        {n.title}
+                      </p>
+                      <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5">{n.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -108,36 +193,33 @@ export const SupplierLayout: React.FC = () => {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 md:hidden"
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-transform duration-200 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 flex flex-col justify-between transition-transform duration-200 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         <div>
           {/* Brand Header */}
-          <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
-            <Link to="/supplier" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-slate-950 shadow-lg shadow-emerald-500/20">
-                S
-              </div>
-              <div>
-                <div className="font-black text-base tracking-tight text-white flex items-center gap-1.5">
-                  Shoply <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">B2B</span>
-                </div>
-                <div className="text-[11px] text-slate-400">Supplier Supply Portal</div>
-              </div>
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <Link to="/supplier" className="flex items-center gap-2">
+              <span className="text-2xl font-extrabold tracking-tight text-gray-900">
+                Shoply<span className="text-rose-500">.</span>
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
+                Supplier
+              </span>
             </Link>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1">
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Supply Management
+          <nav className="p-4 space-y-1">
+            <div className="px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-gray-400">
+              Supply Portal
             </div>
             {navLinks.map((link) => {
               const Icon = link.icon;
@@ -148,10 +230,10 @@ export const SupplierLayout: React.FC = () => {
                   end={link.end}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    `flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
                       isActive
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                        ? 'bg-rose-50 text-rose-600 border border-rose-100 shadow-xs'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`
                   }
                 >
@@ -167,29 +249,29 @@ export const SupplierLayout: React.FC = () => {
         </div>
 
         {/* User Account / Footer Actions */}
-        <div className="p-4 border-t border-slate-800/80 space-y-3">
-          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-800 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-sm">
+        <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50/50">
+          <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center font-bold text-rose-600 text-sm">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user?.name || 'Verified Supplier'}</p>
-              <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+              <p className="text-xs font-bold text-gray-900 truncate">{user?.name || 'Verified Supplier'}</p>
+              <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
             </div>
-            <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               to="/"
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-800/60 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 border border-gray-200 transition-colors shadow-xs"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
               Storefront
             </Link>
             <button
               onClick={handleLogout}
-              className="p-2 rounded-lg text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors"
+              className="p-2 rounded-xl text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer"
               title="Log Out"
             >
               <LogOut className="w-4 h-4" />
@@ -201,28 +283,28 @@ export const SupplierLayout: React.FC = () => {
       {/* Main Content Body */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Desktop Top Bar */}
-        <header className="hidden md:flex items-center justify-between px-8 py-4 bg-slate-900/60 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-30">
-          <div className="flex items-center gap-3 text-xs text-slate-400">
-            <span className="flex items-center gap-1 text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Supplier Operational Network
+        <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100 sticky top-0 z-30 shadow-xs">
+          <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
+            <span className="flex items-center gap-1.5 text-rose-600 font-bold bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+              Shoply Supplier Hub
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              TiDB Enterprise Procurement Gateway
+              <Clock className="w-3.5 h-3.5 text-gray-400" />
+              Real-time Inventory & Order Sync
             </span>
           </div>
 
           {/* Notifications Trigger */}
-          <div className="relative">
+          <div className="relative" ref={desktopNotifRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition-colors"
+              className="relative p-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200 transition-colors cursor-pointer"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
@@ -230,24 +312,24 @@ export const SupplierLayout: React.FC = () => {
 
             {/* Notification Dropdown Panel */}
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-gray-100 rounded-3xl shadow-2xl z-50 overflow-hidden text-left animate-in fade-in slide-in-from-top-2">
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-rose-50/40">
                   <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    <Bell className="w-4 h-4 text-rose-500" />
+                    <span className="text-xs font-extrabold text-gray-900 uppercase tracking-wider">
                       Supplier Alerts
                     </span>
                   </div>
                   {unreadCount > 0 && (
-                    <span className="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-semibold">
-                      {unreadCount} unread
+                    <span className="text-[11px] text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full font-bold">
+                      {unreadCount} new
                     </span>
                   )}
                 </div>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60">
+                <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
                   {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-slate-500">
+                    <div className="p-6 text-center text-xs text-gray-400">
                       No notifications yet. You're all caught up!
                     </div>
                   ) : (
@@ -255,20 +337,20 @@ export const SupplierLayout: React.FC = () => {
                       <div
                         key={n.id}
                         onClick={() => handleMarkRead(n.id)}
-                        className={`p-3.5 hover:bg-slate-800/50 transition-colors cursor-pointer text-left ${
-                          !n.isRead ? 'bg-emerald-500/5' : ''
+                        className={`p-3.5 hover:bg-rose-50/40 transition-colors cursor-pointer text-left ${
+                          !n.isRead ? 'bg-rose-50/20' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className={`text-xs font-semibold ${!n.isRead ? 'text-emerald-300' : 'text-slate-200'}`}>
+                          <p className={`text-xs font-bold ${!n.isRead ? 'text-rose-600' : 'text-gray-800'}`}>
                             {n.title}
                           </p>
                           {!n.isRead && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 mt-1" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 mt-1" />
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed mb-1.5">{n.message}</p>
-                        <span className="text-[9px] text-slate-500 font-mono">
+                        <p className="text-[11px] text-gray-500 leading-relaxed mb-1.5">{n.message}</p>
+                        <span className="text-[10px] text-gray-400 font-mono">
                           {new Date(n.createdAt).toLocaleString()}
                         </span>
                       </div>
@@ -281,7 +363,7 @@ export const SupplierLayout: React.FC = () => {
         </header>
 
         {/* Content Outlet */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto bg-[#fafafa]">
           <Outlet />
         </main>
       </div>

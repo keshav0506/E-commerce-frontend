@@ -33,7 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.25 }}
       onClick={handleCardClick}
-      className={`group relative bg-white rounded-2xl p-4 flex flex-col justify-between hover:shadow-xl border border-gray-100/90 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${
+      className={`group relative bg-[#f3f4f6] hover:bg-white rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between hover:shadow-xl border border-gray-200/80 hover:border-rose-200/90 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer ${
         isOutOfStock ? 'opacity-75' : ''
       }`}
     >
@@ -41,7 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="flex items-center justify-between z-10">
         <div className="flex items-center gap-1.5 flex-wrap">
           {product.brand && (
-            <span className="inline-block px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-700 bg-gray-100 rounded-md">
+            <span className="inline-block px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-700 bg-white border border-gray-200/80 rounded-md shadow-2xs">
               {product.brand}
             </span>
           )}
@@ -67,10 +67,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className={`p-2 rounded-full backdrop-blur-md transition-all duration-200 cursor-pointer ${
+          className={`p-2 rounded-full transition-all duration-200 cursor-pointer ${
             isWishlisted
-              ? 'bg-rose-50 text-rose-500 shadow-sm'
-              : 'bg-gray-50/80 text-gray-400 hover:text-rose-500 hover:bg-rose-50 shadow-2xs'
+              ? 'bg-rose-50 text-rose-500 shadow-xs border border-rose-100'
+              : 'bg-white text-gray-400 hover:text-rose-500 hover:bg-rose-50 shadow-2xs border border-gray-200/70'
           }`}
           aria-label="Wishlist"
         >
@@ -79,12 +79,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Seamless Image Area with Quick Add (+) Button */}
-      <div className="relative my-2 aspect-square flex items-center justify-center p-3 rounded-xl bg-slate-50/40 group-hover:bg-rose-50/30 transition-colors duration-300 overflow-hidden">
+      <div className="relative my-2 aspect-square flex items-center justify-center p-3 rounded-xl bg-white shadow-2xs border border-gray-200/60 group-hover:border-rose-100 group-hover:shadow-xs transition-all duration-300 overflow-hidden">
         <img
           src={imgSrc}
           alt={product.name}
           onError={() => setImgSrc(FALLBACK_IMAGE)}
-          className={`w-full h-full object-contain filter drop-shadow-md mix-blend-multiply group-hover:scale-105 transition-transform duration-300 ${
+          className={`w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-300 ${
             isOutOfStock ? 'grayscale opacity-60' : ''
           }`}
         />
@@ -98,7 +98,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className={`absolute bottom-1.5 right-1.5 p-2.5 rounded-xl shadow-md transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 z-10 ${
               inCartItem
                 ? 'bg-rose-500 text-white'
-                : 'bg-white hover:bg-rose-50 text-gray-800 hover:text-rose-600 border border-gray-100'
+                : 'bg-white hover:bg-rose-500 text-gray-800 hover:text-white border border-gray-200/80 shadow-xs'
             }`}
             title="Quick Add to Cart"
           >

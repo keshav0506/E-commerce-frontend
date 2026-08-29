@@ -28,6 +28,9 @@ import { TermsPage } from './pages/TermsPage';
 import { SupplierRoute } from './components/SupplierRoute';
 import { SupplierLayout } from './components/SupplierLayout';
 import { SupplierDashboard } from './pages/supplier/SupplierDashboard';
+import { SupplierProductsPage } from './pages/supplier/SupplierProductsPage';
+import { SupplierAddProductPage } from './pages/supplier/SupplierAddProductPage';
+import { SupplierEditProductPage } from './pages/supplier/SupplierEditProductPage';
 import { SupplierPurchaseOrdersPage } from './pages/supplier/SupplierPurchaseOrdersPage';
 import { SupplierPurchaseOrderDetailPage } from './pages/supplier/SupplierPurchaseOrderDetailPage';
 import { SupplierShipmentsPage } from './pages/supplier/SupplierShipmentsPage';
@@ -79,6 +82,9 @@ export function App() {
                 }
               >
                 <Route index element={<SupplierDashboard />} />
+                <Route path="products" element={<SupplierProductsPage />} />
+                <Route path="products/new" element={<SupplierAddProductPage />} />
+                <Route path="products/:id/edit" element={<SupplierEditProductPage />} />
                 <Route path="purchase-orders" element={<SupplierPurchaseOrdersPage />} />
                 <Route path="purchase-orders/:id" element={<SupplierPurchaseOrderDetailPage />} />
                 <Route path="shipments" element={<SupplierShipmentsPage />} />

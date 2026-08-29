@@ -14,18 +14,39 @@ export const LoginPage: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
   const initialRoleParam = queryParams.get('role')?.toUpperCase();
 
+  const DEFAULT_CREDENTIALS = {
+    CUSTOMER: { email: 'user@ecommerce.com', password: 'user123' },
+    SUPPLIER: { email: 'supplier@ecommerce.com', password: 'supplier123' },
+    ADMIN: { email: 'admin@ecommerce.com', password: 'admin123' }
+  };
+
   const [selectedRole, setSelectedRole] = useState<'CUSTOMER' | 'SUPPLIER' | 'ADMIN'>(() => {
     if (initialRoleParam === 'SUPPLIER') return 'SUPPLIER';
     if (initialRoleParam === 'ADMIN') return 'ADMIN';
     return 'CUSTOMER';
   });
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(() => {
+    const initialRole = initialRoleParam === 'SUPPLIER' ? 'SUPPLIER' : initialRoleParam === 'ADMIN' ? 'ADMIN' : 'CUSTOMER';
+    return DEFAULT_CREDENTIALS[initialRole].email;
+  });
+  const [password, setPassword] = useState(() => {
+    const initialRole = initialRoleParam === 'SUPPLIER' ? 'SUPPLIER' : initialRoleParam === 'ADMIN' ? 'ADMIN' : 'CUSTOMER';
+    return DEFAULT_CREDENTIALS[initialRole].password;
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleRoleSelect = (role: 'CUSTOMER' | 'SUPPLIER' | 'ADMIN') => {
+    setSelectedRole(role);
+    setGeneralError('');
+    setEmailError('');
+    setPasswordError('');
+    setEmail(DEFAULT_CREDENTIALS[role].email);
+    setPassword(DEFAULT_CREDENTIALS[role].password);
+  };
 
   // Errors
   const [emailError, setEmailError] = useState('');
@@ -188,7 +209,7 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-1.5 p-1 bg-gray-100/90 rounded-2xl border border-gray-200">
               <button
                 type="button"
-                onClick={() => { setSelectedRole('CUSTOMER'); setGeneralError(''); }}
+                onClick={() => handleRoleSelect('CUSTOMER')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'CUSTOMER'
                     ? 'bg-white text-gray-900 shadow-sm border border-gray-200/80'
@@ -201,7 +222,7 @@ export const LoginPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => { setSelectedRole('SUPPLIER'); setGeneralError(''); }}
+                onClick={() => handleRoleSelect('SUPPLIER')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'SUPPLIER'
                     ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
@@ -214,7 +235,7 @@ export const LoginPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => { setSelectedRole('ADMIN'); setGeneralError(''); }}
+                onClick={() => handleRoleSelect('ADMIN')}
                 className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   selectedRole === 'ADMIN'
                     ? 'bg-slate-900 text-white shadow-sm'

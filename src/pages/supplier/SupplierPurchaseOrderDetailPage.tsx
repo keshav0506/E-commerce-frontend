@@ -124,22 +124,22 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-slate-400 text-xs">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-        <p>Loading purchase order record...</p>
+      <div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-gray-400 text-xs">
+        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+        <p className="font-bold">Loading purchase order record...</p>
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="p-8 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-center space-y-4 max-w-lg mx-auto mt-12">
-        <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
-        <h3 className="text-base font-bold text-white">Purchase Order Not Found</h3>
-        <p className="text-xs text-rose-300 leading-relaxed">{error || 'Record is inaccessible or does not exist.'}</p>
+      <div className="p-8 bg-rose-50 border border-rose-100 rounded-3xl text-center space-y-4 max-w-lg mx-auto mt-12">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h3 className="text-base font-bold text-gray-900">Purchase Order Not Found</h3>
+        <p className="text-xs text-rose-600 leading-relaxed">{error || 'Record is inaccessible or does not exist.'}</p>
         <Link
           to="/supplier/purchase-orders"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold shadow-xs"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to List
@@ -157,36 +157,36 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
           to="/supplier/purchase-orders"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-rose-500" />
           Back to Purchase Orders
         </Link>
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold transition-colors shadow-xs cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5 text-rose-500" />
             Print Order PO
           </button>
         </div>
       </div>
 
       {/* Main Order Card */}
-      <div className="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-6 sm:p-8 space-y-8 shadow-xl">
+      <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 space-y-8 shadow-xs">
         {/* Header Information */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-gray-100">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-black text-white tracking-tight font-mono">
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight font-mono">
                 {order.poNumber}
               </h1>
-              <span className="px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-rose-50 text-rose-600 border border-rose-100">
                 {order.status}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+            <p className="text-xs text-gray-400 mt-1 flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5" />
               Issued: {new Date(order.orderDate).toLocaleString()}
             </p>
@@ -199,14 +199,14 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                 <button
                   disabled={actionLoading}
                   onClick={handleAccept}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   Accept PO
                 </button>
                 <button
                   disabled={actionLoading}
                   onClick={() => setShowRejectModal(true)}
-                  className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs border border-rose-500/20 transition-all disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-2xl bg-gray-50 hover:bg-rose-50 text-gray-600 hover:text-rose-600 font-bold text-xs border border-gray-200 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   Decline
                 </button>
@@ -217,7 +217,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               <button
                 disabled={actionLoading}
                 onClick={handleProcess}
-                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
                 <Package className="w-4 h-4" />
                 Start Packing & Processing
@@ -228,7 +228,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               <button
                 disabled={actionLoading}
                 onClick={() => setShowShipModal(true)}
-                className="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-2xl bg-purple-500 hover:bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
                 <Truck className="w-4 h-4" />
                 Mark as Dispatched / Shipped
@@ -239,7 +239,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               <button
                 disabled={actionLoading}
                 onClick={handleDeliver}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Confirm Warehouse Delivery
@@ -251,7 +251,7 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
         {/* Timeline Progression Bar */}
         {order.status !== 'REJECTED' && order.status !== 'CANCELLED' && (
           <div className="py-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">
               Fulfillment Progression
             </h3>
             <div className="grid grid-cols-5 gap-2 text-center">
@@ -263,13 +263,13 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border transition-all ${
                         isPassed
-                          ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
-                          : 'bg-slate-950 text-slate-500 border-slate-800'
+                          ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20'
+                          : 'bg-gray-100 text-gray-400 border-gray-200'
                       }`}
                     >
                       {isPassed ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
                     </div>
-                    <span className={`text-[10px] font-semibold uppercase ${isCurrent ? 'text-emerald-400' : isPassed ? 'text-slate-200' : 'text-slate-500'}`}>
+                    <span className={`text-[10px] font-bold uppercase ${isCurrent ? 'text-rose-600' : isPassed ? 'text-gray-900' : 'text-gray-400'}`}>
                       {step}
                     </span>
                   </div>
@@ -281,73 +281,73 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
 
         {/* Rejection / Note Callout */}
         {order.rejectionReason && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl space-y-1">
-            <p className="text-xs font-bold text-rose-400">Order Declined Reason</p>
-            <p className="text-xs text-rose-300">{order.rejectionReason}</p>
+          <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl space-y-1">
+            <p className="text-xs font-bold text-rose-600">Order Declined Reason</p>
+            <p className="text-xs text-rose-500">{order.rejectionReason}</p>
           </div>
         )}
 
         {order.shippingCarrier && order.trackingNumber && (
-          <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-between text-xs">
+          <div className="p-4 bg-purple-50 border border-purple-100 rounded-2xl flex items-center justify-between text-xs">
             <div>
-              <p className="font-bold text-purple-300">Carrier: {order.shippingCarrier}</p>
-              <p className="text-purple-400 font-mono mt-0.5">Tracking Number: {order.trackingNumber}</p>
+              <p className="font-bold text-purple-700">Carrier: {order.shippingCarrier}</p>
+              <p className="text-purple-600 font-mono mt-0.5">Tracking Number: {order.trackingNumber}</p>
             </div>
-            <Truck className="w-6 h-6 text-purple-400" />
+            <Truck className="w-6 h-6 text-purple-500" />
           </div>
         )}
 
         {/* Itemised Procurement Table */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
             Order Items & SKUs
           </h3>
-          <div className="border border-slate-800 rounded-xl overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+          <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-gray-50/80 text-gray-400 uppercase text-[10px] font-bold tracking-wider border-b border-gray-100">
                 <tr>
-                  <th className="py-3 px-4">Item Details</th>
-                  <th className="py-3 px-4 text-center">Quantity</th>
-                  <th className="py-3 px-4 text-right">Unit Wholesale Price</th>
-                  <th className="py-3 px-4 text-right">Subtotal</th>
+                  <th className="py-3.5 px-4">Item Details</th>
+                  <th className="py-3.5 px-4 text-center">Quantity</th>
+                  <th className="py-3.5 px-4 text-right">Unit Wholesale Price</th>
+                  <th className="py-3.5 px-4 text-right">Subtotal</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-200">
+              <tbody className="divide-y divide-gray-100 text-gray-700">
                 {order.items?.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id} className="hover:bg-gray-50/50">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         {item.productImage && (
                           <img
                             src={item.productImage}
                             alt={item.productName}
-                            className="w-10 h-10 rounded-lg object-cover bg-slate-800 border border-slate-700"
+                            className="w-10 h-10 rounded-xl object-cover bg-gray-50 border border-gray-100 shadow-xs"
                           />
                         )}
                         <div>
-                          <p className="font-semibold text-white">{item.productName}</p>
+                          <p className="font-bold text-gray-900">{item.productName}</p>
                           {item.productSku && (
-                            <p className="text-[10px] font-mono text-slate-400">SKU: {item.productSku}</p>
+                            <p className="text-[10px] font-mono text-gray-400">SKU: {item.productSku}</p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold">
+                    <td className="py-3.5 px-4 text-center font-bold text-gray-900">
                       {item.quantity} units
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono">
+                    <td className="py-3.5 px-4 text-right font-mono text-gray-600">
                       ₹{Number(item.unitPrice).toLocaleString()}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-white">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-gray-900">
                       ₹{Number(item.subtotal).toLocaleString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-950/80 font-bold border-t border-slate-800">
+              <tfoot className="bg-rose-50/40 font-bold border-t border-gray-100">
                 <tr>
-                  <td colSpan={3} className="py-4 px-4 text-right text-slate-400">Total Procurement Payable:</td>
-                  <td className="py-4 px-4 text-right text-base text-emerald-400 font-mono">
+                  <td colSpan={3} className="py-4 px-4 text-right text-gray-500">Total Procurement Payable:</td>
+                  <td className="py-4 px-4 text-right text-base text-rose-600 font-mono font-black">
                     ₹{Number(order.totalAmount).toLocaleString()}
                   </td>
                 </tr>
@@ -359,9 +359,9 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 text-left">
-            <h3 className="text-base font-bold text-white">Decline Purchase Order</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 text-left shadow-2xl animate-in fade-in zoom-in-95">
+            <h3 className="text-base font-extrabold text-gray-900">Decline Purchase Order</h3>
             <form onSubmit={handleReject} className="space-y-4">
               <textarea
                 required
@@ -369,20 +369,20 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                 placeholder="State your reason for declining this order..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-rose-500"
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-medium"
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowRejectModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold"
+                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md shadow-rose-500/20 cursor-pointer"
                 >
                   Confirm Reject
                 </button>
@@ -394,16 +394,16 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
 
       {/* Ship Modal */}
       {showShipModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 text-left">
-            <h3 className="text-base font-bold text-white">Dispatch Shipment</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 text-left shadow-2xl animate-in fade-in zoom-in-95">
+            <h3 className="text-base font-extrabold text-gray-900">Dispatch Shipment</h3>
             <form onSubmit={handleShip} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Carrier Partner</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Carrier Partner</label>
                 <select
                   value={carrier}
                   onChange={(e) => setCarrier(e.target.value)}
-                  className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 font-semibold"
                 >
                   <option value="BlueDart Express">BlueDart Express</option>
                   <option value="Delhivery Freight">Delhivery Freight</option>
@@ -414,14 +414,14 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Tracking Number / AWB</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Tracking Number / AWB</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. BLU-84920489"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full p-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs sm:text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
                 />
               </div>
 
@@ -429,14 +429,14 @@ export const SupplierPurchaseOrderDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowShipModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold"
+                  className="px-5 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md shadow-rose-500/20 cursor-pointer"
                 >
                   Confirm Shipment
                 </button>

@@ -100,7 +100,7 @@ export const SpecialDealsSection: React.FC = () => {
               <div
                 key={product.id}
                 onClick={() => navigate(`/products/${product.id}`)}
-                className="bg-[#fafafa] hover:bg-white rounded-2xl p-3 border border-gray-100 hover:border-gray-200 shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group relative"
+                className="bg-[#f3f4f6] hover:bg-white rounded-2xl p-3 border border-gray-200/80 hover:border-rose-200 shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group relative"
               >
                 {/* Discount Tag */}
                 <div className="flex items-center justify-between mb-2">
@@ -119,7 +119,7 @@ export const SpecialDealsSection: React.FC = () => {
                 </div>
 
                 {/* Product Image */}
-                <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2">
+                <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -184,9 +184,9 @@ export const SpecialDealsSection: React.FC = () => {
               <div
                 key={product.id}
                 onClick={() => navigate(`/products/${product.id}`)}
-                className="bg-white rounded-2xl p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-100/50"
+                className="bg-[#f3f4f6] hover:bg-white rounded-2xl p-2.5 sm:p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-200/80"
               >
-                <div className="w-full aspect-square bg-[#f8fafc] rounded-xl flex items-center justify-center p-2.5 overflow-hidden">
+                <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden border border-gray-100 shadow-2xs">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -327,9 +327,9 @@ export const SpecialDealsSection: React.FC = () => {
             <div
               key={product.id}
               onClick={() => navigate(`/products/${product.id}`)}
-              className="bg-white rounded-2xl p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-100/50"
+              className="bg-[#f3f4f6] hover:bg-white rounded-2xl p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-200/80"
             >
-              <div className="w-full aspect-square bg-[#f8fafc] rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2">
+              <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -344,7 +344,7 @@ export const SpecialDealsSection: React.FC = () => {
                 <h3 className="text-xs font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors">
                   {product.name}
                 </h3>
-                <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
                   <span className="text-xs sm:text-sm font-black text-gray-900">
                     ₹{product.price}
                   </span>
@@ -396,9 +396,9 @@ export const SpecialDealsSection: React.FC = () => {
             <div
               key={product.id}
               onClick={() => navigate(`/products/${product.id}`)}
-              className="bg-white rounded-2xl p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-100/50"
+              className="bg-[#f3f4f6] hover:bg-white rounded-2xl p-3 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-200/80"
             >
-              <div className="w-full aspect-square bg-[#f8fafc] rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2">
+              <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -413,7 +413,7 @@ export const SpecialDealsSection: React.FC = () => {
                 <h3 className="text-xs font-bold text-gray-900 truncate group-hover:text-rose-600 transition-colors">
                   {product.name}
                 </h3>
-                <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-1 border-t border-gray-200/60">
                   <span className="text-xs sm:text-sm font-black text-gray-900">
                     ₹{product.price}
                   </span>

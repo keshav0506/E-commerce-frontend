@@ -92,6 +92,47 @@ export interface SupplierNotification {
   createdAt: string;
 }
 
+export interface SupplierProduct {
+  id: number;
+  sku: string;
+  name: string;
+  slug: string;
+  description?: string;
+  shortDescription?: string;
+  brand?: string;
+  price: number;
+  discountPrice?: number;
+  stock: number;
+  lowStockThreshold?: number;
+  image: string;
+  status: string;
+  rating?: number;
+  reviewCount?: number;
+  featured?: boolean;
+  categoryId?: number;
+  categoryName?: string;
+  supplierId?: number;
+  supplierBusinessName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplierProductRequest {
+  sku?: string;
+  name: string;
+  description?: string;
+  shortDescription?: string;
+  brand?: string;
+  price: number;
+  discountPrice?: number;
+  stock: number;
+  lowStockThreshold?: number;
+  image: string;
+  categoryId: number;
+  status?: string;
+  featured?: boolean;
+}
+
 export interface SupplierDashboardMetrics {
   pendingOrders: number;
   acceptedOrders: number;
@@ -103,6 +144,8 @@ export interface SupplierDashboardMetrics {
   totalRevenue: number;
   onTimeDeliveryRate: number;
   fulfillmentRate: number;
+  totalProductsListed?: number;
+  lowStockProductsCount?: number;
   recentPurchaseOrders: PurchaseOrder[];
   recentNotifications: SupplierNotification[];
 }
