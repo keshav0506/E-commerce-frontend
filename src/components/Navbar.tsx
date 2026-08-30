@@ -182,12 +182,13 @@ export const Navbar: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
+                aria-label="Search products, brands, and categories"
                 placeholder="Search for Products, Brands, Categories and More..."
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="w-full pl-11 pr-10 py-2.5 bg-gray-50/90 hover:bg-gray-100/90 focus:bg-white text-xs sm:text-sm text-gray-900 placeholder-gray-400 rounded-2xl border border-gray-200/90 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all duration-200"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" aria-hidden="true" />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
@@ -332,7 +333,7 @@ export const Navbar: React.FC = () => {
                   : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/60'
               }`}
               title="My Wishlist"
-              aria-label="Wishlist"
+              aria-label={`Wishlist with ${wishlist.length} saved items`}
             >
               <Heart className={`w-4.5 h-4.5 sm:w-4 sm:h-4 ${wishlist.length > 0 ? 'fill-rose-500 text-rose-500' : 'text-gray-600'}`} />
               <span className="hidden md:inline">Wishlist</span>
@@ -351,7 +352,7 @@ export const Navbar: React.FC = () => {
                   ? 'bg-rose-500 text-white shadow-md'
                   : 'bg-rose-50 hover:bg-rose-100/80 text-rose-600 border border-rose-100'
               }`}
-              aria-label="Shopping Cart"
+              aria-label={`Shopping Cart with ${cartTotalCount} items`}
             >
               <ShoppingBag className="w-4.5 h-4.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Cart</span>
@@ -368,7 +369,9 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="sm:hidden p-2 text-gray-700 hover:text-rose-600 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer ml-0.5"
-              aria-label="Mobile Navigation Menu"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 text-rose-600" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -380,12 +383,12 @@ export const Navbar: React.FC = () => {
         <div className="sm:hidden pb-3">
           <div className="relative">
             <input
-              id="mobile-search"
               type="text"
-              placeholder="Search products, brands and more..."
+              aria-label="Search products, brands, and categories on mobile"
+              placeholder="Search for Products, Brands..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full pl-9 pr-8 py-2 bg-gray-50 text-xs text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+              className="w-full pl-10 pr-9 py-2 bg-gray-50 text-xs text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 focus:outline-none focus:border-rose-500 focus:bg-white"
             />
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             {searchQuery && (
@@ -458,8 +461,8 @@ export const Navbar: React.FC = () => {
 
       {/* MOBILE MENU DRAWER */}
       {mobileMenuOpen && (
-        <div className="sm:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-3 animate-in slide-in-from-top duration-200">
-          <nav className="flex flex-col space-y-2 text-sm font-medium text-left">
+        <div id="mobile-navigation" className="sm:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-3 animate-in slide-in-from-top duration-200">
+          <nav aria-label="Mobile menu" className="flex flex-col space-y-2 text-sm font-medium text-left">
             <button
               onClick={() => {
                 setSelectedCategoryId('all');

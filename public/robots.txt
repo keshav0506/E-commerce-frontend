@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /supplier/purchase-orders
+Disallow: /supplier/invoices
+Disallow: /supplier/shipments
+
+Sitemap: https://shoplyyy.vercel.app/sitemap.xml

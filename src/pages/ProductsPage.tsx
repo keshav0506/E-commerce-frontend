@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SlidersHorizontal, ArrowUpDown, RefreshCw, ShoppingBag, AlertTriangle, Sparkles, Building2 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
+import { PageMeta } from '../components/PageMeta';
 
 export const ProductsPage: React.FC = () => {
   const {
@@ -207,6 +208,10 @@ export const ProductsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-16 text-left">
+      <PageMeta
+        title={selectedCategoryObj ? `${selectedCategoryObj.name} Products | Shoply` : 'All Products Catalog | Shoply'}
+        description={`Explore our curated collection of ${selectedCategoryObj ? selectedCategoryObj.name : 'premium products'} with fast delivery and guaranteed quality.`}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         
         {/* Breadcrumb Navigation */}
@@ -412,14 +417,16 @@ export const ProductsPage: React.FC = () => {
                   <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
                     <button
                       onClick={() => setSelectedSupplier('all')}
+                      aria-label="Filter by all merchants"
+                      aria-pressed={selectedSupplier === 'all'}
                       className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
                         selectedSupplier === 'all'
                           ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/80 shadow-2xs'
-                          : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                          : 'text-gray-700 hover:bg-white hover:text-gray-900'
                       }`}
                     >
                       <span>All Merchants</span>
-                      <span className="text-[10px] text-gray-400 font-bold">{products.length}</span>
+                      <span className="text-[10px] text-gray-500 font-bold">{products.length}</span>
                     </button>
                     {uniqueSuppliers.map((s) => {
                       const isSelected = selectedSupplier === String(s.id) || selectedSupplier.toLowerCase() === s.name.toLowerCase();
@@ -427,14 +434,16 @@ export const ProductsPage: React.FC = () => {
                         <button
                           key={s.id}
                           onClick={() => setSelectedSupplier(isSelected ? 'all' : String(s.id))}
+                          aria-label={`Filter by merchant ${s.name}`}
+                          aria-pressed={isSelected}
                           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left cursor-pointer ${
                             isSelected
                               ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/80 shadow-2xs'
-                              : 'text-gray-600 hover:bg-white hover:text-gray-900'
+                              : 'text-gray-700 hover:bg-white hover:text-gray-900'
                           }`}
                         >
                           <span className="truncate pr-1">{s.name}</span>
-                          <span className="text-[10px] text-gray-400 font-bold shrink-0">{s.count}</span>
+                          <span className="text-[10px] text-gray-500 font-bold shrink-0">{s.count}</span>
                         </button>
                       );
                     })}
@@ -550,11 +559,13 @@ export const ProductsPage: React.FC = () => {
 
                 {/* Sort By Dropdown */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500 font-medium hidden md:flex items-center gap-1">
-                    <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+                  <label htmlFor="sort-products-select" className="text-xs text-gray-600 font-medium hidden md:flex items-center gap-1">
+                    <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" aria-hidden="true" />
                     Sort:
-                  </span>
+                  </label>
                   <select
+                    id="sort-products-select"
+                    aria-label="Sort products by"
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
                     className="text-xs font-bold text-gray-800 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 focus:outline-hidden focus:border-rose-500 cursor-pointer"
@@ -572,19 +583,19 @@ export const ProductsPage: React.FC = () => {
             {/* Active Filter Chips */}
             {activeFiltersCount > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-gray-400 font-medium">Applied:</span>
+                <span className="text-xs text-gray-600 font-medium">Applied:</span>
 
                 {isForYouSelected ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     <Sparkles className="w-3 h-3" /> For You Picks
-                    <button onClick={() => handleCategoryChange('all')} className="hover:text-rose-800">
+                    <button onClick={() => handleCategoryChange('all')} aria-label="Remove For You filter" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
                 ) : selectedCategoryId !== 'all' && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     Category: {selectedCategoryObj ? selectedCategoryObj.name : selectedCategoryId}
-                    <button onClick={() => handleCategoryChange('all')} className="hover:text-rose-800">
+                    <button onClick={() => handleCategoryChange('all')} aria-label="Remove Category filter" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -593,7 +604,7 @@ export const ProductsPage: React.FC = () => {
                 {searchQuery.trim() && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     Search: "{searchQuery}"
-                    <button onClick={() => setSearchQuery('')} className="hover:text-rose-800">
+                    <button onClick={() => setSearchQuery('')} aria-label="Clear search text" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -602,7 +613,7 @@ export const ProductsPage: React.FC = () => {
                 {selectedPriceRange !== 'all' && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     Price: {selectedPriceRange}
-                    <button onClick={() => setSelectedPriceRange('all')} className="hover:text-rose-800">
+                    <button onClick={() => setSelectedPriceRange('all')} aria-label="Remove Price filter" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -611,7 +622,7 @@ export const ProductsPage: React.FC = () => {
                 {selectedMinRating > 0 && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     {selectedMinRating}★ & above
-                    <button onClick={() => setSelectedMinRating(0)} className="hover:text-rose-800">
+                    <button onClick={() => setSelectedMinRating(0)} aria-label="Remove Rating filter" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -619,9 +630,9 @@ export const ProductsPage: React.FC = () => {
 
                 {selectedSupplier !== 'all' && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
-                    <Building2 className="w-3 h-3 text-emerald-600" />
+                    <Building2 className="w-3.5 h-3.5 text-emerald-600" />
                     Merchant: {uniqueSuppliers.find((s) => String(s.id) === selectedSupplier || s.name.toLowerCase() === selectedSupplier.toLowerCase())?.name || selectedSupplier}
-                    <button onClick={() => setSelectedSupplier('all')} className="hover:text-emerald-900">
+                    <button onClick={() => setSelectedSupplier('all')} aria-label="Remove Merchant filter" className="hover:text-emerald-900 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -630,7 +641,7 @@ export const ProductsPage: React.FC = () => {
                 {inStockOnly && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold border border-rose-100">
                     In Stock Only
-                    <button onClick={() => setInStockOnly(false)} className="hover:text-rose-800">
+                    <button onClick={() => setInStockOnly(false)} aria-label="Remove In Stock filter" className="hover:text-rose-800 cursor-pointer">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -662,16 +673,19 @@ export const ProductsPage: React.FC = () => {
               </div>
             ) : paginatedProducts.length > 0 ? (
               /* 4-COLUMN PRODUCT GRID */
-              <motion.div
-                layout
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
-              >
-                <AnimatePresence mode="popLayout">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+              <section aria-label="Products Catalog Grid">
+                <h2 className="sr-only">Products Catalog</h2>
+                <motion.div
+                  layout
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {paginatedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              </section>
             ) : (
               /* EMPTY STATE */
               <div className="bg-white rounded-3xl p-12 text-center my-6 max-w-md mx-auto border border-gray-100 shadow-xs space-y-4">
@@ -748,6 +762,7 @@ export const ProductsPage: React.FC = () => {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
+                          aria-label={`Page ${pageNum}`}
                           aria-current={isActive ? 'page' : undefined}
                           className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             isActive

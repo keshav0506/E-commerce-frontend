@@ -35,7 +35,8 @@ import {
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
-import { fetchEmiPlans } from '../services/apiService';
+import { PageMeta } from '../components/PageMeta';
+import { fetchEmiPlans, submitWholesaleQuote } from '../services/apiService';
 import {
   fetchProductReviewsApi,
   submitProductReviewApi,
@@ -68,6 +69,10 @@ export const ProductDetailPage: React.FC = () => {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [quoteQty, setQuoteQty] = useState('100');
   const [quoteNotes, setQuoteNotes] = useState('');
+  const [quoteCompanyName, setQuoteCompanyName] = useState('');
+  const [quoteContactName, setQuoteContactName] = useState('');
+  const [quoteContactEmail, setQuoteContactEmail] = useState('');
+  const [quoteContactPhone, setQuoteContactPhone] = useState('');
   const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
 
   // Reviews state
@@ -101,16 +106,39 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
-  const handleSendQuote = (e: React.FormEvent) => {
+  const handleSendQuote = async (e: React.FormEvent) => {
     e.preventDefault();
+    const supplierId = product?.supplier?.id;
+    if (!supplierId) {
+      showToast('Supplier information not available for this product.');
+      return;
+    }
     setIsSubmittingQuote(true);
-    setTimeout(() => {
-      setIsSubmittingQuote(false);
+    try {
+      const result = await submitWholesaleQuote(supplierId, {
+        companyName: quoteCompanyName,
+        contactName: quoteContactName,
+        contactEmail: quoteContactEmail,
+        contactPhone: quoteContactPhone || undefined,
+        quantity: parseInt(quoteQty, 10),
+        notes: quoteNotes || undefined,
+        productId: product?.id,
+        productName: product?.name,
+      });
       setIsQuoteModalOpen(false);
+      setQuoteCompanyName('');
+      setQuoteContactName('');
+      setQuoteContactEmail('');
+      setQuoteContactPhone('');
       setQuoteNotes('');
+      setQuoteQty('100');
       const suppName = product?.supplier?.businessName || `${product?.categoryName || ''} Supplier`;
-      showToast(`Wholesale inquiry sent to ${suppName}!`);
-    }, 700);
+      showToast(`Quote submitted! Reference: ${result.referenceId} — ${suppName} will contact you within 1-2 business days.`);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to submit quote. Please try again.');
+    } finally {
+      setIsSubmittingQuote(false);
+    }
   };
 
   // Load reviews for current product
@@ -328,21 +356,26 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
-  // Compute live review ratings and distributions
-  const displayRating = reviewSummary?.averageRating || product.rating || 4.8;
-  const displayReviewCount = reviewSummary?.totalReviews !== undefined ? reviewSummary.totalReviews : (product.reviewCount || 1);
+  // Compute live review ratings and distributions from real API data
+  // Use ?? (nullish coalescing) so that 0 from the server is respected, not treated as falsy
+  const displayRating = reviewSummary != null ? reviewSummary.averageRating : (product.rating ?? 0);
+  const displayReviewCount = reviewSummary != null ? reviewSummary.totalReviews : (product.reviewCount ?? 0);
   const displayReviews = reviewSummary?.reviews && reviewSummary.reviews.length > 0 ? reviewSummary.reviews : (product.reviews || []);
 
-  const ratingPercentages = reviewSummary?.ratingPercentages || {
-    5: 75,
-    4: 20,
-    3: 5,
+  const ratingPercentages: Record<number, number> = reviewSummary?.ratingPercentages ?? {
+    5: 0,
+    4: 0,
+    3: 0,
     2: 0,
     1: 0
   };
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 text-left">
+      <PageMeta
+        title={`${product.name} | Shoply`}
+        description={product.description || `Buy ${product.name} at ₹${product.price}. Verified reviews, fast shipping, and wholesale quotes available.`}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         
         {/* Breadcrumbs */}
@@ -453,13 +486,21 @@ export const ProductDetailPage: React.FC = () => {
 
               {/* Rating Preview */}
               <div className="flex items-center gap-2 mt-3">
-                <div className="flex items-center bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-full text-amber-900 text-xs font-extrabold">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 mr-1" />
-                  <span>{displayRating}</span>
-                </div>
-                <a href="#reviews-section" className="text-xs text-gray-500 hover:text-rose-600 underline font-medium">
-                  {displayReviewCount} customer {displayReviewCount === 1 ? 'review' : 'reviews'}
-                </a>
+                {displayReviewCount > 0 ? (
+                  <>
+                    <div className="flex items-center bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-full text-amber-900 text-xs font-extrabold">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 mr-1" />
+                      <span>{displayRating.toFixed(1)}</span>
+                    </div>
+                    <a href="#reviews-section" className="text-xs text-gray-500 hover:text-rose-600 underline font-medium">
+                      {displayReviewCount} customer {displayReviewCount === 1 ? 'review' : 'reviews'}
+                    </a>
+                  </>
+                ) : (
+                  <a href="#reviews-section" className="text-xs text-gray-400 hover:text-rose-600 underline font-medium">
+                    No reviews yet — be the first!
+                  </a>
+                )}
               </div>
             </div>
 
@@ -604,9 +645,9 @@ export const ProductDetailPage: React.FC = () => {
                       Verified
                     </span>
                   </div>
-                  <h4 className="text-xs sm:text-sm font-extrabold text-gray-900 truncate">
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 truncate">
                     {product.supplier?.businessName || `${product.categoryName || 'Category'} Supplier`}
-                  </h4>
+                  </p>
                   <p className="text-[10px] text-gray-500 truncate">
                     {product.supplier?.city ? `${product.supplier.city}, ${product.supplier.state || 'India'}` : 'Authorized Distribution Hub'} • 100% Genuine Stock
                   </p>
@@ -795,46 +836,60 @@ export const ProductDetailPage: React.FC = () => {
             
             {/* RATING SUMMARY CARD */}
             <div className="lg:col-span-4 bg-[#f3f4f6] border border-gray-200/80 rounded-3xl p-6 shadow-xs text-center space-y-4">
-              <div>
-                <span className="text-5xl font-black text-gray-900">{displayRating}</span>
-                <span className="text-sm text-gray-400 block font-medium mt-1">out of 5.0</span>
-              </div>
+              {displayReviewCount === 0 ? (
+                <div className="py-4 space-y-3">
+                  <div className="flex justify-center space-x-1">
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} className="w-6 h-6 fill-gray-200 text-gray-200" />
+                    ))}
+                  </div>
+                  <p className="text-sm font-bold text-gray-400">No ratings yet</p>
+                  <p className="text-xs text-gray-400">Be the first to review this product</p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <span className="text-5xl font-black text-gray-900">{displayRating.toFixed(1)}</span>
+                    <span className="text-sm text-gray-400 block font-medium mt-1">out of 5.0</span>
+                  </div>
 
-              <div className="flex justify-center text-amber-400 space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-5 h-5 ${
-                      star <= Math.round(displayRating)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'fill-gray-100 text-gray-200'
-                    }`}
-                  />
-                ))}
-              </div>
+                  <div className="flex justify-center text-amber-400 space-x-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-5 h-5 ${
+                          star <= Math.round(displayRating)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-gray-100 text-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
 
-              <span className="text-xs text-gray-500 block font-medium">
-                Based on {displayReviewCount} {displayReviewCount === 1 ? 'rating' : 'ratings'}
-              </span>
+                  <span className="text-xs text-gray-500 block font-medium">
+                    Based on {displayReviewCount} {displayReviewCount === 1 ? 'rating' : 'ratings'}
+                  </span>
 
-              {/* STAR BREAKDOWN BARS */}
-              <div className="space-y-2 pt-2 text-xs">
-                {[5, 4, 3, 2, 1].map((stars) => {
-                  const pct = ratingPercentages[stars] || 0;
-                  return (
-                    <div key={stars} className="flex items-center gap-2">
-                      <span className="w-8 text-right font-bold text-gray-700">{stars}★</span>
-                      <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-gray-200/60">
-                        <div
-                          className="bg-amber-400 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="w-9 text-left text-gray-400 font-semibold">{pct}%</span>
-                    </div>
-                  );
-                })}
-              </div>
+                  {/* STAR BREAKDOWN BARS */}
+                  <div className="space-y-2 pt-2 text-xs">
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const pct = ratingPercentages[stars] || 0;
+                      return (
+                        <div key={stars} className="flex items-center gap-2">
+                          <span className="w-8 text-right font-bold text-gray-700">{stars}★</span>
+                          <div className="flex-1 bg-white h-2 rounded-full overflow-hidden border border-gray-200/60">
+                            <div
+                              className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-left text-gray-400 font-semibold">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* REVIEWS LIST */}
@@ -923,7 +978,7 @@ export const ProductDetailPage: React.FC = () => {
 
                       {/* Title & Comment */}
                       {rev.title && (
-                        <h4 className="text-xs sm:text-sm font-bold text-gray-900">{rev.title}</h4>
+                        <h3 className="text-xs sm:text-sm font-bold text-gray-900">{rev.title}</h3>
                       )}
                       <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                         "{rev.comment}"
@@ -1427,13 +1482,67 @@ export const ProductDetailPage: React.FC = () => {
               </div>
 
               <form onSubmit={handleSendQuote} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                      Company / Business Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Acme Corp"
+                      value={quoteCompanyName}
+                      onChange={(e) => setQuoteCompanyName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                      Your Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="John Doe"
+                      value={quoteContactName}
+                      onChange={(e) => setQuoteContactName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                      Phone (optional)
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="+91 9XXXXXXXXX"
+                      value={quoteContactPhone}
+                      onChange={(e) => setQuoteContactPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                      Contact Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="procurement@yourcompany.com"
+                      value={quoteContactEmail}
+                      onChange={(e) => setQuoteContactEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
                     Required Quantity (Units) *
                   </label>
                   <input
                     type="number"
-                    min={10}
+                    min={1}
                     required
                     value={quoteQty}
                     onChange={(e) => setQuoteQty(e.target.value)}
@@ -1447,7 +1556,6 @@ export const ProductDetailPage: React.FC = () => {
                   </label>
                   <textarea
                     rows={3}
-                    required
                     placeholder="Specify delivery timeline, custom labelling, target invoice price..."
                     value={quoteNotes}
                     onChange={(e) => setQuoteNotes(e.target.value)}
@@ -1457,7 +1565,7 @@ export const ProductDetailPage: React.FC = () => {
 
                 <div className="p-3 bg-white rounded-2xl border border-gray-200/60 shadow-2xs text-[11px] text-gray-500 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Your request will be dispatched to {product.supplier?.businessEmail || `${(product.categoryName || 'supplier').toLowerCase().replace(/\s+/g, '')}Supplier@shoply.com`}.</span>
+                  <span>Quote sent directly to {product?.supplier?.businessName || `${product?.categoryName} Supplier`}. You&apos;ll receive a reply at your email within 1-2 business days.</span>
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">

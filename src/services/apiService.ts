@@ -231,3 +231,40 @@ export async function fetchPublicSupplierCatalog(
     return null;
   }
 }
+
+export interface WholesaleQuotePayload {
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string;
+  quantity: number;
+  notes?: string;
+  productId?: number | string;
+  productName?: string;
+}
+
+export interface WholesaleQuoteResult {
+  id: number;
+  referenceId: string;
+  supplierBusinessName: string;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  quantity: number;
+  status: string;
+  createdAt: string;
+  message: string;
+}
+
+/**
+ * Submit a wholesale quote request to a supplier (POST /api/suppliers/{id}/quote)
+ */
+export async function submitWholesaleQuote(
+  supplierId: string | number,
+  payload: WholesaleQuotePayload
+): Promise<WholesaleQuoteResult> {
+  return await apiFetch<WholesaleQuoteResult>(`/suppliers/${supplierId}/quote`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}

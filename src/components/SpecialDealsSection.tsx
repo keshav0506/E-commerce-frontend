@@ -9,6 +9,7 @@ import {
   Flame
 } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import { getOptimizedImageUrl } from '../lib/imageUtils';
 
 export const SpecialDealsSection: React.FC = () => {
   const navigate = useNavigate();
@@ -113,6 +114,7 @@ export const SpecialDealsSection: React.FC = () => {
                       toggleWishlist(product.id);
                     }}
                     className="p-1 rounded-full text-gray-400 hover:text-rose-500 transition-colors"
+                    aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                   >
                     <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
                   </button>
@@ -121,8 +123,12 @@ export const SpecialDealsSection: React.FC = () => {
                 {/* Product Image */}
                 <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                   <img
-                    src={product.image}
+                    src={getOptimizedImageUrl(product.image, 300)}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="150"
+                    height="150"
                     className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-108 transition-transform duration-300"
                   />
                 </div>
@@ -188,8 +194,12 @@ export const SpecialDealsSection: React.FC = () => {
               >
                 <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden border border-gray-100 shadow-2xs">
                   <img
-                    src={product.image}
+                    src={getOptimizedImageUrl(product.image, 300)}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="160"
+                    height="160"
                     className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -247,8 +257,12 @@ export const SpecialDealsSection: React.FC = () => {
               >
                 <div className="w-full aspect-square bg-white/5 rounded-xl flex items-center justify-center p-2 overflow-hidden mb-2">
                   <img
-                    src={product.image}
+                    src={getOptimizedImageUrl(product.image, 300)}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="150"
+                    height="150"
                     className="w-full h-full object-contain filter drop-shadow-lg group-hover:scale-108 transition-transform duration-300"
                   />
                 </div>
@@ -267,6 +281,7 @@ export const SpecialDealsSection: React.FC = () => {
                         addToCart(product, 1);
                       }}
                       className="p-1.5 rounded-lg bg-white/20 hover:bg-rose-500 text-white transition-colors"
+                      aria-label={`Add ${product.name} to cart`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>
@@ -331,14 +346,18 @@ export const SpecialDealsSection: React.FC = () => {
             >
               <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                 <img
-                  src={product.image}
+                  src={getOptimizedImageUrl(product.image, 300)}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
+                  width="150"
+                  height="150"
                   className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
 
               <div className="space-y-1 text-left">
-                <span className="text-[10px] text-amber-700 font-extrabold uppercase">
+                <span className="text-[10px] text-amber-800 font-extrabold uppercase">
                   {product.categoryName}
                 </span>
                 <h3 className="text-xs font-bold text-gray-900 truncate group-hover:text-amber-700 transition-colors">
@@ -353,7 +372,8 @@ export const SpecialDealsSection: React.FC = () => {
                       e.stopPropagation();
                       addToCart(product, 1);
                     }}
-                    className="p-1.5 rounded-lg bg-amber-900 hover:bg-black text-white transition-colors"
+                    className="p-1.5 rounded-lg bg-amber-900 hover:bg-black text-white transition-colors cursor-pointer"
+                    aria-label={`Add ${product.name} to cart`}
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
                   </button>
@@ -400,8 +420,12 @@ export const SpecialDealsSection: React.FC = () => {
             >
               <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center p-2.5 overflow-hidden mb-2 border border-gray-100 shadow-2xs">
                 <img
-                  src={product.image}
+                  src={getOptimizedImageUrl(product.image, 300)}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
+                  width="150"
+                  height="150"
                   className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -422,7 +446,8 @@ export const SpecialDealsSection: React.FC = () => {
                       e.stopPropagation();
                       addToCart(product, 1);
                     }}
-                    className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors"
+                    className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer"
+                    aria-label={`Add ${product.name} to cart`}
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
                   </button>

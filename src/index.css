@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -23,7 +22,13 @@
     padding: 0;
   }
 
-  /* Prevent auto-zoom on input focus on iOS/Android (16px base font for inputs) */
+  /* Accessibility: standard focus-visible rings across all interactive controls */
+  :focus-visible {
+    outline: 2px solid #f43f5e;
+    outline-offset: 2px;
+  }
+
+  /* Prevent auto-zoom on input focus on mobile */
   @media screen and (max-width: 768px) {
     input, select, textarea {
       font-size: 16px !important;

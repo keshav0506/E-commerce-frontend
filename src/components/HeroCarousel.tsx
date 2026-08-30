@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { useNavigate } from 'react-router-dom';
+import { getOptimizedImageUrl } from '../lib/imageUtils';
 
 interface FlipkartHeroBanner {
   id: string;
@@ -39,7 +40,7 @@ const HERO_BANNERS: FlipkartHeroBanner[] = [
     highlight: 'From ₹1,999',
     subtitle: 'Always-On Display • 7-Day Battery • IP68 Water Resistant',
     bankOffer: 'Instant 10% Off with HDFC / SBI Cards',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg', 600),
     bgGradient: 'from-[#0f172a] via-[#1e293b] to-[#334155]',
     textColor: 'text-white',
     accentColor: 'text-rose-400',
@@ -53,7 +54,7 @@ const HERO_BANNERS: FlipkartHeroBanner[] = [
     highlight: 'Flat 45% Off',
     subtitle: 'Active Noise Cancellation • 60H Battery Life • Deep Bass',
     bankOffer: 'Free Express 2-Day Delivery',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg', 600),
     bgGradient: 'from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0]',
     textColor: 'text-gray-900',
     accentColor: 'text-indigo-600',
@@ -67,7 +68,7 @@ const HERO_BANNERS: FlipkartHeroBanner[] = [
     highlight: 'Pack of 3 at ₹499',
     subtitle: '100% Pure Natural Fruits • Zero Added Sugars',
     bankOffer: 'Buy 2 Get 1 Free on Beverages',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg', 600),
     bgGradient: 'from-[#fdf2f8] via-[#fce7f3] to-[#fbcfe8]',
     textColor: 'text-gray-900',
     accentColor: 'text-pink-600',
@@ -81,7 +82,7 @@ const HERO_BANNERS: FlipkartHeroBanner[] = [
     highlight: 'Up to 50% Off',
     subtitle: 'Breathable Knit Mesh • Memory Foam Sole • Lightweight',
     bankOffer: 'Special Weekend Clearance Sale',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg', 600),
     bgGradient: 'from-[#fff7ed] via-[#ffedd5] to-[#fed7aa]',
     textColor: 'text-gray-900',
     accentColor: 'text-amber-700',
@@ -96,7 +97,7 @@ const MINI_BANNERS: MiniBannerItem[] = [
     title: 'Chipotle Lime Nachos & Nuts',
     subtitle: 'Crispy stone-ground nachos with zesty dip',
     discountText: 'Up to 40% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846783/ecommerce/products/sonwmknronpjyv4qoxdb.jpg', 400),
     bgGradient: 'from-amber-900/90 via-amber-950/80 to-black/90',
     categoryId: 'snacks'
   },
@@ -106,7 +107,7 @@ const MINI_BANNERS: MiniBannerItem[] = [
     title: 'Artisan Roast Espresso',
     subtitle: 'Single origin Arabica coffee beans',
     discountText: 'Up to 25% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg', 400),
     bgGradient: 'from-zinc-900/90 via-zinc-950/85 to-black/95',
     categoryId: 'beverages'
   },
@@ -116,7 +117,7 @@ const MINI_BANNERS: MiniBannerItem[] = [
     title: 'Smart Gadgets & Earbuds',
     subtitle: 'Crystal clear calls & ambient sound mode',
     discountText: 'Up to 60% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg', 400),
     bgGradient: 'from-stone-900/90 via-stone-950/85 to-black/95',
     categoryId: 'accessories'
   },
@@ -126,7 +127,7 @@ const MINI_BANNERS: MiniBannerItem[] = [
     title: 'Comfort Cotton Tees',
     subtitle: '100% Bio-washed premium streetwear',
     discountText: 'Up to 50% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg', 400),
     bgGradient: 'from-indigo-950/90 via-slate-950/85 to-black/95',
     categoryId: 'clothing'
   },
@@ -136,7 +137,7 @@ const MINI_BANNERS: MiniBannerItem[] = [
     title: 'Organic Personal Care',
     subtitle: 'Gentle hydration & natural essential oils',
     discountText: 'Up to 35% Off',
-    image: 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg',
+    image: getOptimizedImageUrl('https://res.cloudinary.com/oqmadwpj/image/upload/v1787846790/ecommerce/products/foq3pj2h2qmtckbuwu0o.jpg', 400),
     bgGradient: 'from-rose-950/90 via-pink-950/85 to-black/95',
     categoryId: 'care'
   }
@@ -246,6 +247,11 @@ export const HeroCarousel: React.FC = () => {
               <img
                 src={slide1.image}
                 alt={slide1.title}
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
+                width="176"
+                height="176"
                 className="w-full h-full object-contain filter drop-shadow-xl transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -300,6 +306,10 @@ export const HeroCarousel: React.FC = () => {
               <img
                 src={slide2.image}
                 alt={slide2.title}
+                loading="lazy"
+                decoding="async"
+                width="176"
+                height="176"
                 className="w-full h-full object-contain filter drop-shadow-xl transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -325,15 +335,22 @@ export const HeroCarousel: React.FC = () => {
         </button>
 
         {/* Dots Pagination */}
-        <div className="flex justify-center gap-1.5 mt-2">
+        <div className="flex justify-center items-center gap-1 mt-2" role="tablist" aria-label="Hero carousel pagination">
           {HERO_BANNERS.map((_, i) => (
             <button
               key={i}
+              role="tab"
+              aria-selected={i === currentSlideIndex}
+              aria-label={`Go to slide ${i + 1}`}
               onClick={() => setCurrentSlideIndex(i)}
-              className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                i === currentSlideIndex ? 'w-5 bg-rose-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400'
-              }`}
-            />
+              className="p-2 flex items-center justify-center cursor-pointer"
+            >
+              <span
+                className={`h-1.5 rounded-full transition-all block ${
+                  i === currentSlideIndex ? 'w-6 bg-rose-500' : 'w-2 bg-gray-400 hover:bg-gray-600'
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>
@@ -367,6 +384,8 @@ export const HeroCarousel: React.FC = () => {
               <img
                 src={mini.image}
                 alt={mini.title}
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover/card:scale-105 transition-transform duration-500"
               />
 

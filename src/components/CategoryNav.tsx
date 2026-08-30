@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import { getOptimizedImageUrl } from '../lib/imageUtils';
 
 export const CategoryNav: React.FC = () => {
   const { categories, selectedCategoryId, setSelectedCategoryId } = useShop();
@@ -31,6 +32,8 @@ export const CategoryNav: React.FC = () => {
             <motion.button
               key={cat.id}
               onClick={() => setSelectedCategoryId(isSelected ? 'all' : cat.id)}
+              aria-label={`Filter by ${cat.name} category`}
+              aria-pressed={isSelected}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.03 }}
@@ -46,8 +49,12 @@ export const CategoryNav: React.FC = () => {
                 }`}
               >
                 <img
-                  src={cat.image}
+                  src={getOptimizedImageUrl(cat.image, 200)}
                   alt={cat.name}
+                  loading="lazy"
+                  decoding="async"
+                  width="64"
+                  height="64"
                   className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-110 transition-transform duration-300"
                 />
               </div>

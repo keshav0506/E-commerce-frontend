@@ -4,17 +4,18 @@ import { motion } from 'framer-motion';
 import { Heart, Plus, Star, Check, AlertCircle, Building2, ShieldCheck } from 'lucide-react';
 import type { Product } from '../types';
 import { useShop } from '../context/ShopContext';
+import { getOptimizedImageUrl } from '../lib/imageUtils';
 
 interface ProductCardProps {
   product: Product;
 }
 
-const FALLBACK_IMAGE = 'https://res.cloudinary.com/oqmadwpj/image/upload/v1787846340/ecommerce/products/re1p3tqmpjl4gdqngjf1.jpg';
+const FALLBACK_IMAGE = 'https://res.cloudinary.com/oqmadwpj/image/upload/f_auto,q_auto,w_400/v1787846340/ecommerce/products/re1p3tqmpjl4gdqngjf1.jpg';
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, wishlist, toggleWishlist, cart } = useShop();
   const navigate = useNavigate();
-  const [imgSrc, setImgSrc] = useState(product.image || FALLBACK_IMAGE);
+  const [imgSrc, setImgSrc] = useState(getOptimizedImageUrl(product.image, 400) || FALLBACK_IMAGE);
 
   const isWishlisted = wishlist.some((id) => String(id) === String(product.id));
   const inCartItem = cart.find((item) => item.product.id === product.id);
@@ -75,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ? 'bg-rose-50 text-rose-500 shadow-xs border border-rose-100'
               : 'bg-white text-gray-400 hover:text-rose-500 hover:bg-rose-50 shadow-2xs border border-gray-200/70'
           }`}
-          aria-label="Wishlist"
+          aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
         >
           <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
         </button>
@@ -86,6 +87,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <img
           src={imgSrc}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
+          width="240"
+          height="240"
           onError={() => setImgSrc(FALLBACK_IMAGE)}
           className={`w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-300 ${
             isOutOfStock ? 'grayscale opacity-60' : ''
@@ -104,6 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 : 'bg-white hover:bg-rose-500 text-gray-800 hover:text-white border border-gray-200/80 shadow-xs'
             }`}
             title="Quick Add to Cart"
+            aria-label={inCartItem ? `Added ${product.name} to cart` : `Quick add ${product.name} to cart`}
           >
             {inCartItem ? <Check className="w-4 h-4 stroke-[3]" /> : <Plus className="w-4 h-4 stroke-[3]" />}
           </button>
@@ -117,9 +123,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="flex items-center space-x-1 text-amber-500 font-medium">
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             <span>{product.rating}</span>
-            <span className="text-gray-400 font-normal">({product.reviewCount})</span>
+            <span className="text-gray-500 font-normal">({product.reviewCount})</span>
           </div>
-          <span className="text-[10px] text-gray-400 font-bold uppercase truncate max-w-[45%]">
+          <span className="text-[10px] text-gray-600 font-bold uppercase truncate max-w-[45%]">
             {product.categoryName}
           </span>
         </div>
@@ -136,7 +142,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
 
           {product.originalPrice > product.price && (
-            <span className="text-xs text-gray-400 line-through">
+            <span className="text-xs text-gray-500 line-through">
               ₹{product.originalPrice}
             </span>
           )}
@@ -159,7 +165,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         >
           <div className="flex items-center gap-1.5 truncate min-w-0">
             <Building2 className="w-3.5 h-3.5 text-rose-500 shrink-0 group-hover/supplier:scale-110 transition-transform" />
-            <span className="text-gray-400 text-[10px]">Sold by:</span>
+            <span className="text-gray-500 text-[10px]">Sold by:</span>
             <span className="font-bold text-gray-800 group-hover/supplier:text-rose-600 truncate text-[11px]">
               {supplierName}
             </span>

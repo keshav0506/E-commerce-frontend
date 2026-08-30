@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Clock } from 'lucide-react';
+import { getOptimizedImageUrl } from '../lib/imageUtils';
 
 export const FlashSaleBanner: React.FC = () => {
   const navigate = useNavigate();
@@ -52,15 +53,23 @@ export const FlashSaleBanner: React.FC = () => {
         <div className="hidden lg:flex items-center justify-end z-10 shrink-0 gap-2">
           <div className="relative w-28 h-24 flex items-center justify-center">
             <img
-              src="https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg"
-              alt="Smartwatch Deal"
+              src={getOptimizedImageUrl("https://res.cloudinary.com/oqmadwpj/image/upload/v1787846812/ecommerce/products/mcbgbgucqnd293rjid65.jpg", 200)}
+              alt="Smartwatch Flash Deal"
+              loading="lazy"
+              decoding="async"
+              width="80"
+              height="80"
               className="w-20 h-20 object-contain filter drop-shadow-xl transform -rotate-6 hover:scale-105 transition-transform"
             />
           </div>
           <div className="relative w-28 h-24 flex items-center justify-center -ml-8">
             <img
-              src="https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg"
-              alt="Headphones Deal"
+              src={getOptimizedImageUrl("https://res.cloudinary.com/oqmadwpj/image/upload/v1787846770/ecommerce/products/yn4qovboszpxtefr7yjo.jpg", 200)}
+              alt="Headphones Flash Deal"
+              loading="lazy"
+              decoding="async"
+              width="88"
+              height="88"
               className="w-22 h-22 object-contain filter drop-shadow-xl transform rotate-6 hover:scale-105 transition-transform"
             />
           </div>

@@ -19,8 +19,9 @@ import {
   Send,
   X
 } from 'lucide-react';
-import { fetchPublicSupplierCatalog, type PublicSupplierCatalogResponse } from '../services/apiService';
+import { fetchPublicSupplierCatalog, submitWholesaleQuote, type PublicSupplierCatalogResponse } from '../services/apiService';
 import { ProductCard } from '../components/ProductCard';
+import { PageMeta } from '../components/PageMeta';
 import { useShop } from '../context/ShopContext';
 
 export const SupplierStorefrontPage: React.FC = () => {
@@ -40,6 +41,10 @@ export const SupplierStorefrontPage: React.FC = () => {
 
   // Bulk Quote Modal State
   const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [quoteCompanyName, setQuoteCompanyName] = useState('');
+  const [quoteContactName, setQuoteContactName] = useState('');
+  const [quoteContactEmail, setQuoteContactEmail] = useState('');
+  const [quoteContactPhone, setQuoteContactPhone] = useState('');
   const [quoteQuantity, setQuoteQuantity] = useState('100');
   const [quoteNotes, setQuoteNotes] = useState('');
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
@@ -80,15 +85,32 @@ export const SupplierStorefrontPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleQuoteSubmit = (e: React.FormEvent) => {
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!id) return;
     setQuoteSubmitting(true);
-    setTimeout(() => {
-      setQuoteSubmitting(false);
+    try {
+      const result = await submitWholesaleQuote(id, {
+        companyName: quoteCompanyName,
+        contactName: quoteContactName,
+        contactEmail: quoteContactEmail,
+        contactPhone: quoteContactPhone || undefined,
+        quantity: parseInt(quoteQuantity, 10),
+        notes: quoteNotes || undefined,
+      });
       setShowQuoteModal(false);
+      setQuoteCompanyName('');
+      setQuoteContactName('');
+      setQuoteContactEmail('');
+      setQuoteContactPhone('');
       setQuoteNotes('');
-      showToast(`Wholesale inquiry sent to ${data?.supplier.businessName}! Our B2B desk will contact you.`);
-    }, 800);
+      setQuoteQuantity('100');
+      showToast(`Quote submitted! Reference: ${result.referenceId} — ${data?.supplier.businessName} will contact you within 1-2 business days.`);
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to submit quote. Please try again.');
+    } finally {
+      setQuoteSubmitting(false);
+    }
   };
 
   if (loading && !data) {
@@ -123,6 +145,10 @@ export const SupplierStorefrontPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] pb-24 text-left">
+      <PageMeta
+        title={`${supplier.businessName} - Official Verified Storefront | Shoply B2B`}
+        description={`Explore the full catalog of ${supplier.businessName} on Shoply. Request bulk wholesale quotations, fast fulfillment, and verified authenticity.`}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
         
         {/* Navigation Breadcrumb */}
@@ -374,13 +400,67 @@ export const SupplierStorefrontPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleQuoteSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Company / Business Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Acme Corp"
+                    value={quoteCompanyName}
+                    onChange={(e) => setQuoteCompanyName(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Your Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="John Doe"
+                    value={quoteContactName}
+                    onChange={(e) => setQuoteContactName(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Phone (optional)
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="+91 9XXXXXXXXX"
+                    value={quoteContactPhone}
+                    onChange={(e) => setQuoteContactPhone(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
+                    Contact Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="procurement@yourcompany.com"
+                    value={quoteContactEmail}
+                    onChange={(e) => setQuoteContactEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-rose-500 shadow-2xs"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-gray-800 uppercase mb-1">
                   Estimated Quantity (Units) *
                 </label>
                 <input
                   type="number"
-                  min={10}
+                  min={1}
                   required
                   value={quoteQuantity}
                   onChange={(e) => setQuoteQuantity(e.target.value)}
@@ -394,7 +474,6 @@ export const SupplierStorefrontPage: React.FC = () => {
                 </label>
                 <textarea
                   rows={3}
-                  required
                   placeholder="Specify custom packaging, target price, or delivery destination..."
                   value={quoteNotes}
                   onChange={(e) => setQuoteNotes(e.target.value)}
@@ -404,7 +483,7 @@ export const SupplierStorefrontPage: React.FC = () => {
 
               <div className="p-3 bg-white rounded-2xl border border-gray-200/60 shadow-2xs text-[11px] text-gray-500 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Responses are routed directly to {supplier.businessEmail} with Shoply guarantee.</span>
+                <span>Quote sent directly to {data?.supplier.businessName}. You&apos;ll receive a reply at your email within 1-2 business days.</span>
               </div>
 
               <div className="flex items-center gap-3 pt-2">
@@ -425,7 +504,7 @@ export const SupplierStorefrontPage: React.FC = () => {
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Submit Inquiry</span>
+                      <span>Submit Quote Request</span>
                     </>
                   )}
                 </button>
